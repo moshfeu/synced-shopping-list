@@ -1,24 +1,27 @@
-import React from 'react';
-import logo from './logo.svg';
+import React, { ChangeEvent } from 'react';
 import './App.css';
+import { useDB } from './Contexts/Items';
+import { addItem } from './Services/Firebase';
 
 function App() {
+  const { items } = useDB();
+
+  function onSubmit(e: ChangeEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const data = new FormData(e.target);
+    addItem({ name: data.get('name') as string });
+  }
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div className='App'>
+      <form onSubmit={onSubmit}>
+        <input name='name' type='text' />
+      </form>
+      <ul>
+        {Object.entries(items).map(([id, item]) => (
+          <li key={id}>{item.name}</li>
+        ))}
+      </ul>
     </div>
   );
 }
