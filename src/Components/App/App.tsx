@@ -1,19 +1,11 @@
-import React, { ChangeEvent } from 'react';
-import { addItem } from '../../Services/Firebase';
+import React from 'react';
 import { List } from '../List/List';
+import { Search } from '../Search/Search';
 
 function App() {
-  function onSubmit(e: ChangeEvent<HTMLFormElement>) {
-    e.preventDefault();
-    const data = new FormData(e.target);
-    addItem({ name: data.get('name') as string });
-  }
-
   return (
     <div className='App'>
-      <form onSubmit={onSubmit}>
-        <input name='name' type='text' />
-      </form>
+      <Search />
       <List />
     </div>
   );
