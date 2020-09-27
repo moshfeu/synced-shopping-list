@@ -1,5 +1,5 @@
 import firebase from 'firebase';
-import { Item } from '../types';
+import { Item, Category } from '../types';
 
 const app = firebase.initializeApp({
   apiKey: process.env.REACT_APP_API_KEY,
@@ -14,5 +14,9 @@ const app = firebase.initializeApp({
 export const db = app.database();
 
 export const addItem = (item: Item) => {
-  return db.ref('items').push(item)
-}
+  return db.ref('items').push(item);
+};
+
+export const addCategory = (category: Category) => {
+  return db.ref('categories').push(category);
+};

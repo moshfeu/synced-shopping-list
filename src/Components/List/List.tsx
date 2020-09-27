@@ -6,6 +6,7 @@ import {
   makeStyles,
 } from '@material-ui/core';
 import { useDB } from '../../Hooks/useDB';
+import { Search } from './Search/Search';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -19,13 +20,15 @@ export const List: FC = () => {
   const { items } = useDB();
 
   return (
-    <MUIList className={classes.root}>
-      List!
-      {Object.entries(items).map(([id, item]) => (
-        <ListItem dense button key={id}>
-          <ListItemText id={id} primary={item.name} />
-        </ListItem>
-      ))}
-    </MUIList>
+    <>
+      <Search />
+      <MUIList className={classes.root}>
+        {Object.entries(items).map(([id, item]) => (
+          <ListItem dense button key={id}>
+            <ListItemText id={id} primary={item.name} />
+          </ListItem>
+        ))}
+      </MUIList>
+    </>
   );
 };

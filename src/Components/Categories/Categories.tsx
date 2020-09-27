@@ -5,7 +5,10 @@ import {
   ListItemText,
   makeStyles,
 } from '@material-ui/core';
+import { Add } from '@material-ui/icons';
 import { useDB } from '../../Hooks/useDB';
+import { Header } from '../Header/Header';
+import { addCategory } from '../../Services/db';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -18,15 +21,27 @@ export const CategoriesList: FC = () => {
   const classes = useStyles();
   const { categories } = useDB();
 
+  function onSubmit(name: string) {
+    addCategory({
+      name,
+      color: 'fff',
+    });
+  }
+
   return (
-    <MUIList className={classes.root}>
-      Categories!
-      {Object.entries(categories).map(([id, category]) => (
-        <ListItem dense button key={id}>
-          <ListItemText id={id} primary={category.name} />
-        </ListItem>
-      ))}
-      !Categories!
-    </MUIList>
+    <>
+      <Header
+        input={{ placeholder: 'Category Name' }}
+        submit={{ icon: Add, label: 'Add' }}
+        onSubmit={onSubmit}
+      />
+      <MUIList className={classes.root}>
+        {Object.entries(categories).map(([id, category]) => (
+          <ListItem dense button key={id}>
+            <ListItemText id={id} primary={category.name} />
+          </ListItem>
+        ))}
+      </MUIList>
+    </>
   );
 };

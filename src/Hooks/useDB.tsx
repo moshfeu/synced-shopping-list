@@ -5,7 +5,7 @@ import React, {
   useEffect,
   useState,
 } from 'react';
-import { db } from '../Services/Firebase';
+import { db } from '../Services/db';
 import { Categories, Items } from '../types';
 
 export const ItemsContext = createContext<Items>({});
