@@ -3,12 +3,15 @@ import ReactDOM from 'react-dom';
 import './index.css';
 import App from './Components/App/App';
 import * as serviceWorker from './serviceWorker';
-import { DBProvider } from './Contexts/Items';
+import { DBProvider } from './Hooks/useDB';
+import { UIStoreProvider } from './Hooks/useUIStore';
 
 ReactDOM.render(
   <React.StrictMode>
     <DBProvider>
-      <App />
+      <UIStoreProvider>
+        <App />
+      </UIStoreProvider>
     </DBProvider>
   </React.StrictMode>,
   document.getElementById('root')

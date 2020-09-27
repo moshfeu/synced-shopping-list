@@ -14,18 +14,19 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export const List: FC = () => {
+export const CategoriesList: FC = () => {
   const classes = useStyles();
-  const { items } = useDB();
+  const { categories } = useDB();
 
   return (
     <MUIList className={classes.root}>
-      List!
-      {Object.entries(items).map(([id, item]) => (
+      Categories!
+      {Object.entries(categories).map(([id, category]) => (
         <ListItem dense button key={id}>
-          <ListItemText id={id} primary={item.name} />
+          <ListItemText id={id} primary={category.name} />
         </ListItem>
       ))}
+      !Categories!
     </MUIList>
   );
 };

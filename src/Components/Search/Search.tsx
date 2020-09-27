@@ -6,7 +6,9 @@ import Divider from '@material-ui/core/Divider';
 import IconButton from '@material-ui/core/IconButton';
 import SearchIcon from '@material-ui/icons/Search';
 import HistoryIcon from '@material-ui/icons/History';
+import MenuIcon from '@material-ui/icons/Menu';
 import { addItem } from '../../Services/Firebase';
+import { useUIStore } from '../../Hooks/useUIStore';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -28,6 +30,9 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 export const Search: FC = () => {
+  const classes = useStyles();
+  const {dispatch} = useUIStore();
+
   function onAdd(e: FormEvent<HTMLDivElement>) {
     e.preventDefault();
     const form = e.target as HTMLFormElement;
@@ -39,13 +44,17 @@ export const Search: FC = () => {
     form.reset();
   }
 
-  const classes = useStyles();
+  function toggleDrawer() {
+    dispatch({
+      type: 'TOGGLE_DRAWER'
+    })
+  }
 
   return (
     <Paper component='form' className={classes.root} onSubmit={onAdd}>
-      {/* <IconButton className={classes.iconButton} aria-label="menu">
+      <IconButton className={classes.iconButton} aria-label="menu" onClick={toggleDrawer}>
         <MenuIcon />
-      </IconButton> */}
+      </IconButton>
       <InputBase
         className={classes.input}
         placeholder='Product Name'
