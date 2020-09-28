@@ -11,6 +11,7 @@ function App() {
         <Drawer />
         <Switch>
           <Route path='/' exact component={List} />
+          <Route path='/item/:id' component={List} />
           <Route path='/categories' component={CategoriesList} />
         </Switch>
       </Router>

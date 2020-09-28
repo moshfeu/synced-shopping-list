@@ -3,6 +3,7 @@ import {
   List as MUIList,
   ListItem,
   ListItemText,
+  CircularProgress,
   makeStyles,
 } from '@material-ui/core';
 import { Add } from '@material-ui/icons';
@@ -19,7 +20,11 @@ const useStyles = makeStyles((theme) => ({
 
 export const CategoriesList: FC = () => {
   const classes = useStyles();
-  const { categories } = useDB();
+  const { categories, isLoading } = useDB();
+
+  if (isLoading) {
+    return <CircularProgress />;
+  }
 
   function onSubmit(name: string) {
     addCategory({
@@ -36,9 +41,9 @@ export const CategoriesList: FC = () => {
         onSubmit={onSubmit}
       />
       <MUIList className={classes.root}>
-        {Object.entries(categories).map(([id, category]) => (
+        {categories.map(({ id, name }) => (
           <ListItem dense button key={id}>
-            <ListItemText id={id} primary={category.name} />
+            <ListItemText id={id} primary={name} />
           </ListItem>
         ))}
       </MUIList>

@@ -8,7 +8,7 @@ import {
 import { addItem } from '../../../Services/db';
 import { Header } from '../../Header/Header';
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles(() => ({
   iconButton: {
     padding: 10,
   },

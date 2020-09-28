@@ -1,15 +1,16 @@
-type DBRefList<T> = {
-  [key: string]: T;
-}
+type DBItem = {
+  id: string;
+};
 
-export type Item = {
+export type Item = DBItem & {
   name: string;
-}
+  category?: string | null;
+};
 
-export type Category = {
+export type Category = DBItem & {
   name: string;
   color: string;
-}
+};
 
-export type Items = DBRefList<Item>;
-export type Categories = DBRefList<Category>;
+export type Items = Array<Item>;
+export type Categories = Array<Category>;

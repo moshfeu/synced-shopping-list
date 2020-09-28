@@ -1,6 +1,8 @@
 import firebase from 'firebase';
 import { Item, Category } from '../types';
 
+type NewRecord<T> = Omit<T, 'id'>;
+
 const app = firebase.initializeApp({
   apiKey: process.env.REACT_APP_API_KEY,
   authDomain: process.env.REACT_APP_AUTH_DOMAIN,
@@ -13,10 +15,24 @@ const app = firebase.initializeApp({
 
 export const db = app.database();
 
-export const addItem = (item: Item) => {
+export function addItem(item: NewRecord<Item>) {
   return db.ref('items').push(item);
-};
+}
 
-export const addCategory = (category: Category) => {
+export function updateItem(item: Item, itemData: Partial<Item>) {
+  if (!item.id) {
+    throw new Error('item must has id');
+  }
+  const updates = Object.entries(itemData).reduce(
+    (prev, [prop, value]) => ({
+      ...prev,
+      [`items/${item.id}/${prop}`]: value,
+    }),
+    {}
+  );
+  return db.ref().update(updates);
+}
+
+export function addCategory(category: NewRecord<Category>) {
   return db.ref('categories').push(category);
-};
+}
