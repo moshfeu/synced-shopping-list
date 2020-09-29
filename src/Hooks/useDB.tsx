@@ -5,7 +5,7 @@ import React, {
   useEffect,
   useState,
 } from 'react';
-import { db } from '../Services/db';
+import { db, DBRef } from '../Services/db';
 import { Categories, Category, Item, Items } from '../types';
 
 type DBContext = {
@@ -20,8 +20,6 @@ const initialValue: DBContext = {
   categories: [],
 };
 export const DBContext = createContext<DBContext>(initialValue);
-
-type DBRef = 'items' | 'categories';
 
 function dbRefOnChange<T>(ref: DBRef, callback: (data: Array<T>) => void) {
   return new Promise((resolve) => {

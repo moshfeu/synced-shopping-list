@@ -1,12 +1,15 @@
-import React, { FC, FormEvent } from 'react';
-import { IconButton, InputBase, makeStyles, Paper } from '@material-ui/core';
+import React, { FC } from 'react';
+import { IconButton, makeStyles, Paper } from '@material-ui/core';
 import { Menu as MenuIcon, SvgIconComponent } from '@material-ui/icons';
 import { useUIStore } from '../../Hooks/useUIStore';
+import { Item } from '../../types';
+import { Autocomplete } from '../Autocomplete/Autocomplete';
 
 type HeaderProps = {
   onSubmit?: (text: string) => void;
   input?: {
     placeholder: string;
+    options?: Array<Item>;
   };
   submit?: {
     label: string;
@@ -23,6 +26,8 @@ const useStyles = makeStyles((theme) => ({
   input: {
     marginLeft: theme.spacing(1),
     flex: 1,
+    display: 'flex',
+    alignItems: 'center',
   },
   iconButton: {
     padding: 10,
@@ -45,21 +50,17 @@ export const Header: FC<HeaderProps> = ({
     });
   }
 
-  function onFormSubmit(e: FormEvent<HTMLDivElement>) {
-    e.preventDefault();
-    const form = e.target as HTMLFormElement;
-    const text = new FormData(form).get('name') as string;
+  function onFormSubmit(item: Item) {
     if (onSubmit) {
-      onSubmit(text);
+      onSubmit(item.name);
     }
-    form.reset();
   }
 
-  const { dispatch } = useUIStore();
   const classes = useStyles();
+  const { dispatch } = useUIStore();
 
   return (
-    <Paper component='form' className={classes.root} onSubmit={onFormSubmit}>
+    <Paper className={classes.root}>
       <IconButton
         className={classes.iconButton}
         aria-label='menu'
@@ -68,11 +69,11 @@ export const Header: FC<HeaderProps> = ({
         <MenuIcon />
       </IconButton>
       {input && submit && (
-        <>
-          <InputBase
-            className={classes.input}
+        <div className={classes.input}>
+          <Autocomplete
+            options={input.options || []}
+            onSelect={onFormSubmit}
             placeholder='Product Name'
-            name='name'
           />
           <IconButton
             type='submit'
@@ -81,7 +82,7 @@ export const Header: FC<HeaderProps> = ({
           >
             <submit.icon />
           </IconButton>
-        </>
+        </div>
       )}
       {children}
     </Paper>

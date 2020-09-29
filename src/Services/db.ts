@@ -1,5 +1,5 @@
 import firebase from 'firebase';
-import { Item, Category } from '../types';
+import { ListItem, Item, Category } from '../types';
 
 type NewRecord<T> = Omit<T, 'id'>;
 
@@ -13,10 +13,22 @@ const app = firebase.initializeApp({
   appId: process.env.REACT_APP_APP_ID,
 });
 
+const DB_REF = {
+  ITEMS: 'items',
+  CATEGORIES: 'categories',
+  LIST: 'list',
+} as const;
+
+export type DBRef = typeof DB_REF[keyof typeof DB_REF];
+
 export const db = app.database();
 
 export function addItem(item: NewRecord<Item>) {
-  return db.ref('items').push(item);
+  return db.ref(DB_REF.ITEMS).push(item);
+}
+
+export function addListItem(listItem: NewRecord<ListItem>) {
+  return db.ref(DB_REF.LIST).push(listItem);
 }
 
 export function updateItem(item: Item, itemData: Partial<Item>) {
@@ -26,7 +38,7 @@ export function updateItem(item: Item, itemData: Partial<Item>) {
   const updates = Object.entries(itemData).reduce(
     (prev, [prop, value]) => ({
       ...prev,
-      [`items/${item.id}/${prop}`]: value,
+      [`${DB_REF.ITEMS}/${item.id}/${prop}`]: value,
     }),
     {}
   );
@@ -34,5 +46,5 @@ export function updateItem(item: Item, itemData: Partial<Item>) {
 }
 
 export function addCategory(category: NewRecord<Category>) {
-  return db.ref('categories').push(category);
+  return db.ref(DB_REF.CATEGORIES).push(category);
 }
