@@ -23,12 +23,26 @@ export type DBRef = typeof DB_REF[keyof typeof DB_REF];
 
 export const db = app.database();
 
-export function addItem(item: NewRecord<Item>) {
+export async function addItem(item: NewRecord<Item>) {
   return db.ref(DB_REF.ITEMS).push(item);
 }
 
-export function addListItem(listItem: NewRecord<ListItem>) {
-  return db.ref(DB_REF.LIST).push(listItem);
+export async function addListItem(
+  item: Pick<ListItem, 'itemId'> | NewRecord<Item>
+) {
+  const newListItem: Partial<ListItem> = {
+    checked: false,
+    note: '',
+    quantity: 1,
+  };
+
+  if (!('itemId' in item)) {
+    const newItem = await addItem(item);
+    newListItem.itemId = newItem.key!;
+  } else {
+    newListItem.itemId = item.itemId;
+  }
+  return db.ref(DB_REF.LIST).push(newListItem);
 }
 
 export function updateItem(item: Item, itemData: Partial<Item>) {

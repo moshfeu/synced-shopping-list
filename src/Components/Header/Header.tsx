@@ -6,7 +6,7 @@ import { Item } from '../../types';
 import { Autocomplete } from '../Autocomplete/Autocomplete';
 
 type HeaderProps = {
-  onSubmit?: (text: string) => void;
+  onSubmit?(item: string | object): void;
   input?: {
     placeholder: string;
     options?: Array<Item>;
@@ -50,9 +50,9 @@ export const Header: FC<HeaderProps> = ({
     });
   }
 
-  function onFormSubmit(item: Item) {
+  function onFormSubmit(item: Item | string) {
     if (onSubmit) {
-      onSubmit(item.name);
+      onSubmit(item);
     }
   }
 

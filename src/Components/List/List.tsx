@@ -6,7 +6,6 @@ import {
   ListItemText,
   Drawer,
   IconButton,
-  CircularProgress,
   makeStyles,
 } from '@material-ui/core';
 import { MoreVert } from '@material-ui/icons';
@@ -24,11 +23,11 @@ const useStyles = makeStyles((theme) => ({
 
 export const List: FC = () => {
   const classes = useStyles();
-  const { items, isLoading } = useDB();
+  const { listItems } = useDB();
   const history = useHistory();
   const { id } = useParams<{ id: string }>();
   const [isDrawOpen, setIsDrawOpen] = useState(false);
-  const focusedItem = items.find((item) => item.id === id);
+  const focusedItem = listItems.find((listItem) => listItem.id === id);
 
   useEffect(() => {
     setIsDrawOpen(!!id);
@@ -45,27 +44,21 @@ export const List: FC = () => {
   return (
     <>
       <Search />
-      {isLoading ? (
-        <CircularProgress />
-      ) : (
-        <>
-          <Drawer anchor='right' open={isDrawOpen} onClose={hideItemDetailes}>
-            <ItemDetails item={focusedItem} />
-          </Drawer>
-          <MUIList className={classes.root}>
-            {items.map(({ id, name }) => (
-              <ListItem dense button key={id}>
-                <ListItemText id={id} primary={name} />
-                <ListItemSecondaryAction>
-                  <IconButton onClick={() => showItemDetailes(id)}>
-                    <MoreVert />
-                  </IconButton>
-                </ListItemSecondaryAction>
-              </ListItem>
-            ))}
-          </MUIList>
-        </>
-      )}
+      <Drawer anchor='right' open={isDrawOpen} onClose={hideItemDetailes}>
+        <ItemDetails itemList={focusedItem} />
+      </Drawer>
+      <MUIList className={classes.root}>
+        {listItems.map(({ id, item: { name } }) => (
+          <ListItem dense button key={id}>
+            <ListItemText id={id} primary={name} />
+            <ListItemSecondaryAction>
+              <IconButton onClick={() => showItemDetailes(id)}>
+                <MoreVert />
+              </IconButton>
+            </ListItemSecondaryAction>
+          </ListItem>
+        ))}
+      </MUIList>
     </>
   );
 };

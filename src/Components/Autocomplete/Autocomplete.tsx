@@ -5,7 +5,7 @@ import { Item } from '../../types';
 type AutocompleteOptions = {
   placeholder: string;
   options: Array<Item>;
-  onSelect(option: Partial<Item>): void;
+  onSelect(option: Partial<Item> | string): void;
 };
 
 const useStyles = makeStyles((theme) => ({
@@ -41,16 +41,14 @@ export const Autocomplete: FC<AutocompleteOptions> = ({
     );
   }, [inputValue, options, inputInFocus]);
 
-  function onItemClick(option: Partial<Item>) {
+  function onItemClick(option: Partial<Item> | string) {
     setInputValue('');
     onSelect(option);
   }
 
   function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    onItemClick({
-      name: inputValue,
-    });
+    onItemClick(inputValue);
   }
 
   return (

@@ -5,9 +5,10 @@ import {
   Search as SearchIcon,
   History as HistoryIcon,
 } from '@material-ui/icons';
-import { addItem } from '../../../Services/db';
+import { addListItem } from '../../../Services/db';
 import { Header } from '../../Header/Header';
 import { useDB } from '../../../Hooks/useDB';
+import { Item } from '../../../types';
 
 const useStyles = makeStyles(() => ({
   iconButton: {
@@ -23,8 +24,16 @@ export const Search: FC = () => {
   const classes = useStyles();
   const { items } = useDB();
 
-  function onAdd(name: string) {
-    addItem({ name });
+  function onAdd(option: string | Item) {
+    addListItem(
+      typeof option === 'string'
+        ? {
+            name: option,
+          }
+        : {
+            itemId: option.id,
+          }
+    );
   }
 
   return (

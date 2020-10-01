@@ -8,11 +8,11 @@ import {
 } from '@material-ui/core';
 import { useDB } from '../../Hooks/useDB';
 import { updateItem } from '../../Services/db';
-import { Item } from '../../types';
+import { ListItemView } from '../../types';
 import { UNCATEGORIZED } from '../../consts';
 
 type ItemDetails = {
-  item?: Item;
+  itemList?: ListItemView;
 };
 
 const useStyles = makeStyles(() => ({
@@ -25,25 +25,25 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-export const ItemDetails: FC<ItemDetails> = ({ item }) => {
+export const ItemDetails: FC<ItemDetails> = ({ itemList }) => {
   const classes = useStyles();
   const { categories } = useDB();
 
   function onChange(_e: unknown, value: ReactNode) {
     const { value: category } = (value as ReactElement).props;
-    updateItem(item!, {
+    updateItem(itemList!.item, {
       category: category === UNCATEGORIZED ? null : category,
     });
   }
 
   return (
     <div className={classes.root}>
-      {!item ? null : (
+      {!itemList ? null : (
         <FormControl classes={{ root: classes.formControl }}>
           <InputLabel>Caetgory</InputLabel>
           <Select
             onChange={onChange}
-            defaultValue={item.category || UNCATEGORIZED}
+            defaultValue={itemList.item.category || UNCATEGORIZED}
           >
             <MenuItem key={UNCATEGORIZED} value={UNCATEGORIZED}>
               uncategorized
