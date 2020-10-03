@@ -1,4 +1,4 @@
-type DBItem = {
+export type DBItem = {
   readonly id: string;
 };
 

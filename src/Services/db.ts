@@ -1,5 +1,5 @@
 import firebase from 'firebase';
-import { ListItem, Item, Category } from '../types';
+import { ListItem, Item, Category, ListItemView, DBItem } from '../types';
 
 type NewRecord<T> = Omit<T, 'id'>;
 
@@ -45,14 +45,29 @@ export async function addListItem(
   return db.ref(DB_REF.LIST).push(newListItem);
 }
 
+export function updateListItem(
+  item: ListItemView,
+  itemData: Partial<ListItemView>
+) {
+  return updateRef(item, itemData, DB_REF.LIST);
+}
+
 export function updateItem(item: Item, itemData: Partial<Item>) {
+  return updateRef(item, itemData, DB_REF.ITEMS);
+}
+
+function updateRef<T extends DBItem>(
+  item: T,
+  itemData: Partial<T>,
+  ref: DBRef = DB_REF.ITEMS
+) {
   if (!item.id) {
     throw new Error('item must has id');
   }
   const updates = Object.entries(itemData).reduce(
     (prev, [prop, value]) => ({
       ...prev,
-      [`${DB_REF.ITEMS}/${item.id}/${prop}`]: value,
+      [`${ref}/${item.id}/${prop}`]: value,
     }),
     {}
   );
