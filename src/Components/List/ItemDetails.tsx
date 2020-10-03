@@ -15,7 +15,7 @@ import { ListItemView } from '../../types';
 import { UNCATEGORIZED } from '../../consts';
 
 type ItemDetails = {
-  itemList?: ListItemView;
+  listItem?: ListItemView;
 };
 
 const useStyles = makeStyles((theme) => ({
@@ -35,7 +35,7 @@ const useStyles = makeStyles((theme) => ({
   select: {},
 }));
 
-export const ItemDetails: FC<ItemDetails> = ({ itemList }) => {
+export const ItemDetails: FC<ItemDetails> = ({ listItem }) => {
   const classes = useStyles();
   const { categories } = useDB();
 
@@ -43,11 +43,11 @@ export const ItemDetails: FC<ItemDetails> = ({ itemList }) => {
     let { value, name } = e.target;
     if (name === 'category') {
       value = value === UNCATEGORIZED ? null : value;
-      updateItem(itemList!.item, {
+      updateItem(listItem!.item, {
         category: value,
       });
     } else {
-      updateListItem(itemList!, {
+      updateListItem(listItem!, {
         [name!]: value,
       });
     }
@@ -55,10 +55,10 @@ export const ItemDetails: FC<ItemDetails> = ({ itemList }) => {
 
   return (
     <div className={classes.root}>
-      {!itemList ? null : (
+      {!listItem ? null : (
         <CardContent>
           <Typography gutterBottom variant='h5' component='h2'>
-            {itemList?.item.name}
+            {listItem?.item.name}
           </Typography>
           <FormControl classes={{ root: classes.formControl }}>
             <FormLabel classes={{ filled: classes.label }} htmlFor='category'>
@@ -68,7 +68,7 @@ export const ItemDetails: FC<ItemDetails> = ({ itemList }) => {
               name='category'
               id='category'
               onChange={onChange}
-              defaultValue={itemList.item.category || UNCATEGORIZED}
+              defaultValue={listItem.item.category || UNCATEGORIZED}
               className={classes.select}
             >
               <MenuItem key={UNCATEGORIZED} value={UNCATEGORIZED}>
@@ -86,7 +86,7 @@ export const ItemDetails: FC<ItemDetails> = ({ itemList }) => {
             <TextField
               name='quantity'
               type='number'
-              defaultValue={itemList.quantity || 1}
+              defaultValue={listItem.quantity || 1}
               onChange={onChange}
             />
           </FormControl>
@@ -98,7 +98,7 @@ export const ItemDetails: FC<ItemDetails> = ({ itemList }) => {
               multiline
               rowsMax={4}
               placeholder='The blue one..'
-              defaultValue={itemList.note}
+              defaultValue={listItem.note}
               onChange={onChange}
             />
           </FormControl>

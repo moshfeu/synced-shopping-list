@@ -1,10 +1,5 @@
 import React, { FC } from 'react';
-import {
-  List as MUIList,
-  ListItem,
-  ListItemText,
-  makeStyles,
-} from '@material-ui/core';
+import { List, ListItem, ListItemText, makeStyles } from '@material-ui/core';
 import { Add } from '@material-ui/icons';
 import { useDB } from '../../Hooks/useDB';
 import { Header } from '../Header/Header';
@@ -35,13 +30,13 @@ export const CategoriesList: FC = () => {
         submit={{ icon: Add, label: 'Add' }}
         onSubmit={onSubmit}
       />
-      <MUIList className={classes.root}>
+      <List className={classes.root}>
         {categories.map(({ id, name }) => (
           <ListItem dense button key={id}>
             <ListItemText id={id} primary={name} />
           </ListItem>
         ))}
-      </MUIList>
+      </List>
     </>
   );
 };
