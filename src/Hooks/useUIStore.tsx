@@ -8,13 +8,14 @@ import React, {
 } from 'react';
 import { ConfirmationDialog } from '../Components/Dialogs/Confirmation/Confirmation';
 
-type Action =
-  | { type: 'TOGGLE_DRAWER' }
-  | { type: 'SHOW_CONFIRMATION'; payload: false };
-
 type UIState = {
   drawOpened: boolean;
+  isAppLoading: boolean;
 };
+
+type Action =
+  | { type: 'TOGGLE_DRAWER' }
+  | { type: 'IS_APP_LOADING'; payload: UIState['isAppLoading'] };
 
 type ConfirmationState = {
   title: string;
@@ -24,6 +25,7 @@ type ConfirmationState = {
 
 const initialState: UIState = {
   drawOpened: false,
+  isAppLoading: true,
 };
 
 const UIContext = createContext<{
@@ -35,12 +37,11 @@ const UIContext = createContext<{
 });
 
 function reducer(state: UIState, action: Action): UIState {
-  const { type } = action;
-  switch (type) {
+  switch (action.type) {
     case 'TOGGLE_DRAWER':
       return { ...state, drawOpened: !state.drawOpened };
-    default:
-      throw new Error(`action not found: ${type}`);
+    case 'IS_APP_LOADING':
+      return { ...state, isAppLoading: action.payload };
   }
 }
 

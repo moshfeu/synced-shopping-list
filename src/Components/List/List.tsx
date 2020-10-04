@@ -1,6 +1,11 @@
 import React, { useState, useEffect, FC, useMemo } from 'react';
 import { partition } from 'lodash';
-import { Drawer, makeStyles, Typography } from '@material-ui/core';
+import {
+  CircularProgress,
+  Drawer,
+  makeStyles,
+  Typography,
+} from '@material-ui/core';
 import { useHistory, useParams } from 'react-router-dom';
 import { useDB } from '../../Hooks/useDB';
 import { Search } from './Search/Search';
@@ -15,6 +20,8 @@ import { History } from './History';
 import { CheckedListHeader } from './CheckedListHeader';
 import { useUIStore } from '../../Hooks/useUIStore';
 import { Item } from '../../types';
+import { EmptyState } from '../EmptyState/EmptyState';
+import { useGlobalStyles } from '../../Styles/common';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -42,8 +49,9 @@ const useStyles = makeStyles((theme) => ({
 
 export const List: FC = () => {
   const classes = useStyles();
+  const globalClasses = useGlobalStyles();
   const { listItems, items } = useDB();
-  const { showConfirmation } = useUIStore();
+  const { state, showConfirmation } = useUIStore();
   const history = useHistory();
   const { id } = useParams<{ id: string }>();
   const { location } = useHistory();
@@ -107,24 +115,41 @@ export const List: FC = () => {
           navigateToRoot();
         }}
       />
-      <div className={classes.lists}>
-        <ListItems
-          items={uncheckedItems}
-          className={classes.uncheckedList}
-          onCheckItem={(listItem) =>
-            updateListItem(listItem, { checked: true })
+      {state.isAppLoading ? (
+        <div className={globalClasses.centerContent}>
+          <CircularProgress color='secondary' />
+        </div>
+      ) : listItems.length ? (
+        <div className={classes.lists}>
+          <>
+            <ListItems
+              items={uncheckedItems}
+              className={classes.uncheckedList}
+              onCheckItem={(listItem) =>
+                updateListItem(listItem, { checked: true })
+              }
+              onClickMoreItem={(listItem) => navigateToItem(listItem.id)}
+            />
+            <ListItems
+              header={<CheckedListHeader onDelete={onDeleteChecked} />}
+              items={checkedItems}
+              className={classes.checkedList}
+              onCheckItem={(listItem) =>
+                updateListItem(listItem, { checked: false })
+              }
+            />
+          </>
+        </div>
+      ) : (
+        <EmptyState
+          text={
+            <>
+              <div>Amm.. We can't go shoping that way,</div>
+              <div>please add some products.</div>
+            </>
           }
-          onClickMoreItem={(listItem) => navigateToItem(listItem.id)}
         />
-        <ListItems
-          header={<CheckedListHeader onDelete={onDeleteChecked} />}
-          items={checkedItems}
-          className={classes.checkedList}
-          onCheckItem={(listItem) =>
-            updateListItem(listItem, { checked: false })
-          }
-        />
-      </div>
+      )}
       <div className={classes.summary}>
         <Typography>
           Total: {uncheckedItems.length + checkedItems.length}

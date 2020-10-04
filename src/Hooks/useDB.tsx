@@ -7,6 +7,7 @@ import React, {
 } from 'react';
 import { Categories, Items, ListItem, ListItems } from '../types';
 import { db } from '../Services/db';
+import { useUIStore } from './useUIStore';
 
 type DBContext = {
   list: Array<ListItem>;
@@ -29,7 +30,9 @@ type State = {
 };
 
 export const DBProvider: FC = ({ children }) => {
+  const [loaded, setLoaded] = useState(false);
   const [state, setState] = useState<State>(initialValue);
+  const { dispatch } = useUIStore();
 
   useEffect(() => {
     db.ref().on('value', (snapshot) => {
@@ -64,9 +67,22 @@ export const DBProvider: FC = ({ children }) => {
             !state.listItems.some((listItem) => listItem.item.id === item.id)
         );
         setState(state);
+
+        if (!loaded) {
+          setLoaded(true);
+        }
       }
     });
-  }, []);
+  }, [loaded]);
+
+  useEffect(() => {
+    if (loaded) {
+      dispatch({
+        type: 'IS_APP_LOADING',
+        payload: false,
+      });
+    }
+  }, [dispatch, loaded]);
 
   return <DBContext.Provider value={state}>{children}</DBContext.Provider>;
 };

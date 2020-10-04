@@ -8,11 +8,11 @@ import { UIStoreProvider } from './Hooks/useUIStore';
 
 ReactDOM.render(
   <React.StrictMode>
-    <DBProvider>
-      <UIStoreProvider>
+    <UIStoreProvider>
+      <DBProvider>
         <App />
-      </UIStoreProvider>
-    </DBProvider>
+      </DBProvider>
+    </UIStoreProvider>
   </React.StrictMode>,
   document.getElementById('root')
 );

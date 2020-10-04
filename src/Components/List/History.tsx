@@ -18,6 +18,7 @@ import { Delete } from '@material-ui/icons';
 import { Item } from '../../types';
 import { deleteItem } from '../../Services/db';
 import { useGlobalStyles } from '../../Styles/common';
+import { EmptyState } from '../EmptyState/EmptyState';
 
 type HistoryProps = {
   open: boolean;
@@ -56,43 +57,47 @@ export const History: FC<HistoryProps> = ({ open, items, onClose, onAdd }) => {
     >
       <DialogTitle id='dialog-title'>History</DialogTitle>
       <DialogContent classes={{ root: classes.content }} dividers>
-        <List>
-          {items.map((item) => {
-            const checked = checkedItems.has(item.id);
-            return (
-              <MUIListItem key={item.id}>
-                <ListItemIcon classes={{ root: globalClasses.listItemIcon }}>
-                  <Checkbox
-                    onChange={() => {
-                      setCheckedItems(
-                        (prevState) =>
-                          new Set(
-                            checked
-                              ? (prevState.delete(item.id), prevState)
-                              : prevState.add(item.id)
-                          )
-                      );
-                    }}
-                    edge='start'
-                    tabIndex={-1}
-                    disableRipple
-                    checked={checked}
-                  />
-                </ListItemIcon>
-                <ListItemText primary={item.name} />
-                <ListItemSecondaryAction>
-                  <IconButton
-                    edge='end'
-                    aria-label='delete'
-                    onClick={() => deleteItem(item)}
-                  >
-                    <Delete />
-                  </IconButton>
-                </ListItemSecondaryAction>
-              </MUIListItem>
-            );
-          })}
-        </List>
+        {items.length ? (
+          <List>
+            {items.map((item) => {
+              const checked = checkedItems.has(item.id);
+              return (
+                <MUIListItem key={item.id}>
+                  <ListItemIcon classes={{ root: globalClasses.listItemIcon }}>
+                    <Checkbox
+                      onChange={() => {
+                        setCheckedItems(
+                          (prevState) =>
+                            new Set(
+                              checked
+                                ? (prevState.delete(item.id), prevState)
+                                : prevState.add(item.id)
+                            )
+                        );
+                      }}
+                      edge='start'
+                      tabIndex={-1}
+                      disableRipple
+                      checked={checked}
+                    />
+                  </ListItemIcon>
+                  <ListItemText primary={item.name} />
+                  <ListItemSecondaryAction>
+                    <IconButton
+                      edge='end'
+                      aria-label='delete'
+                      onClick={() => deleteItem(item)}
+                    >
+                      <Delete />
+                    </IconButton>
+                  </ListItemSecondaryAction>
+                </MUIListItem>
+              );
+            })}
+          </List>
+        ) : (
+          <EmptyState text='Have you added the whole history??' />
+        )}
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose} color='secondary'>
