@@ -1,4 +1,4 @@
-import React, { FC } from 'react';
+import React, { FC, useMemo } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import { IconButton, Divider } from '@material-ui/core';
 import {
@@ -22,7 +22,12 @@ const useStyles = makeStyles(() => ({
 
 export const Search: FC = () => {
   const classes = useStyles();
-  const { items } = useDB();
+  const { items, listItems } = useDB();
+  const options = useMemo(() => {
+    return items.filter(
+      (item) => !listItems.some((listItem) => listItem.item.id === item.id)
+    );
+  }, [items, listItems]);
 
   function onAdd(option: string | Item) {
     addListItem(
@@ -39,7 +44,7 @@ export const Search: FC = () => {
   return (
     <Header
       onSubmit={onAdd}
-      input={{ placeholder: 'Product Name', options: items }}
+      input={{ placeholder: 'Product Name', options }}
       submit={{ icon: SearchIcon, label: 'Add' }}
     >
       <Divider className={classes.divider} orientation='vertical' />
