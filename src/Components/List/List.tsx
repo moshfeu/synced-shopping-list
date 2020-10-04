@@ -1,6 +1,6 @@
 import React, { useState, useEffect, FC, useMemo } from 'react';
 import { partition } from 'lodash';
-import { Drawer, makeStyles } from '@material-ui/core';
+import { Drawer, makeStyles, Typography } from '@material-ui/core';
 import { useHistory, useParams } from 'react-router-dom';
 import { useDB } from '../../Hooks/useDB';
 import { Search } from './Search/Search';
@@ -15,8 +15,20 @@ const useStyles = makeStyles((theme) => ({
     width: '100%',
     backgroundColor: theme.palette.background.paper,
   },
+  list: {
+    display: 'grid',
+    gridTemplateRows: 'auto 1fr auto',
+    height: '100vh',
+  },
   checkedList: {
     backgroundColor: theme.palette.background.default,
+  },
+  summary: {
+    backgroundColor: theme.palette.info.dark,
+    color: theme.palette.info.contrastText,
+    padding: theme.spacing(1),
+    display: 'flex',
+    justifyContent: 'space-around',
   },
 }));
 
@@ -56,23 +68,35 @@ export const List: FC = () => {
   }
 
   return (
-    <>
+    <div className={classes.list}>
       <Search />
       <Drawer anchor='right' open={isDrawOpen} onClose={hideItemDetailes}>
         <ItemDetails listItem={focusedItem} />
       </Drawer>
-      <ListItems
-        items={uncheckedItems}
-        className={classes.root}
-        onCheckItem={(listItem) => updateListItem(listItem, { checked: true })}
-        onClickMoreItem={(listItem) => showItemDetailes(listItem.id)}
-      />
-      <ListItems
-        header={<CheckedListHeader onDelete={onDeleteChecked} />}
-        items={checkedItems}
-        className={classes.checkedList}
-        onCheckItem={(listItem) => updateListItem(listItem, { checked: false })}
-      />
-    </>
+      <div>
+        <ListItems
+          items={uncheckedItems}
+          className={classes.root}
+          onCheckItem={(listItem) =>
+            updateListItem(listItem, { checked: true })
+          }
+          onClickMoreItem={(listItem) => showItemDetailes(listItem.id)}
+        />
+        <ListItems
+          header={<CheckedListHeader onDelete={onDeleteChecked} />}
+          items={checkedItems}
+          className={classes.checkedList}
+          onCheckItem={(listItem) =>
+            updateListItem(listItem, { checked: false })
+          }
+        />
+      </div>
+      <div className={classes.summary}>
+        <Typography>
+          Total: {uncheckedItems.length + checkedItems.length}
+        </Typography>
+        <Typography>Left: {uncheckedItems.length}</Typography>
+      </div>
+    </div>
   );
 };
