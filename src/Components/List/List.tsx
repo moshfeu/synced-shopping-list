@@ -5,20 +5,28 @@ import { useHistory, useParams } from 'react-router-dom';
 import { useDB } from '../../Hooks/useDB';
 import { Search } from './Search/Search';
 import { ItemDetails } from './ItemDetails';
-import { deleteListItems, updateListItem } from '../../Services/db';
+import {
+  addListItems,
+  deleteListItems,
+  updateListItem,
+} from '../../Services/db';
 import { ListItems } from './ListItems';
+import { History } from './History';
 import { CheckedListHeader } from './CheckedListHeader';
 import { useUIStore } from '../../Hooks/useUIStore';
+import { Item } from '../../types';
 
 const useStyles = makeStyles((theme) => ({
   root: {
-    width: '100%',
-    backgroundColor: theme.palette.background.paper,
-  },
-  list: {
     display: 'grid',
     gridTemplateRows: 'auto 1fr auto',
     height: '100vh',
+  },
+  lists: {
+    overflowY: 'auto',
+  },
+  uncheckedList: {
+    backgroundColor: theme.palette.background.paper,
   },
   checkedList: {
     backgroundColor: theme.palette.background.default,
@@ -34,11 +42,13 @@ const useStyles = makeStyles((theme) => ({
 
 export const List: FC = () => {
   const classes = useStyles();
-  const { listItems } = useDB();
+  const { listItems, items } = useDB();
   const { showConfirmation } = useUIStore();
   const history = useHistory();
   const { id } = useParams<{ id: string }>();
+  const { location } = useHistory();
   const [isDrawOpen, setIsDrawOpen] = useState(false);
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const focusedItem = listItems.find((listItem) => listItem.id === id);
   const [checkedItems, uncheckedItems] = useMemo(
     () => partition(listItems, (item) => item.checked),
@@ -49,11 +59,15 @@ export const List: FC = () => {
     setIsDrawOpen(!!id);
   }, [id]);
 
-  function showItemDetailes(itemId: string) {
+  useEffect(() => {
+    setIsHistoryOpen(location.pathname === '/history');
+  }, [location.pathname]);
+
+  function navigateToItem(itemId: string) {
     history.push(`/item/${itemId}`);
   }
 
-  function hideItemDetailes() {
+  function navigateToRoot() {
     history.push('/');
   }
 
@@ -67,20 +81,40 @@ export const List: FC = () => {
     });
   }
 
+  function handleAddFromHistory(items: Array<Item>) {
+    addListItems(
+      items.map((item) => ({
+        checked: false,
+        itemId: item.id,
+        note: '',
+        quantity: 1,
+      }))
+    );
+  }
+
   return (
-    <div className={classes.list}>
+    <div className={classes.root}>
       <Search />
-      <Drawer anchor='right' open={isDrawOpen} onClose={hideItemDetailes}>
+      <Drawer anchor='right' open={isDrawOpen} onClose={navigateToRoot}>
         <ItemDetails listItem={focusedItem} />
       </Drawer>
-      <div>
+      <History
+        open={isHistoryOpen}
+        items={items}
+        onAdd={handleAddFromHistory}
+        onClose={() => {
+          setIsHistoryOpen(false);
+          navigateToRoot();
+        }}
+      />
+      <div className={classes.lists}>
         <ListItems
           items={uncheckedItems}
-          className={classes.root}
+          className={classes.uncheckedList}
           onCheckItem={(listItem) =>
             updateListItem(listItem, { checked: true })
           }
-          onClickMoreItem={(listItem) => showItemDetailes(listItem.id)}
+          onClickMoreItem={(listItem) => navigateToItem(listItem.id)}
         />
         <ListItems
           header={<CheckedListHeader onDelete={onDeleteChecked} />}

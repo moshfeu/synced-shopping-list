@@ -50,6 +50,10 @@ export const DBProvider: FC = ({ children }) => {
           ...rest,
           item: state.items.find((item) => item.id === itemId)!,
         }));
+        state.items = state.items.filter(
+          (item) =>
+            !state.listItems.some((listItem) => listItem.item.id === item.id)
+        );
         delete state.list;
         setState(state);
       }

@@ -63,11 +63,20 @@ export async function addListItem(
   return db.ref(DB_REF.LIST).push(newListItem);
 }
 
+export function addListItems(items: Array<NewRecord<ListItem>>) {
+  const listItemsRef = db.ref(DB_REF.LIST);
+  return Promise.all(items.map((item) => listItemsRef.push(item)));
+}
+
 export function updateListItem(
   item: ListItemView,
   itemData: Partial<ListItemView>
 ) {
   return updateRef(item, itemData, DB_REF.LIST);
+}
+
+export function deleteItem(item: Item) {
+  return db.ref(`${DB_REF.ITEMS}/${item.id}`).remove();
 }
 
 export function deleteListItems(items: Array<ListItemView>) {
