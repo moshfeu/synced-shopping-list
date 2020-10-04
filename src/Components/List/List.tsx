@@ -5,8 +5,10 @@ import { useHistory, useParams } from 'react-router-dom';
 import { useDB } from '../../Hooks/useDB';
 import { Search } from './Search/Search';
 import { ItemDetails } from './ItemDetails';
-import { updateListItem } from '../../Services/db';
+import { deleteListItems, updateListItem } from '../../Services/db';
 import { ListItems } from './ListItems';
+import { CheckedListHeader } from './CheckedListHeader';
+import { useUIStore } from '../../Hooks/useUIStore';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -21,6 +23,7 @@ const useStyles = makeStyles((theme) => ({
 export const List: FC = () => {
   const classes = useStyles();
   const { listItems } = useDB();
+  const { showConfirmation } = useUIStore();
   const history = useHistory();
   const { id } = useParams<{ id: string }>();
   const [isDrawOpen, setIsDrawOpen] = useState(false);
@@ -42,6 +45,16 @@ export const List: FC = () => {
     history.push('/');
   }
 
+  function onDeleteChecked() {
+    showConfirmation({
+      title: 'Confirm',
+      text: 'Are you sure you want to delete all the items?',
+      onConfirm: () => {
+        deleteListItems(checkedItems);
+      },
+    });
+  }
+
   return (
     <>
       <Search />
@@ -55,6 +68,7 @@ export const List: FC = () => {
         onClickMoreItem={(listItem) => showItemDetailes(listItem.id)}
       />
       <ListItems
+        header={<CheckedListHeader onDelete={onDeleteChecked} />}
         items={checkedItems}
         className={classes.checkedList}
         onCheckItem={(listItem) => updateListItem(listItem, { checked: false })}

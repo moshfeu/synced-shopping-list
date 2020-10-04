@@ -46,7 +46,7 @@ export const DBProvider: FC = ({ children }) => {
           {} as State
         );
 
-        state.listItems = state.list!.map(({ itemId, ...rest }) => ({
+        state.listItems = (state.list || []).map(({ itemId, ...rest }) => ({
           ...rest,
           item: state.items.find((item) => item.id === itemId)!,
         }));

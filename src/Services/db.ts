@@ -23,6 +23,24 @@ export type DBRef = typeof DB_REF[keyof typeof DB_REF];
 
 export const db = app.database();
 
+function updateRef<T extends DBItem>(
+  item: T,
+  itemData: Partial<T>,
+  ref: DBRef
+) {
+  if (!item.id) {
+    throw new Error('item must has id');
+  }
+  const updates = Object.entries(itemData).reduce(
+    (prev, [prop, value]) => ({
+      ...prev,
+      [`${ref}/${item.id}/${prop}`]: value,
+    }),
+    {}
+  );
+  return db.ref().update(updates);
+}
+
 export async function addItem(item: NewRecord<Item>) {
   return db.ref(DB_REF.ITEMS).push(item);
 }
@@ -52,26 +70,20 @@ export function updateListItem(
   return updateRef(item, itemData, DB_REF.LIST);
 }
 
-export function updateItem(item: Item, itemData: Partial<Item>) {
-  return updateRef(item, itemData, DB_REF.ITEMS);
-}
-
-function updateRef<T extends DBItem>(
-  item: T,
-  itemData: Partial<T>,
-  ref: DBRef = DB_REF.ITEMS
-) {
-  if (!item.id) {
-    throw new Error('item must has id');
-  }
-  const updates = Object.entries(itemData).reduce(
-    (prev, [prop, value]) => ({
+export function deleteListItems(items: Array<ListItemView>) {
+  const updates = items.reduce(
+    (prev, next) => ({
       ...prev,
-      [`${ref}/${item.id}/${prop}`]: value,
+      [`${DB_REF.LIST}/${next.id}`]: null,
     }),
     {}
   );
+
   return db.ref().update(updates);
+}
+
+export function updateItem(item: Item, itemData: Partial<Item>) {
+  return updateRef(item, itemData, DB_REF.ITEMS);
 }
 
 export function addCategory(category: NewRecord<Category>) {

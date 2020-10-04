@@ -1,4 +1,4 @@
-import React, { FC } from 'react';
+import React, { FC, ReactElement } from 'react';
 import {
   List,
   ListItem,
@@ -13,44 +13,48 @@ import { ListItemView } from '../../types';
 
 type ItemProps = {
   items: Array<ListItemView>;
+  header?: ReactElement;
+  className: string;
   onCheckItem(listItem: ListItemView): void;
   onClickMoreItem?(listItem: ListItemView): void;
-  className: string;
 };
 
 export const ListItems: FC<ItemProps> = ({
   items,
+  header,
+  className,
   onCheckItem,
   onClickMoreItem,
-  className,
 }) => {
+  if (!items.length) {
+    return <></>;
+  }
   return (
-    <>
-      {items.length ? (
-        <List className={className}>
-          {items.map((item) => (
-            <ListItem dense button>
-              <ListItemIcon>
-                <Checkbox
-                  onChange={() => onCheckItem(item)}
-                  edge='start'
-                  tabIndex={-1}
-                  disableRipple
-                  checked={item.checked}
-                />
-              </ListItemIcon>
-              <ListItemText id={item.id} primary={item.item.name} />
-              <ListItemSecondaryAction>
-                {onClickMoreItem && (
-                  <IconButton onClick={() => onClickMoreItem(item)}>
-                    <MoreVert />
-                  </IconButton>
-                )}
-              </ListItemSecondaryAction>
-            </ListItem>
-          ))}
-        </List>
-      ) : null}
-    </>
+    <div className={className}>
+      {header}
+      <List>
+        {items.map((item) => (
+          <ListItem key={item.id} dense button>
+            <ListItemIcon>
+              <Checkbox
+                onChange={() => onCheckItem(item)}
+                edge='start'
+                tabIndex={-1}
+                disableRipple
+                checked={item.checked}
+              />
+            </ListItemIcon>
+            <ListItemText id={item.id} primary={item.item.name} />
+            <ListItemSecondaryAction>
+              {onClickMoreItem && (
+                <IconButton onClick={() => onClickMoreItem(item)}>
+                  <MoreVert />
+                </IconButton>
+              )}
+            </ListItemSecondaryAction>
+          </ListItem>
+        ))}
+      </List>
+    </div>
   );
 };
