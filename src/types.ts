@@ -21,6 +21,7 @@ export type ListItem = DBItem & {
 
 export type ListItemView = Omit<ListItem, 'itemId'> & {
   item: Item;
+  category?: Category;
 };
 
 export type Items = Array<Item>;

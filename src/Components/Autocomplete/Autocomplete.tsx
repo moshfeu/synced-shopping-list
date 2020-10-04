@@ -11,7 +11,7 @@ type AutocompleteOptions = {
 const useStyles = makeStyles((theme) => ({
   root: {
     position: 'relative',
-    zIndex: 1,
+    zIndex: 2,
     flex: 1,
   },
   list: {

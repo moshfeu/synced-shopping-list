@@ -55,7 +55,7 @@ export const ItemDetails: FC<ItemDetails> = ({ listItem }) => {
 
   return (
     <div className={classes.root}>
-      {!listItem ? null : (
+      {listItem ? (
         <CardContent>
           <Typography gutterBottom variant='h5' component='h2'>
             {listItem?.item.name}
@@ -68,7 +68,7 @@ export const ItemDetails: FC<ItemDetails> = ({ listItem }) => {
               name='category'
               id='category'
               onChange={onChange}
-              defaultValue={listItem.item.category || UNCATEGORIZED}
+              value={listItem.item.category || UNCATEGORIZED}
               className={classes.select}
             >
               <MenuItem key={UNCATEGORIZED} value={UNCATEGORIZED}>
@@ -103,7 +103,7 @@ export const ItemDetails: FC<ItemDetails> = ({ listItem }) => {
             />
           </FormControl>
         </CardContent>
-      )}
+      ) : null}
     </div>
   );
 };

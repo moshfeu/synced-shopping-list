@@ -17,6 +17,7 @@ import {
 import { Delete } from '@material-ui/icons';
 import { Item } from '../../types';
 import { deleteItem } from '../../Services/db';
+import { useGlobalStyles } from '../../Styles/common';
 
 type HistoryProps = {
   open: boolean;
@@ -33,6 +34,7 @@ const useStyles = makeStyles(() => ({
 
 export const History: FC<HistoryProps> = ({ open, items, onClose, onAdd }) => {
   const classes = useStyles();
+  const globalClasses = useGlobalStyles();
   const [checkedItems, setCheckedItems] = useState(new Set());
 
   function handleAdd() {
@@ -59,7 +61,7 @@ export const History: FC<HistoryProps> = ({ open, items, onClose, onAdd }) => {
             const checked = checkedItems.has(item.id);
             return (
               <MUIListItem key={item.id}>
-                <ListItemIcon>
+                <ListItemIcon classes={{ root: globalClasses.listItemIcon }}>
                   <Checkbox
                     onChange={() => {
                       setCheckedItems(

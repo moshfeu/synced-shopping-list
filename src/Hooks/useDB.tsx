@@ -9,7 +9,7 @@ import { Categories, Items, ListItem, ListItems } from '../types';
 import { db } from '../Services/db';
 
 type DBContext = {
-  list?: Array<ListItem>;
+  list: Array<ListItem>;
   listItems: ListItems;
   items: Items;
   categories: Categories;
@@ -23,7 +23,7 @@ const initialValue: DBContext = {
 };
 export const DBContext = createContext<DBContext>(initialValue);
 
-type dbRef = { [key in keyof DBContext]: { [key: string]: any } };
+type dbRef = { [key in keyof DBContext]: { [key: string]: DBContext[key][0] } };
 type State = {
   [key in keyof DBContext]: DBContext[key];
 };
@@ -46,15 +46,23 @@ export const DBProvider: FC = ({ children }) => {
           {} as State
         );
 
-        state.listItems = (state.list || []).map(({ itemId, ...rest }) => ({
-          ...rest,
-          item: state.items.find((item) => item.id === itemId)!,
-        }));
-        state.items = state.items.filter(
+        state.listItems = (state.list || []).map(({ itemId, ...rest }) => {
+          const item = {
+            ...snapshotAsJSON.items[itemId],
+            id: itemId,
+          };
+          const category = snapshotAsJSON.categories[item.category || ''];
+
+          return {
+            ...rest,
+            item,
+            category,
+          };
+        });
+        state.items = (state.items || []).filter(
           (item) =>
             !state.listItems.some((listItem) => listItem.item.id === item.id)
         );
-        delete state.list;
         setState(state);
       }
     });
