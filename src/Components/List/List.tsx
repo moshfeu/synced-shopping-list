@@ -89,13 +89,13 @@ export const List: FC = () => {
     });
   }
 
-  function handleAddFromHistory(items: Array<Item>) {
+  function handleAddFromHistory(items: Map<string, number>) {
     addListItems(
-      items.map((item) => ({
-        checked: false,
-        itemId: item.id,
+      Array.from(items.entries()).map(([itemId, quantity]) => ({
+        itemId,
+        quantity,
         note: '',
-        quantity: 1,
+        checked: false,
       }))
     );
   }

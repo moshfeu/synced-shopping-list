@@ -60,10 +60,15 @@ export const ListItems: FC<ItemProps> = ({
   );
 };
 
-const ListItemTextComposition: FC<{
+type ListItemTextCompositionProps = {
   name: string;
   quantity: number;
-}> = ({ name, quantity }) => (
+};
+
+const ListItemTextComposition: FC<ListItemTextCompositionProps> = ({
+  name,
+  quantity,
+}) => (
   <>
     {name}
     {quantity > 1 ? <> ({quantity})</> : null}

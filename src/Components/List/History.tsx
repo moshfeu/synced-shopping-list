@@ -6,6 +6,8 @@ import {
   DialogActions,
   Button,
   makeStyles,
+  InputBase,
+  Grid,
 } from '@material-ui/core';
 import { Delete } from '@material-ui/icons';
 import { ItemView } from '../../types';
@@ -17,35 +19,51 @@ import { groupItemsBy } from '../../Services/converters';
 type HistoryProps = {
   open: boolean;
   items: Array<ItemView>;
-  onAdd(items: Array<ItemView>): void;
+  onAdd(items: Map<string, number>): void;
   onClose(): void;
 };
 
-const useStyles = makeStyles(() => ({
+const useStyles = makeStyles((theme) => ({
   content: {
     padding: 0,
+  },
+  quantity: {
+    width: theme.spacing(4),
+    border: `1px solid ${theme.palette.primary.light}`,
+  },
+  quantityInput: {
+    textAlign: 'center',
+    lineHeight: 1,
   },
 }));
 
 export const History: FC<HistoryProps> = ({ open, items, onClose, onAdd }) => {
   const classes = useStyles();
-  const [checkedItems, setCheckedItems] = useState(new Set());
+  const [checkedItems, setCheckedItems] = useState(new Map<string, number>());
 
   const groupByCategories = useMemo(() => {
     return groupItemsBy(items, ['category', 'name'], (item) => ({
       key: item.id,
       checked: checkedItems.has(item.id),
-      primary: item.name,
+      primary: (
+        <ItemTextComposition
+          name={item.name}
+          value={checkedItems.get(item.id)!}
+          onChange={(value) =>
+            setCheckedItems((prevState) => prevState.set(item.id, value))
+          }
+        />
+      ),
     }));
   }, [checkedItems, items]);
 
   function handleAdd() {
-    onAdd(items.filter((item) => checkedItems.has(item.id)));
+    onAdd(checkedItems);
     onClose();
   }
 
   useEffect(() => {
-    setCheckedItems(new Set());
+    setCheckedItems((prevState) => (prevState.clear(), prevState));
   }, [open]);
 
   return (
@@ -66,10 +84,10 @@ export const History: FC<HistoryProps> = ({ open, items, onClose, onAdd }) => {
             onCheckItem={(item) =>
               setCheckedItems(
                 (prevState) =>
-                  new Set(
+                  new Map(
                     item.checked
                       ? (prevState.delete(item.key), prevState)
-                      : prevState.add(item.key)
+                      : prevState.set(item.key, 1)
                   )
               )
             }
@@ -87,5 +105,34 @@ export const History: FC<HistoryProps> = ({ open, items, onClose, onAdd }) => {
         </Button>
       </DialogActions>
     </Dialog>
+  );
+};
+
+type ItemTextCompositionProps = {
+  name: string;
+  value: number;
+  onChange(input: number): void;
+};
+const ItemTextComposition: FC<ItemTextCompositionProps> = ({
+  name,
+  value,
+  onChange,
+}) => {
+  const classes = useStyles();
+  return (
+    <Grid container direction='row' justify='space-between' alignItems='center'>
+      <Grid item>{name}</Grid>
+      {value ? (
+        <Grid item>
+          <InputBase
+            type='number'
+            defaultValue={value}
+            classes={{ root: classes.quantity, input: classes.quantityInput }}
+            color='primary'
+            onChange={(e) => onChange(Number(e.target.value))}
+          />
+        </Grid>
+      ) : null}
+    </Grid>
   );
 };
