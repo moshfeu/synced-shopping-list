@@ -63,7 +63,10 @@ export const History: FC<HistoryProps> = ({ open, items, onClose, onAdd }) => {
   }
 
   useEffect(() => {
-    setCheckedItems((prevState) => (prevState.clear(), prevState));
+    setCheckedItems((prevState) => {
+      prevState.clear();
+      return prevState;
+    });
   }, [open]);
 
   return (

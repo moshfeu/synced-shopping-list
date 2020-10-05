@@ -59,7 +59,7 @@ export const Autocomplete: FC<AutocompleteOptions> = ({
           placeholder={placeholder}
           name='name'
           onFocus={() => setInputInFocus(true)}
-          // hold tp let the item's `onClick` to fire
+          // hold it, let the item's `onClick` to fire
           onBlur={() => setTimeout(() => setInputInFocus(false))}
           onChange={(e) => setInputValue(e.target.value)}
           value={inputValue}

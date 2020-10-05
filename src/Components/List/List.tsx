@@ -19,7 +19,6 @@ import { ListItems } from './ListItems';
 import { History } from './History';
 import { CheckedListHeader } from './CheckedListHeader';
 import { useUIStore } from '../../Hooks/useUIStore';
-import { Item } from '../../types';
 import { EmptyState } from '../EmptyState/EmptyState';
 import { useGlobalStyles } from '../../Styles/common';
 
@@ -144,7 +143,7 @@ export const List: FC = () => {
         <EmptyState
           text={
             <>
-              <div>Amm.. We can't go shoping that way,</div>
+              <div>Amm.. We can't go shopping that way,</div>
               <div>please add some products.</div>
             </>
           }
