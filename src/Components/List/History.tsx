@@ -11,9 +11,8 @@ import { Delete } from '@material-ui/icons';
 import { ItemView } from '../../types';
 import { deleteItem } from '../../Services/db';
 import { EmptyState } from '../EmptyState/EmptyState';
-import { GroupedList, GroupedListItem } from '../GroupedList/GroupedList';
-import { groupBy, startCase } from 'lodash';
-import { UNCATEGORIZED } from '../../consts';
+import { GroupedList } from '../GroupedList/GroupedList';
+import { groupItemsBy } from '../../Services/converters';
 
 type HistoryProps = {
   open: boolean;
@@ -33,24 +32,11 @@ export const History: FC<HistoryProps> = ({ open, items, onClose, onAdd }) => {
   const [checkedItems, setCheckedItems] = useState(new Set());
 
   const groupByCategories = useMemo(() => {
-    return Object.entries(
-      groupBy(items, (item) => item.category?.name || startCase(UNCATEGORIZED))
-    )
-      .sort(([categoryA], [categoryB]) => categoryA.localeCompare(categoryB))
-      .reduce<Array<[string, Array<GroupedListItem>]>>(
-        (prev, [categoryName, items]) => [
-          ...prev,
-          [
-            categoryName,
-            items.map<GroupedListItem>((item) => ({
-              key: item.id,
-              checked: checkedItems.has(item.id),
-              primary: item.name,
-            })),
-          ],
-        ],
-        []
-      );
+    return groupItemsBy(items, ['category', 'name'], (item) => ({
+      key: item.id,
+      checked: checkedItems.has(item.id),
+      primary: item.name,
+    }));
   }, [checkedItems, items]);
 
   function handleAdd() {

@@ -23,7 +23,7 @@ type GroupedListProps = {
   categories: Array<[string, Array<GroupedListItem>]>;
   actionIcon: ReactChild;
   onCheckItem(item: GroupedListItem): void;
-  onAction(item: GroupedListItem): void;
+  onAction?(item: GroupedListItem): void;
 };
 
 const useStyles = makeStyles((theme) => ({
