@@ -1,29 +1,24 @@
-import React, { FC, useState, useEffect } from 'react';
+import React, { FC, useState, useEffect, useMemo } from 'react';
 import {
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
-  List,
-  ListItem as MUIListItem,
-  ListItemIcon,
-  ListItemText,
-  ListItemSecondaryAction,
-  IconButton,
-  Checkbox,
   Button,
   makeStyles,
 } from '@material-ui/core';
 import { Delete } from '@material-ui/icons';
-import { Item } from '../../types';
+import { ItemView } from '../../types';
 import { deleteItem } from '../../Services/db';
-import { useGlobalStyles } from '../../Styles/common';
 import { EmptyState } from '../EmptyState/EmptyState';
+import { GroupedList, GroupedListItem } from '../GroupedList/GroupedList';
+import { groupBy, startCase } from 'lodash';
+import { UNCATEGORIZED } from '../../consts';
 
 type HistoryProps = {
   open: boolean;
-  items: Array<Item>;
-  onAdd(items: Array<Item>): void;
+  items: Array<ItemView>;
+  onAdd(items: Array<ItemView>): void;
   onClose(): void;
 };
 
@@ -35,8 +30,28 @@ const useStyles = makeStyles(() => ({
 
 export const History: FC<HistoryProps> = ({ open, items, onClose, onAdd }) => {
   const classes = useStyles();
-  const globalClasses = useGlobalStyles();
   const [checkedItems, setCheckedItems] = useState(new Set());
+
+  const groupByCategories = useMemo(() => {
+    return Object.entries(
+      groupBy(items, (item) => item.category?.name || startCase(UNCATEGORIZED))
+    )
+      .sort(([categoryA], [categoryB]) => categoryA.localeCompare(categoryB))
+      .reduce<Array<[string, Array<GroupedListItem>]>>(
+        (prev, [categoryName, items]) => [
+          ...prev,
+          [
+            categoryName,
+            items.map<GroupedListItem>((item) => ({
+              key: item.id,
+              checked: checkedItems.has(item.id),
+              primary: item.name,
+            })),
+          ],
+        ],
+        []
+      );
+  }, [checkedItems, items]);
 
   function handleAdd() {
     onAdd(items.filter((item) => checkedItems.has(item.id)));
@@ -58,43 +73,21 @@ export const History: FC<HistoryProps> = ({ open, items, onClose, onAdd }) => {
       <DialogTitle id='dialog-title'>History</DialogTitle>
       <DialogContent classes={{ root: classes.content }} dividers>
         {items.length ? (
-          <List>
-            {items.map((item) => {
-              const checked = checkedItems.has(item.id);
-              return (
-                <MUIListItem key={item.id}>
-                  <ListItemIcon classes={{ root: globalClasses.listItemIcon }}>
-                    <Checkbox
-                      onChange={() => {
-                        setCheckedItems(
-                          (prevState) =>
-                            new Set(
-                              checked
-                                ? (prevState.delete(item.id), prevState)
-                                : prevState.add(item.id)
-                            )
-                        );
-                      }}
-                      edge='start'
-                      tabIndex={-1}
-                      disableRipple
-                      checked={checked}
-                    />
-                  </ListItemIcon>
-                  <ListItemText primary={item.name} />
-                  <ListItemSecondaryAction>
-                    <IconButton
-                      edge='end'
-                      aria-label='delete'
-                      onClick={() => deleteItem(item)}
-                    >
-                      <Delete />
-                    </IconButton>
-                  </ListItemSecondaryAction>
-                </MUIListItem>
-              );
-            })}
-          </List>
+          <GroupedList
+            categories={groupByCategories}
+            actionIcon={<Delete />}
+            onAction={(item) => deleteItem(item.key)}
+            onCheckItem={(item) =>
+              setCheckedItems(
+                (prevState) =>
+                  new Set(
+                    item.checked
+                      ? (prevState.delete(item.key), prevState)
+                      : prevState.add(item.key)
+                  )
+              )
+            }
+          />
         ) : (
           <EmptyState text='Have you added the whole history??' />
         )}

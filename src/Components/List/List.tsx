@@ -50,17 +50,17 @@ const useStyles = makeStyles((theme) => ({
 export const List: FC = () => {
   const classes = useStyles();
   const globalClasses = useGlobalStyles();
-  const { listItems, items } = useDB();
+  const { list, items } = useDB();
   const { state, showConfirmation } = useUIStore();
   const history = useHistory();
   const { id } = useParams<{ id: string }>();
   const { location } = useHistory();
   const [isDrawOpen, setIsDrawOpen] = useState(false);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
-  const focusedItem = listItems.find((listItem) => listItem.id === id);
+  const focusedItem = list.find((listItem) => listItem.id === id);
   const [checkedItems, uncheckedItems] = useMemo(
-    () => partition(listItems, (item) => item.checked),
-    [listItems]
+    () => partition(list, (item) => item.checked),
+    [list]
   );
 
   useEffect(() => {
@@ -119,7 +119,7 @@ export const List: FC = () => {
         <div className={globalClasses.centerContent}>
           <CircularProgress color='secondary' />
         </div>
-      ) : listItems.length ? (
+      ) : list.length ? (
         <div className={classes.lists}>
           <>
             <ListItems

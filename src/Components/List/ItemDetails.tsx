@@ -44,7 +44,7 @@ export const ItemDetails: FC<ItemDetails> = ({ listItem }) => {
     if (name === 'category') {
       value = value === UNCATEGORIZED ? null : value;
       updateItem(listItem!.item, {
-        category: value,
+        categoryId: value,
       });
     } else {
       updateListItem(listItem!, {
@@ -68,7 +68,7 @@ export const ItemDetails: FC<ItemDetails> = ({ listItem }) => {
               name='category'
               id='category'
               onChange={onChange}
-              value={listItem.item.category || UNCATEGORIZED}
+              value={listItem.item.category?.id || UNCATEGORIZED}
               className={classes.select}
             >
               <MenuItem key={UNCATEGORIZED} value={UNCATEGORIZED}>

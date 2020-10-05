@@ -1,5 +1,12 @@
 import firebase from 'firebase';
-import { ListItem, Item, Category, ListItemView, DBItem } from '../types';
+import {
+  ListItem,
+  Item,
+  Category,
+  ListItemView,
+  DBItem,
+  ItemView,
+} from '../types';
 
 type NewRecord<T> = Omit<T, 'id'>;
 
@@ -75,8 +82,8 @@ export function updateListItem(
   return updateRef(item, itemData, DB_REF.LIST);
 }
 
-export function deleteItem(item: Item) {
-  return db.ref(`${DB_REF.ITEMS}/${item.id}`).remove();
+export function deleteItem(itemId: string) {
+  return db.ref(`${DB_REF.ITEMS}/${itemId}`).remove();
 }
 
 export function deleteListItems(items: Array<ListItemView>) {
@@ -91,7 +98,7 @@ export function deleteListItems(items: Array<ListItemView>) {
   return db.ref().update(updates);
 }
 
-export function updateItem(item: Item, itemData: Partial<Item>) {
+export function updateItem(item: ItemView, itemData: Partial<Item>) {
   return updateRef(item, itemData, DB_REF.ITEMS);
 }
 

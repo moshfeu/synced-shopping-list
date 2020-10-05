@@ -5,26 +5,32 @@ import React, {
   useEffect,
   useState,
 } from 'react';
-import { Categories, Items, ListItem, ListItems } from '../types';
+import { Categories, Item, ItemView, ListItem, ListItemView } from '../types';
 import { db } from '../Services/db';
 import { useUIStore } from './useUIStore';
 
-type DBContext = {
+type DBStructure = {
   list: Array<ListItem>;
-  listItems: ListItems;
-  items: Items;
+  items: Array<Item>;
+  categories: Categories;
+};
+
+type DBContext = {
+  list: Array<ListItemView>;
+  items: Array<ItemView>;
   categories: Categories;
 };
 
 const initialValue: DBContext = {
   list: [],
-  listItems: [],
   items: [],
   categories: [],
 };
 export const DBContext = createContext<DBContext>(initialValue);
 
-type dbRef = { [key in keyof DBContext]: { [key: string]: DBContext[key][0] } };
+type dbRef = {
+  [key in keyof DBStructure]: { [key: string]: DBStructure[key][0] };
+};
 type State = {
   [key in keyof DBContext]: DBContext[key];
 };
@@ -38,7 +44,7 @@ export const DBProvider: FC = ({ children }) => {
     db.ref().on('value', (snapshot) => {
       const snapshotAsJSON = snapshot.toJSON() as dbRef;
       if (snapshotAsJSON) {
-        const state = Object.entries(snapshotAsJSON).reduce(
+        const dbData = Object.entries(snapshotAsJSON).reduce(
           (prev, [ref, items]) => ({
             ...prev,
             [ref]: Object.entries(items!).map(([id, props]) => ({
@@ -46,26 +52,34 @@ export const DBProvider: FC = ({ children }) => {
               ...props,
             })),
           }),
-          {} as State
+          {} as DBStructure
         );
 
-        state.listItems = (state.list || []).map(({ itemId, ...rest }) => {
-          const item = {
-            ...snapshotAsJSON.items[itemId],
-            id: itemId,
-          };
-          const category = snapshotAsJSON.categories[item.category || ''];
+        const items = (dbData.items || []).map(({ categoryId, ...item }) => ({
+          ...item,
+          category: categoryId
+            ? {
+                ...snapshotAsJSON.categories[categoryId || ''],
+                id: categoryId,
+              }
+            : undefined,
+        }));
 
+        const list = (dbData.list || []).map(({ itemId, ...listItem }) => {
+          const itemIndex = items.findIndex((item) => item.id === itemId);
+          const [item] = items.splice(itemIndex, 1);
           return {
-            ...rest,
+            ...listItem,
             item,
-            category,
           };
         });
-        state.items = (state.items || []).filter(
-          (item) =>
-            !state.listItems.some((listItem) => listItem.item.id === item.id)
-        );
+
+        const state: State = {
+          ...dbData,
+          items: items.filter((dbItem) => !snapshotAsJSON.list[dbItem.id]),
+          list,
+        };
+
         setState(state);
 
         if (!loaded) {
@@ -88,9 +102,9 @@ export const DBProvider: FC = ({ children }) => {
 };
 
 export const useDB = () => {
-  const { items, categories, listItems } = useContext(DBContext);
-  if (!items || !categories || !listItems) {
+  const { items, categories, list } = useContext(DBContext);
+  if (!items || !categories || !list) {
     throw new Error('useDB must be called from a DBProvider!');
   }
-  return { items, categories, listItems };
+  return { items, categories, list };
 };

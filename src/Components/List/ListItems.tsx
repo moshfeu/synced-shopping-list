@@ -50,7 +50,10 @@ export const ListItems: FC<ItemProps> = ({
 
   const groupByCategories = useMemo(() => {
     return Object.entries(
-      groupBy(items, (item) => item.category?.name || startCase(UNCATEGORIZED))
+      groupBy(
+        items,
+        (item) => item.item.category?.name || startCase(UNCATEGORIZED)
+      )
     ).sort(([categoryA], [categoryB]) => categoryA.localeCompare(categoryB));
   }, [items]);
 

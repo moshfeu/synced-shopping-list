@@ -4,7 +4,7 @@ export type DBItem = {
 
 export type Item = DBItem & {
   name: string;
-  category?: string | null;
+  categoryId?: string | null;
 };
 
 export type Category = DBItem & {
@@ -19,9 +19,12 @@ export type ListItem = DBItem & {
   checked: boolean;
 };
 
-export type ListItemView = Omit<ListItem, 'itemId'> & {
-  item: Item;
+export type ItemView = Omit<Item, 'categoryId'> & {
   category?: Category;
+};
+
+export type ListItemView = Omit<ListItem, 'itemId'> & {
+  item: ItemView;
 };
 
 export type Items = Array<Item>;
