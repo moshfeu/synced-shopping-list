@@ -7,6 +7,7 @@ import React, {
   useState,
 } from 'react';
 import { ConfirmationDialog } from '../Components/Dialogs/Confirmation/Confirmation';
+import { Snackbar } from '../Components/Dialogs/Snackbar/Snackbar';
 
 type UIState = {
   drawOpened: boolean;
@@ -23,6 +24,12 @@ type ConfirmationState = {
   onConfirm(): void;
 };
 
+type SnackState = {
+  title: string;
+  actionText: string;
+  onAction(): void;
+};
+
 const initialState: UIState = {
   drawOpened: false,
   isAppLoading: true,
@@ -32,6 +39,7 @@ const UIContext = createContext<{
   state: UIState;
   dispatch?: Dispatch<Action>;
   showConfirmation?(options: ConfirmationState | null): void;
+  showSnack?(options: SnackState | null): void;
 }>({
   state: initialState,
 });
@@ -51,13 +59,20 @@ export const UIStoreProvider: FC = ({ children }) => {
     confirmationState,
     setConfirmationState,
   ] = useState<ConfirmationState | null>();
+  const [snackState, setSnackState] = useState<SnackState | null>();
 
   function showConfirmation(options: ConfirmationState | null) {
     setConfirmationState(options);
   }
 
+  function showSnack(options: SnackState) {
+    setSnackState(options);
+  }
+
   return (
-    <UIContext.Provider value={{ state, dispatch, showConfirmation }}>
+    <UIContext.Provider
+      value={{ state, dispatch, showConfirmation, showSnack }}
+    >
       {confirmationState && (
         <ConfirmationDialog
           open={true}
@@ -70,15 +85,29 @@ export const UIStoreProvider: FC = ({ children }) => {
           handleClose={() => setConfirmationState(null)}
         />
       )}
+      {snackState && (
+        <Snackbar
+          open={true}
+          actionText={snackState.actionText}
+          onAction={snackState.onAction}
+        />
+      )}
       {children}
     </UIContext.Provider>
   );
 };
 
 export const useUIStore = () => {
-  const { state, dispatch, showConfirmation } = useContext(UIContext);
+  const { state, dispatch, showConfirmation, showSnack } = useContext(
+    UIContext
+  );
   if (!dispatch) {
     throw new Error('useUIStore must be called from a UIStoreProvider!');
   }
-  return { state, dispatch: dispatch!, showConfirmation: showConfirmation! };
+  return {
+    state,
+    dispatch: dispatch!,
+    showConfirmation: showConfirmation!,
+    showSnack: showSnack!,
+  };
 };
