@@ -72,7 +72,7 @@ function shouldMainNavBeOpen(location: Location) {
   return new URLSearchParams(location.search).has('menu');
 }
 
-export const Drawer: FC = () => {
+export const MainNav: FC = () => {
   const classes = useStyles();
   const currentUser = useAuth();
   const history = useHistory();

@@ -33,7 +33,7 @@
   },
   "husky": {
     "hooks": {
-      "pre-push": "npm version minor"
+      "pre-push": "yarn build && npm version minor"
     }
   },
   "eslintConfig": {

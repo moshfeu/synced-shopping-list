@@ -1,13 +1,13 @@
 import React from 'react';
-import { Drawer } from '../Drawer/Drawer';
-import { List } from '../List/List';
 import { Switch, Route } from 'react-router-dom';
+import { List } from '../List/List';
+import { MainNav } from '../MainNav/MainNav';
 import { CategoriesList } from '../Categories/Categories';
 
 function App() {
   return (
     <div className='App'>
-      <Drawer />
+      <MainNav />
       <Switch>
         <Route path='/' exact component={List} />
         <Route path='/item/:id' component={List} />
