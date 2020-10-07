@@ -45,11 +45,8 @@ export const Header: FC<HeaderProps> = ({
   input,
   submit,
 }) => {
-  function toggleDrawer() {
-    dispatch({
-      type: 'TOGGLE_DRAWER',
-    });
-  }
+  const classes = useStyles();
+  const { toggleMainNav } = useUIStore();
 
   function onFormSubmit(item: Item | string) {
     if (onSubmit) {
@@ -57,15 +54,12 @@ export const Header: FC<HeaderProps> = ({
     }
   }
 
-  const classes = useStyles();
-  const { dispatch } = useUIStore();
-
   return (
     <Paper className={classes.root}>
       <IconButton
         className={classes.iconButton}
         aria-label='menu'
-        onClick={toggleDrawer}
+        onClick={toggleMainNav}
       >
         <MenuIcon />
       </IconButton>

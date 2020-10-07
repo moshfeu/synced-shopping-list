@@ -1,4 +1,4 @@
-import React, { FC } from 'react';
+import React, { FC, useEffect, useState } from 'react';
 import {
   makeStyles,
   createStyles,
@@ -8,18 +8,18 @@ import {
   ListItem,
   ListItemIcon,
   ListItemText,
-  ListSubheader,
   SwipeableDrawer,
   Typography,
-  Grid,
 } from '@material-ui/core';
+import { version } from '../../../package.json';
 import { List as ListIcon, Category as CategoryIcon } from '@material-ui/icons';
-import { Link } from 'react-router-dom';
+import { Link, useHistory } from 'react-router-dom';
+import { Location } from 'history';
 import { ReactComponent as NavIllustration } from '../../Assets/nav.svg';
 
-import { useUIStore } from '../../Hooks/useUIStore';
 import { useAuth } from '../../Hooks/useAuth';
 import { login, logout } from '../../Services/auth';
+import { useUIStore } from '../../Hooks/useUIStore';
 
 const drawerWidth = 240;
 
@@ -31,6 +31,8 @@ const useStyles = makeStyles((theme) =>
     },
     drawerPaper: {
       width: drawerWidth,
+      display: 'grid',
+      gridTemplateRows: 'auto auto 1fr auto',
     },
     navItemText: {
       '&:first-letter': {
@@ -45,8 +47,10 @@ const useStyles = makeStyles((theme) =>
       padding: theme.spacing(0, 0, 1, 0),
     },
     helloSection: {
-      padding: theme.spacing(0, 1),
+      padding: theme.spacing(1, 1, 0),
       lineHeight: 1,
+      display: 'flex',
+      gap: `${theme.spacing(1)}px`,
     },
   })
 );
@@ -64,14 +68,22 @@ const routes = [
   },
 ];
 
+function shouldMainNavBeOpen(location: Location) {
+  return new URLSearchParams(location.search).has('menu');
+}
+
 export const Drawer: FC = () => {
   const classes = useStyles();
-  const { state, dispatch } = useUIStore();
   const currentUser = useAuth();
+  const history = useHistory();
+  const { toggleMainNav } = useUIStore();
+  const [isOpen, setIsOpen] = useState(shouldMainNavBeOpen(history.location));
 
-  function toggleDrawer() {
-    dispatch({ type: 'TOGGLE_DRAWER' });
-  }
+  useEffect(() => {
+    history.listen((newLocation) => {
+      setIsOpen(shouldMainNavBeOpen(newLocation));
+    });
+  }, [history]);
 
   return (
     <>
@@ -81,38 +93,35 @@ export const Drawer: FC = () => {
           paper: classes.drawerPaper,
         }}
         anchor='left'
-        open={state.drawOpened}
-        onClose={toggleDrawer}
-        onOpen={toggleDrawer}
+        open={isOpen}
+        onClose={toggleMainNav}
+        onOpen={toggleMainNav}
       >
-        <List
-          subheader={
-            <ListSubheader component='div' className={classes.subHeader}>
-              <NavIllustration className={classes.illustration} />
-              {currentUser ? (
-                <HelloSection
-                  text={`Hi ${currentUser.displayName} `}
-                  actionText='Logout'
-                  action={logout}
-                />
-              ) : (
-                <HelloSection
-                  text={`Hi stranger `}
-                  actionText='Login'
-                  action={login}
-                />
-              )}
-            </ListSubheader>
-          }
-        >
-          <Divider />
+        <div className={classes.subHeader}>
+          <NavIllustration className={classes.illustration} />
+          {currentUser ? (
+            <HelloSection
+              text={`Hi ${currentUser.displayName} `}
+              actionText='Logout'
+              action={logout}
+            />
+          ) : (
+            <HelloSection
+              text={`Hi stranger `}
+              actionText='Login'
+              action={login}
+            />
+          )}
+        </div>
+        <Divider />
+        <List>
           {routes.map(({ icon, text, path }) => (
             <ListItem
               key={text}
               button
               component={Link}
               to={path}
-              onClick={toggleDrawer}
+              onClick={toggleMainNav}
             >
               <ListItemIcon>{icon}</ListItemIcon>
               <ListItemText
@@ -122,6 +131,9 @@ export const Drawer: FC = () => {
             </ListItem>
           ))}
         </List>
+        <Typography variant='caption' align='center'>
+          {version}
+        </Typography>
       </SwipeableDrawer>
     </>
   );
@@ -137,20 +149,11 @@ const HelloSection: FC<HelloSectionProps> = ({ text, actionText, action }) => {
   const classes = useStyles();
 
   return (
-    <Grid
-      container
-      spacing={1}
-      alignItems='center'
-      className={classes.helloSection}
-    >
-      <Grid item>
-        <Typography>{text}</Typography>
-      </Grid>
-      <Grid item>
-        <MuiLink component='button' variant='body2' onClick={action}>
-          {actionText}
-        </MuiLink>
-      </Grid>
-    </Grid>
+    <div className={classes.helloSection}>
+      <Typography component='span'>{text}</Typography>
+      <MuiLink component='button' variant='body2' onClick={action}>
+        {actionText}
+      </MuiLink>
+    </div>
   );
 };

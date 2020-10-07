@@ -6,16 +6,19 @@ import * as serviceWorker from './serviceWorker';
 import { DBProvider } from './Hooks/useDB';
 import { UIStoreProvider } from './Hooks/useUIStore';
 import { AuthProvider } from './Hooks/useAuth';
+import { BrowserRouter as Router } from 'react-router-dom';
 
 ReactDOM.render(
   <React.StrictMode>
-    <UIStoreProvider>
-      <AuthProvider>
-        <DBProvider>
-          <App />
-        </DBProvider>
-      </AuthProvider>
-    </UIStoreProvider>
+    <Router>
+      <UIStoreProvider>
+        <AuthProvider>
+          <DBProvider>
+            <App />
+          </DBProvider>
+        </AuthProvider>
+      </UIStoreProvider>
+    </Router>
   </React.StrictMode>,
   document.getElementById('root')
 );

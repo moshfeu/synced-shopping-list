@@ -6,17 +6,15 @@ import React, {
   Dispatch,
   useState,
 } from 'react';
+import { useHistory } from 'react-router-dom';
 import { ConfirmationDialog } from '../Components/Dialogs/Confirmation/Confirmation';
 import { Snackbar } from '../Components/Dialogs/Snackbar/Snackbar';
 
 type UIState = {
-  drawOpened: boolean;
   isAppLoading: boolean;
 };
 
-type Action =
-  | { type: 'TOGGLE_DRAWER' }
-  | { type: 'IS_APP_LOADING'; payload: UIState['isAppLoading'] };
+type Action = { type: 'IS_APP_LOADING'; payload: UIState['isAppLoading'] };
 
 type ConfirmationState = {
   title: string;
@@ -31,7 +29,6 @@ type SnackState = {
 };
 
 const initialState: UIState = {
-  drawOpened: false,
   isAppLoading: true,
 };
 
@@ -40,14 +37,13 @@ const UIContext = createContext<{
   dispatch?: Dispatch<Action>;
   showConfirmation?(options: ConfirmationState | null): void;
   showSnack?(options: SnackState | null): void;
+  toggleMainNav?(): void;
 }>({
   state: initialState,
 });
 
 function reducer(state: UIState, action: Action): UIState {
   switch (action.type) {
-    case 'TOGGLE_DRAWER':
-      return { ...state, drawOpened: !state.drawOpened };
     case 'IS_APP_LOADING':
       return { ...state, isAppLoading: action.payload };
   }
@@ -60,6 +56,7 @@ export const UIStoreProvider: FC = ({ children }) => {
     setConfirmationState,
   ] = useState<ConfirmationState | null>();
   const [snackState, setSnackState] = useState<SnackState | null>();
+  const history = useHistory();
 
   function showConfirmation(options: ConfirmationState | null) {
     setConfirmationState(options);
@@ -69,9 +66,23 @@ export const UIStoreProvider: FC = ({ children }) => {
     setSnackState(options);
   }
 
+  function toggleMainNav() {
+    const currentSearch = new URLSearchParams(history.location.search);
+    if (currentSearch.has('menu')) {
+      currentSearch.delete('menu');
+    } else {
+      currentSearch.set('menu', 'true');
+    }
+    const newSearch = currentSearch.toString();
+    history.push({
+      pathname: history.location.pathname,
+      search: newSearch ? `?${currentSearch.toString()}` : newSearch,
+    });
+  }
+
   return (
     <UIContext.Provider
-      value={{ state, dispatch, showConfirmation, showSnack }}
+      value={{ state, dispatch, showConfirmation, showSnack, toggleMainNav }}
     >
       {confirmationState && (
         <ConfirmationDialog
@@ -98,9 +109,13 @@ export const UIStoreProvider: FC = ({ children }) => {
 };
 
 export const useUIStore = () => {
-  const { state, dispatch, showConfirmation, showSnack } = useContext(
-    UIContext
-  );
+  const {
+    state,
+    dispatch,
+    showConfirmation,
+    showSnack,
+    toggleMainNav,
+  } = useContext(UIContext);
   if (!dispatch) {
     throw new Error('useUIStore must be called from a UIStoreProvider!');
   }
@@ -109,5 +124,6 @@ export const useUIStore = () => {
     dispatch: dispatch!,
     showConfirmation: showConfirmation!,
     showSnack: showSnack!,
+    toggleMainNav: toggleMainNav!,
   };
 };
