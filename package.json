@@ -31,11 +31,11 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
-  // "husky": {
-  //   "hooks": {
-  //     "pre-push": "yarn build && npm --no-git-tag-version version minor"
-  //   }
-  // },
+  "husky": {
+    "hooks": {
+      "pre-push": "yarn build && npm --no-git-tag-version version minor"
+    }
+  },
   "eslintConfig": {
     "extends": "react-app"
   },
