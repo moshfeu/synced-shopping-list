@@ -10,4 +10,4 @@ export const app = firebase.initializeApp({
   appId: process.env.REACT_APP_APP_ID,
 });
 
-app.firestore().enablePersistence();
+firebase.firestore().enablePersistence();
