@@ -1,7 +1,7 @@
 {
-  "name": "a",
-  "version": "0.1.0",
-  "private": true,
+  "name": "synced-shopping-list",
+  "version": "1.0.0",
+  "license": "CC BY 4.0",
   "dependencies": {
     "@material-ui/core": "^4.11.0",
     "@material-ui/icons": "^4.9.1",
@@ -22,6 +22,7 @@
     "@types/react": "^16.9.0",
     "@types/react-dom": "^16.9.0",
     "@types/react-router-dom": "^5.1.5",
+    "husky": "^4.3.0",
     "typescript": "~3.7.2"
   },
   "scripts": {
@@ -29,6 +30,11 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
+  },
+  "husky": {
+    "hooks": {
+      "pre-push": "npm version minor"
+    }
   },
   "eslintConfig": {
     "extends": "react-app"
