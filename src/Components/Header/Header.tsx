@@ -2,7 +2,7 @@ import React, { FC } from 'react';
 import { IconButton, makeStyles, Paper } from '@material-ui/core';
 import { Menu as MenuIcon, SvgIconComponent } from '@material-ui/icons';
 import { useUIStore } from '../../Hooks/useUIStore';
-import { Item } from '../../types';
+import { Item } from '../../Types/entities';
 import { Autocomplete } from '../Autocomplete/Autocomplete';
 
 type HeaderProps = {

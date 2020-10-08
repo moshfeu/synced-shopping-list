@@ -5,40 +5,22 @@ import React, {
   useEffect,
   useState,
 } from 'react';
-import { Categories, Item, ItemView, ListItem, ListItemView } from '../types';
-import { db } from '../Services/db';
+import { DBContext, DBState } from '../Types/db';
+import { db } from '../Services/firebase';
 import { useUIStore } from './useUIStore';
 import { useAuth } from './useAuth';
-
-type DBStructure = {
-  list: Array<ListItem>;
-  items: Array<Item>;
-  categories: Categories;
-};
-
-type DBContext = {
-  list: Array<ListItemView>;
-  items: Array<ItemView>;
-  categories: Categories;
-};
+import { dbRef, firebaseToState } from '../Services/converters';
 
 const initialValue: DBContext = {
   list: [],
   items: [],
   categories: [],
 };
-export const DBContext = createContext<DBContext>(initialValue);
-
-type dbRef = {
-  [key in keyof DBStructure]: { [key: string]: DBStructure[key][0] };
-};
-type State = {
-  [key in keyof DBContext]: DBContext[key];
-};
+const dbContext = createContext<DBContext>(initialValue);
 
 export const DBProvider: FC = ({ children }) => {
   const [loaded, setLoaded] = useState(false);
-  const [state, setState] = useState<State>(initialValue);
+  const [state, setState] = useState<DBState>(initialValue);
   const currentUser = useAuth();
   const { dispatch } = useUIStore();
 
@@ -48,46 +30,8 @@ export const DBProvider: FC = ({ children }) => {
       db.ref().on(
         'value',
         (snapshot) => {
-          const snapshotAsJSON = snapshot.toJSON() as dbRef;
-          if (snapshotAsJSON) {
-            const dbData = Object.entries(snapshotAsJSON).reduce(
-              (prev, [ref, items]) => ({
-                ...prev,
-                [ref]: Object.entries(items!).map(([id, props]) => ({
-                  id,
-                  ...props,
-                })),
-              }),
-              {} as DBStructure
-            );
-
-            const items = (dbData.items || []).map(
-              ({ categoryId, ...item }) => ({
-                ...item,
-                category: categoryId
-                  ? {
-                      ...snapshotAsJSON.categories[categoryId || ''],
-                      id: categoryId,
-                    }
-                  : undefined,
-              })
-            );
-
-            const list = (dbData.list || []).map(({ itemId, ...listItem }) => {
-              const itemIndex = items.findIndex((item) => item.id === itemId);
-              const [item] = items.splice(itemIndex, 1);
-              return {
-                ...listItem,
-                item,
-              };
-            });
-
-            const state: State = {
-              ...dbData,
-              items: items.filter((dbItem) => !snapshotAsJSON.list[dbItem.id]),
-              list,
-            };
-
+          if (snapshot) {
+            const state = firebaseToState(snapshot.toJSON() as dbRef);
             setState(state);
 
             if (!loaded) {
@@ -119,11 +63,11 @@ export const DBProvider: FC = ({ children }) => {
     }
   }, [dispatch, loaded]);
 
-  return <DBContext.Provider value={state}>{children}</DBContext.Provider>;
+  return <dbContext.Provider value={state}>{children}</dbContext.Provider>;
 };
 
 export const useDB = () => {
-  const { items, categories, list } = useContext(DBContext);
+  const { items, categories, list } = useContext(dbContext);
   if (!items || !categories || !list) {
     throw new Error('useDB must be called from a DBProvider!');
   }

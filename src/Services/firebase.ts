@@ -1,4 +1,5 @@
 import firebase from 'firebase';
+import { Lsbase } from './lsbase';
 
 export const app = firebase.initializeApp({
   apiKey: process.env.REACT_APP_API_KEY,
@@ -10,4 +11,4 @@ export const app = firebase.initializeApp({
   appId: process.env.REACT_APP_APP_ID,
 });
 
-firebase.firestore().enablePersistence();
+export const db = new Lsbase(app.database());

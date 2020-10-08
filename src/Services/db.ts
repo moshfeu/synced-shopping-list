@@ -1,4 +1,4 @@
-import { app } from './firebase';
+import { db } from './firebase';
 import {
   ListItem,
   Item,
@@ -6,7 +6,7 @@ import {
   ListItemView,
   DBItem,
   ItemView,
-} from '../types';
+} from '../Types/entities';
 
 type NewRecord<T> = Omit<T, 'id'>;
 
@@ -16,9 +16,7 @@ const DB_REF = {
   LIST: 'list',
 } as const;
 
-export type DBRef = typeof DB_REF[keyof typeof DB_REF];
-
-export const db = app.database();
+type DBRef = typeof DB_REF[keyof typeof DB_REF];
 
 function updateRef<T extends DBItem>(
   item: T,

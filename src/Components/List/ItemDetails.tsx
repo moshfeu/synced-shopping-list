@@ -11,7 +11,7 @@ import {
 } from '@material-ui/core';
 import { useDB } from '../../Hooks/useDB';
 import { updateItem, updateListItem } from '../../Services/db';
-import { ListItemView } from '../../types';
+import { ListItemView } from '../../Types/entities';
 import { UNCATEGORIZED } from '../../consts';
 
 type ItemDetails = {

@@ -9,7 +9,7 @@ import { Link } from 'react-router-dom';
 import { addListItem } from '../../../Services/db';
 import { Header } from '../../Header/Header';
 import { useDB } from '../../../Hooks/useDB';
-import { Item } from '../../../types';
+import { Item } from '../../../Types/entities';
 
 const useStyles = makeStyles(() => ({
   iconButton: {

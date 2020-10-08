@@ -10,7 +10,7 @@ import {
   Grid,
 } from '@material-ui/core';
 import { Delete } from '@material-ui/icons';
-import { ItemView } from '../../types';
+import { ItemView } from '../../Types/entities';
 import { deleteItem } from '../../Services/db';
 import { EmptyState } from '../EmptyState/EmptyState';
 import { GroupedList } from '../GroupedList/GroupedList';
