@@ -3,6 +3,7 @@ import { MoreVert } from '@material-ui/icons';
 import { ListItemView } from '../../Types/entities';
 import { groupItemsBy } from '../../Services/converters';
 import { GroupedList, GroupedListItem } from '../GroupedList/GroupedList';
+import { Grid } from '@material-ui/core';
 
 type ItemProps = {
   items: Array<ListItemView>;
@@ -69,8 +70,8 @@ const ListItemTextComposition: FC<ListItemTextCompositionProps> = ({
   name,
   quantity,
 }) => (
-  <>
-    {name}
-    {quantity > 1 ? <> ({quantity})</> : null}
-  </>
+  <Grid container spacing={1}>
+    <Grid item>{name}</Grid>
+    <Grid item>{quantity > 1 ? `(${quantity})` : ''}</Grid>
+  </Grid>
 );

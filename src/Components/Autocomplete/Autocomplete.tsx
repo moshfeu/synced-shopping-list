@@ -1,6 +1,6 @@
 import React, { FC, useEffect, useState, useRef, FormEvent } from 'react';
 import { InputBase, List, ListItem, makeStyles } from '@material-ui/core';
-import { Item } from '../../types';
+import { Item } from '../../Types/entities';
 
 type AutocompleteOptions = {
   placeholder: string;
@@ -13,6 +13,9 @@ const useStyles = makeStyles((theme) => ({
     position: 'relative',
     zIndex: 2,
     flex: 1,
+  },
+  input: {
+    display: 'flex',
   },
   list: {
     position: 'absolute',
@@ -55,12 +58,13 @@ export const Autocomplete: FC<AutocompleteOptions> = ({
     <div className={classes.root}>
       <form onSubmit={onSubmit}>
         <InputBase
+          classes={{ root: classes.input }}
           ref={inputRef}
           placeholder={placeholder}
           name='name'
           onFocus={() => setInputInFocus(true)}
           // hold it, let the item's `onClick` to fire
-          onBlur={() => setTimeout(() => setInputInFocus(false))}
+          onBlur={() => setTimeout(() => setInputInFocus(false), 300)}
           onChange={(e) => setInputValue(e.target.value)}
           value={inputValue}
         />
