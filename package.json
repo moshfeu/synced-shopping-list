@@ -29,11 +29,12 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "pre-push": "sh scripts/pre-push.sh"
   },
   "husky": {
     "hooks": {
-      "pre-push": "yarn build && npm version minor"
+      "pre-push": "yarn pre-push"
     }
   },
   "eslintConfig": {
