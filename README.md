@@ -41,11 +41,13 @@ yarn
 }
 ```
 
-### Deploy (netlify)
+### Deploy
 
 <a href="https://app.netlify.com/start/deploy?repository=https://github.com/moshfeu/synced-shopping-list" target="_blank"><img src="https://www.netlify.com/img/deploy/button.svg" alt="deploy with netlify"></a>
 
+In the process you'll set the build variables the same as in the `.env` file.
+
 Notes:
 
-1. Don't forget to <a href="https://docs.netlify.com/configure-builds/environment-variables/#declare-variables" target="_blank">configure</a> the build variables like you did in the `.env` file.
-2. `yarn push` trigger also `npm version` which bumps the app's version which reflected in the UI (main nav at the bottom)
+1. If you configure netlify manually (not via the "Deploy" button), don't forget to <a href="https://docs.netlify.com/configure-builds/environment-variables/#declare-variables" target="_blank">configure</a> the build variables.
+2. `yarn push` triggers also `npm version` which bumps the app's version which reflected in the UI (main nav at the bottom)
