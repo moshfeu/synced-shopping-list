@@ -1,4 +1,4 @@
-import { get, groupBy, startCase } from 'lodash';
+import { get, groupBy, startCase, sortBy } from 'lodash';
 import { GroupedListItem } from '../Components/GroupedList/GroupedList';
 import { UNCATEGORIZED } from '../consts';
 import { DBState } from '../Types/db';
@@ -50,6 +50,8 @@ export function firebaseToState(snapshot: dbRef): DBState {
     {} as DBStructure
   );
 
+  const categories = sortBy((dbData.categories || []), 'name');
+
   const items = (dbData.items || []).map(({ categoryId, ...item }) => ({
     ...item,
     category: categoryId
@@ -70,7 +72,7 @@ export function firebaseToState(snapshot: dbRef): DBState {
   });
 
   return {
-    ...dbData,
+    categories,
     items: items.filter(
       (dbItem) => !snapshot.list || !snapshot.list[dbItem.id]
     ),
