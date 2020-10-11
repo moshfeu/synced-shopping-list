@@ -1,7 +1,7 @@
 import React, { FC } from 'react';
 import { IconButton, makeStyles, Paper } from '@material-ui/core';
 import { Menu as MenuIcon, SvgIconComponent } from '@material-ui/icons';
-import { useUIStore } from '../../Hooks/useUIStore';
+import { useToggleMainNav } from '../../Hooks/useToggleMainNav';
 import { Item } from '../../Types/entities';
 import { Autocomplete } from '../Autocomplete/Autocomplete';
 
@@ -46,7 +46,7 @@ export const Header: FC<HeaderProps> = ({
   submit,
 }) => {
   const classes = useStyles();
-  const { toggleMainNav } = useUIStore();
+  const toggleMainNav = useToggleMainNav();
 
   function onFormSubmit(item: Item | string) {
     if (onSubmit) {

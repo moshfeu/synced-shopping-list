@@ -3,6 +3,8 @@ import {
   CardContent,
   FormControl,
   FormLabel,
+  Grid,
+  IconButton,
   makeStyles,
   MenuItem,
   Select,
@@ -10,9 +12,12 @@ import {
   Typography,
 } from '@material-ui/core';
 import { useDB } from '../../Hooks/useDB';
-import { updateItem, updateListItem } from '../../Services/db';
+import { addCategory, updateItem, updateListItem } from '../../Services/db';
 import { ListItemView } from '../../Types/entities';
 import { UNCATEGORIZED } from '../../consts';
+import { Add } from '@material-ui/icons';
+import { useGlobalStyles } from '../../Styles/common';
+import { useUIStore } from '../../Hooks/useUIStore';
 
 type ItemDetails = {
   listItem?: ListItemView;
@@ -21,10 +26,10 @@ type ItemDetails = {
 const useStyles = makeStyles((theme) => ({
   root: {
     width: 250,
-    padding: '0 10px',
+    padding: theme.spacing(0, 2),
   },
   formControl: {
-    width: '100%',
+    display: 'flex',
     marginBottom: theme.spacing(4),
   },
   label: {
@@ -37,7 +42,12 @@ const useStyles = makeStyles((theme) => ({
 
 export const ItemDetails: FC<ItemDetails> = ({ listItem }) => {
   const classes = useStyles();
+  const { flexGrow, flex } = useGlobalStyles();
   const { categories } = useDB();
+  const { dispatch } = useUIStore();
+  const category = categories.find(
+    ({ id }) => id === listItem?.item.category?.id
+  );
 
   function onChange(e: React.ChangeEvent<{ name?: string; value: any }>) {
     let { value, name } = e.target;
@@ -53,6 +63,31 @@ export const ItemDetails: FC<ItemDetails> = ({ listItem }) => {
     }
   }
 
+  async function onAddCategory(formData: FormData) {
+    const name = formData.get('category') as string;
+    const category = await addCategory({
+      name,
+    });
+    if (!category?.key) {
+      return;
+    }
+    updateItem(listItem!.item, {
+      categoryId: category.key,
+    });
+  }
+
+  function showAddCategory() {
+    dispatch({
+      type: 'DIALOG',
+      payload: {
+        title: 'Add Category',
+        actionText: 'Add',
+        content: <TextField name='category' type='text' required />,
+        onAction: onAddCategory,
+      },
+    });
+  }
+
   return (
     <div className={classes.root}>
       {listItem ? (
@@ -60,27 +95,39 @@ export const ItemDetails: FC<ItemDetails> = ({ listItem }) => {
           <Typography gutterBottom variant='h5' component='h2'>
             {listItem?.item.name}
           </Typography>
-          <FormControl classes={{ root: classes.formControl }}>
-            <FormLabel classes={{ filled: classes.label }} htmlFor='category'>
-              Caetgory
-            </FormLabel>
-            <Select
-              name='category'
-              id='category'
-              onChange={onChange}
-              value={listItem.item.category?.id || UNCATEGORIZED}
-              className={classes.select}
-            >
-              <MenuItem key={UNCATEGORIZED} value={UNCATEGORIZED}>
-                Uncategorized
-              </MenuItem>
-              {categories.map(({ id, name }) => (
-                <MenuItem key={id} value={id}>
-                  {name}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+          <Grid container wrap='nowrap' classes={{ root: classes.formControl }}>
+            <Grid item classes={{ root: flexGrow }}>
+              <FormControl classes={{ root: flex }}>
+                <FormLabel
+                  classes={{ filled: classes.label }}
+                  htmlFor='category'
+                >
+                  Caetgory
+                </FormLabel>
+                <Select
+                  name='category'
+                  id='category'
+                  onChange={onChange}
+                  value={category?.id || UNCATEGORIZED}
+                  className={classes.select}
+                >
+                  <MenuItem key={UNCATEGORIZED} value={UNCATEGORIZED}>
+                    Uncategorized
+                  </MenuItem>
+                  {categories.map(({ id, name }) => (
+                    <MenuItem key={id} value={id}>
+                      {name}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid item>
+              <IconButton onClick={showAddCategory}>
+                <Add />
+              </IconButton>
+            </Grid>
+          </Grid>
           <FormControl classes={{ root: classes.formControl }}>
             <FormLabel htmlFor='quantity'>Quantity</FormLabel>
             <TextField

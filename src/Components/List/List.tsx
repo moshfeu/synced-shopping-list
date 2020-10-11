@@ -50,7 +50,7 @@ export const List: FC = () => {
   const classes = useStyles();
   const globalClasses = useGlobalStyles();
   const { list, items } = useDB();
-  const { state, showConfirmation } = useUIStore();
+  const { state, dispatch } = useUIStore();
   const history = useHistory();
   const { id } = useParams<{ id: string }>();
   const { location } = useHistory();
@@ -79,11 +79,14 @@ export const List: FC = () => {
   }
 
   function onDeleteChecked() {
-    showConfirmation({
-      title: 'Confirm',
-      text: 'Are you sure you want to delete all the items?',
-      onConfirm: () => {
-        deleteListItems(checkedItems);
+    dispatch({
+      type: 'CONFIRMATION',
+      payload: {
+        title: 'Confirm',
+        text: 'Are you sure you want to delete all the items?',
+        onConfirm: () => {
+          deleteListItems(checkedItems);
+        },
       },
     });
   }

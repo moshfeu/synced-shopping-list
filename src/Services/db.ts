@@ -93,3 +93,7 @@ export function updateItem(item: ItemView, itemData: Partial<Item>) {
 export function addCategory(category: NewRecord<Category>) {
   return db.ref(DB_REF.CATEGORIES).push(category);
 }
+
+export function deleteCategory(categoryId: string) {
+  return db.ref(`${DB_REF.CATEGORIES}/${categoryId}`).remove();
+}

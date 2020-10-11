@@ -1,9 +1,16 @@
 import React, { FC } from 'react';
-import { List, ListItem, ListItemText, makeStyles } from '@material-ui/core';
-import { Add } from '@material-ui/icons';
+import {
+  IconButton,
+  List,
+  ListItem,
+  ListItemText,
+  ListItemSecondaryAction,
+  makeStyles,
+} from '@material-ui/core';
+import { Add, Delete } from '@material-ui/icons';
 import { useDB } from '../../Hooks/useDB';
 import { Header } from '../Header/Header';
-import { addCategory } from '../../Services/db';
+import { addCategory, deleteCategory } from '../../Services/db';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -34,6 +41,11 @@ export const CategoriesList: FC = () => {
         {categories.map(({ id, name }) => (
           <ListItem dense button key={id}>
             <ListItemText id={id} primary={name} />
+            <ListItemSecondaryAction>
+              <IconButton onClick={() => deleteCategory(id)}>
+                <Delete />
+              </IconButton>
+            </ListItemSecondaryAction>
           </ListItem>
         ))}
       </List>

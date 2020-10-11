@@ -34,9 +34,6 @@ const useStyles = makeStyles((theme) => ({
   listSubheader: {
     backgroundColor: theme.palette.background.default,
   },
-  listItemAction: {
-    right: 0,
-  },
 }));
 
 export const GroupedList: FC<GroupedListProps> = ({
@@ -75,9 +72,7 @@ export const GroupedList: FC<GroupedListProps> = ({
                   primary={item.primary}
                   secondary={item.secondary}
                 />
-                <ListItemSecondaryAction
-                  classes={{ root: classes.listItemAction }}
-                >
+                <ListItemSecondaryAction>
                   {onAction && (
                     <IconButton onClick={() => onAction(item)}>
                       {actionIcon}

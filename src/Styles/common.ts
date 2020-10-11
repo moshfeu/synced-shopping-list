@@ -8,4 +8,10 @@ export const useGlobalStyles = makeStyles(() => ({
   listItemIcon: {
     minWidth: 'auto',
   },
+  flexGrow: {
+    flex: 1
+  },
+  flex: {
+    display: 'flex'
+  },
 }));

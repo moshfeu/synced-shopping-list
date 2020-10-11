@@ -9,7 +9,7 @@ export type Item = DBItem & {
 
 export type Category = DBItem & {
   name: string;
-  color: string;
+  color?: string;
 };
 
 export type ListItem = DBItem & {

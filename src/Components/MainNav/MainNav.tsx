@@ -19,7 +19,7 @@ import { ReactComponent as NavIllustration } from '../../Assets/nav.svg';
 
 import { useAuth } from '../../Hooks/useAuth';
 import { login, logout } from '../../Services/auth';
-import { useUIStore } from '../../Hooks/useUIStore';
+import { useToggleMainNav } from '../../Hooks/useToggleMainNav';
 
 const drawerWidth = 240;
 
@@ -76,7 +76,7 @@ export const MainNav: FC = () => {
   const classes = useStyles();
   const currentUser = useAuth();
   const history = useHistory();
-  const { toggleMainNav } = useUIStore();
+  const toggleMainNav = useToggleMainNav();
   const [isOpen, setIsOpen] = useState(shouldMainNavBeOpen(history.location));
 
   useEffect(() => {
