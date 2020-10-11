@@ -31,8 +31,8 @@ export const DBProvider: FC = ({ children }) => {
         'value',
         (snapshot) => {
           const snapshot_json = snapshot.toJSON() as dbRef;
-          if (snapshot && snapshot_json) {
-            const state = firebaseToState(snapshot_json);
+          if (snapshot && snapshotJson) {
+            const state = firebaseToState(snapshotJson);
             setState(state);
           }
 
