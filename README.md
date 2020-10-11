@@ -26,7 +26,7 @@ yarn
 ### Database (Firebase realtime database)
 
 1. Follow the instruction - <a href="https://firebase.google.com/docs/database/web/start" target="_blank">https://firebase.google.com/docs/database/web/start</a>.
-2. Rename `env.sample` to `.env` and update its content with the details received from firebase.
+2. Rename `env.sample` to `.env.local` and update its content with the details received from firebase.
 3. Set up authentication - <a href="https://firebase.google.com/docs/database/security/get-started#set_up" target="_blank">https://firebase.google.com/docs/database/security/get-started#set_up</a>. The UI doesn't have login so it only supports external providers (e.g. Google)
 4. Limit the users who can access the db to avoid exceeding the free plan. You can do it by setting the <a href="https://firebase.google.com/docs/database/security/get-started#access_your_rules" target="_blank">rules</a> write / read to certain users, like this:
 
