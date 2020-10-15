@@ -30,7 +30,8 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "pre-push": "sh scripts/pre-push.sh"
+    "pre-push": "sh scripts/pre-push.sh",
+    "push:no-version": "NO_VERSION=true git push"
   },
   "husky": {
     "hooks": {
