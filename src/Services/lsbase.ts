@@ -20,7 +20,7 @@ export class Lsbase {
   private queue: Array<Updates>;
   private isOnline: boolean = false;
 
-  constructor(private db: firebase.database.Database) {
+  constructor(public db: firebase.database.Database) {
     this.data = this.getFromLocalOrDefault('data', emptyData);
     this.queue = this.getFromLocalOrDefault('queue', []);
     db.ref().on('value', (snapshot) => {
@@ -131,14 +131,14 @@ export class Lsbase {
       on: (
         event: 'value',
         onSucess: (snapshot: Snapshot) => void,
-        onError: (error: string) => void
+        onError?: (error: string) => void
       ) => {
         if (event === 'value') {
           this.listeners[event] = onSucess;
           try {
             this.handleListener();
           } catch (error) {
-            onError(error);
+            onError?.(error);
           }
         }
       },
