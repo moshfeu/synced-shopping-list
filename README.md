@@ -41,6 +41,13 @@ yarn
 }
 ```
 
+### Messaging (Push Notifications)
+
+In order to let the server (the code will published soon) to send a push notification, the app should register itself to FCM ("Firebase Cloud Messaging"), get a token and submit it to server. In order to do this:
+
+1. [Register the app](https://firebase.google.com/docs/cloud-messaging/js/client#configure_web_credentials_with_fcm) and get the Notification Token.
+2. Add it as `REACT_APP_NOTIFICATION_TOKEN` to `env.local` / server env variable.
+
 ### Deploy
 
 <a href="https://app.netlify.com/start/deploy?repository=https://github.com/moshfeu/synced-shopping-list" target="_blank"><img src="https://www.netlify.com/img/deploy/button.svg" alt="deploy with netlify"></a>
