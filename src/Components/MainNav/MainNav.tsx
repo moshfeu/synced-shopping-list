@@ -20,6 +20,7 @@ import { ReactComponent as NavIllustration } from '../../Assets/nav.svg';
 import { useAuth } from '../../Hooks/useAuth';
 import { login, logout } from '../../Services/auth';
 import { useToggleMainNav } from '../../Hooks/useToggleMainNav';
+import { sendNotification } from '../../Services/notifications';
 
 const drawerWidth = 240;
 
@@ -130,6 +131,9 @@ export const MainNav: FC = () => {
               />
             </ListItem>
           ))}
+          <ListItem key='notification' button onClick={sendNotification}>
+            <ListItemText>Send Notification</ListItemText>
+          </ListItem>
         </List>
         <Typography variant='caption' align='center'>
           {version}

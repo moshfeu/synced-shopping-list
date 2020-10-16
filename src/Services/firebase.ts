@@ -13,25 +13,3 @@ const appSettings = {
 
 export const app = firebase.initializeApp(appSettings);
 export const db = new Lsbase(app.database());
-const messaging = firebase.messaging();
-
-messaging
-  .getToken({
-    vapidKey: process.env.REACT_APP_NOTIFICATION_TOKEN!,
-  })
-  .then(async (currentToken) => {
-    if (currentToken) {
-      const tokens = Object.values(
-        (await db.db.ref('/tokens').once('value')).val()
-      );
-      if (!tokens.includes(currentToken)) {
-        await db.db.ref('/tokens').push(currentToken);
-        console.log(`token ${currentToken} was added`);
-      } else {
-        console.log(`token: ${currentToken} is already exists`);
-      }
-    }
-  })
-  .catch((err) => {
-    console.log('An error occurred while retrieving token. ', err);
-  });

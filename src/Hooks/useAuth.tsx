@@ -6,6 +6,7 @@ import React, {
   useContext,
 } from 'react';
 import { auth } from '../Services/auth';
+import { register } from '../Services/messaging';
 
 type CurrentUser = firebase.User | null | undefined;
 
@@ -18,6 +19,7 @@ export const AuthProvider: FC = ({ children }) => {
     auth.onAuthStateChanged(function (user) {
       if (user) {
         setCurrentUser(user);
+        register(user);
       } else {
         console.log('no');
         setCurrentUser(null);
