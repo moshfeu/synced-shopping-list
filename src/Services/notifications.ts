@@ -1,5 +1,4 @@
-const to = 'cmH9MF_ikoUGm_0dK4U2h_:APA91bH-XIqAMGA2OEBdHZp_976BqA1f-v22FhSQ0-2hl5jM16hjhSBgTrW9zArReXoMObrYyV2vugnCbBKAl9DlT1Ehhm2vAgrbhyIpGJVfq-G35FCM0Rm6r7brwdwpXx_FwS_e4IxL';
-// const to = 'fnaMc6ostbDa5VGOKJAchk:APA91bEJsKF7RuZ3T0MdVQs5I81ZkGUPP8YC1zGaiSh972OBev2lklFb13OLj4tXexksYnNQMwqlNJiNrkq0EsaW04Ik3rRzP4A1i7m72WYN66dr8N_IiUC3WmXv6JTAAsdq1LdpzJpQ';
+const to = process.env.REACT_APP_TEST_TO;
 
 export const sendNotification = () => {
   const notification = {
@@ -20,8 +19,9 @@ export const sendNotification = () => {
       to,
     }),
   })
-    .then(function (response) {
-      console.log(response);
+    .then(async function (response) {
+      const result = await response.json();
+      console.log(result);
     })
     .catch(function (error) {
       console.error(error);

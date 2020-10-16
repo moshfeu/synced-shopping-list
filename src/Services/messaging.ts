@@ -1,9 +1,20 @@
 import firebase from 'firebase';
-import { db } from './firebase';
+import { appSettings, db } from './firebase';
 
 const messaging = firebase.messaging();
 
 export function register(user: firebase.User) {
+  navigator.serviceWorker
+    .register('firebase-messaging-sw.js')
+    .then((registration) => {
+      registration.active?.postMessage({
+        type: 'appSettings',
+        appSettings,
+      });
+    })
+    .catch((err) => {
+      console.log(err);
+    });
   messaging
     .getToken({
       vapidKey: process.env.REACT_APP_NOTIFICATION_TOKEN!,
@@ -32,4 +43,8 @@ export function register(user: firebase.User) {
     .catch((err) => {
       console.log('An error occurred while retrieving token. ', err);
     });
+  messaging.onMessage((a) => {
+    console.log(111111);
+    console.log(a);
+  });
 }
