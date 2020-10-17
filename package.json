@@ -26,16 +26,16 @@
     "typescript": "~3.7.2"
   },
   "scripts": {
-    "start": "react-scripts start",
+    "start": "sh scripts/pre-start.sh && react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "pre-push": "sh scripts/pre-push.sh",
-    "push:no-version": "NO_VERSION=true git push"
+    "push:no-version": "NO_VERSION=true git push",
+    "start:prod": "yarn build && serve -s build"
   },
   "husky": {
     "hooks": {
-      "pre-push": "yarn pre-push"
+      "pre-push": "sh scripts/pre-push.sh"
     }
   },
   "eslintConfig": {
