@@ -58,3 +58,7 @@ Notes:
 
 1. If you configure netlify manually (not via the "Deploy" button), don't forget to <a href="https://docs.netlify.com/configure-builds/environment-variables/#declare-variables" target="_blank">configure</a> the build variables.
 2. `yarn push` triggers also `npm version` which bumps the app's version which reflected in the UI (main nav at the bottom)
+
+### Credits
+
+- Illustrations by [undraw](https://undraw.co/) ❤️
