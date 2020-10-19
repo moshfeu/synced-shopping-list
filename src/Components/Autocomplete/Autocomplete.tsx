@@ -3,6 +3,7 @@ import { InputBase, List, ListItem, makeStyles } from '@material-ui/core';
 import { Item } from '../../Types/entities';
 
 type AutocompleteOptions = {
+  maxResult: number;
   placeholder: string;
   options: Array<Item>;
   onSelect(option: Partial<Item> | string): void;
@@ -26,6 +27,7 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 export const Autocomplete: FC<AutocompleteOptions> = ({
+  maxResult,
   options,
   onSelect,
   placeholder,
@@ -39,10 +41,12 @@ export const Autocomplete: FC<AutocompleteOptions> = ({
   useEffect(() => {
     setOptionsList(
       inputValue && inputInFocus
-        ? options.filter((option) => option.name.includes(inputValue))
+        ? options
+            .filter((option) => option.name.includes(inputValue))
+            .slice(0, maxResult)
         : []
     );
-  }, [inputValue, options, inputInFocus]);
+  }, [inputValue, options, inputInFocus, maxResult]);
 
   function onItemClick(option: Partial<Item> | string) {
     setInputValue('');

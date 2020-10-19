@@ -69,6 +69,7 @@ export const Header: FC<HeaderProps> = ({
             options={input.options || []}
             onSelect={onFormSubmit}
             placeholder='Product Name'
+            maxResult={5}
           />
           <IconButton
             type='submit'
