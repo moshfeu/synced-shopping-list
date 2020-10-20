@@ -50,26 +50,32 @@ export function firebaseToState(snapshot: dbRef): DBState {
     {} as DBStructure
   );
 
-  const categories = sortBy((dbData.categories || []), 'name');
+  const categories = sortBy(dbData.categories || [], 'name');
 
-  const items = (dbData.items || []).map(({ categoryId, ...item }) => ({
-    ...item,
-    category: categoryId
-      ? {
-          ...snapshot.categories[categoryId || ''],
-          id: categoryId,
-        }
-      : undefined,
-  }));
+  const items = sortBy(
+    (dbData.items || []).map(({ categoryId, ...item }) => ({
+      ...item,
+      category: categoryId
+        ? {
+            ...snapshot.categories[categoryId || ''],
+            id: categoryId,
+          }
+        : undefined,
+    })),
+    'name'
+  );
 
-  const list = (dbData.list || []).map(({ itemId, ...listItem }) => {
-    const itemIndex = items.findIndex((item) => item.id === itemId);
-    const [item] = items.splice(itemIndex, 1);
-    return {
-      ...listItem,
-      item,
-    };
-  });
+  const list = sortBy(
+    (dbData.list || []).map(({ itemId, ...listItem }) => {
+      const itemIndex = items.findIndex((item) => item.id === itemId);
+      const [item] = items.splice(itemIndex, 1);
+      return {
+        ...listItem,
+        item,
+      };
+    }),
+    (item) => item.item.name
+  );
 
   return {
     categories,
