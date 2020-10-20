@@ -4,10 +4,12 @@ import { List } from '../List/List';
 import { MainNav } from '../MainNav/MainNav';
 import { CategoriesList } from '../Categories/Categories';
 import { ServiceWorkerWrapper } from '../ServiceWorkerWrapper/ServiceWorkerWrapper';
+import { CssBaseline } from '@material-ui/core';
 
 function App() {
   return (
     <div className='App'>
+      <CssBaseline />
       <ServiceWorkerWrapper />
       <MainNav />
       <Switch>
