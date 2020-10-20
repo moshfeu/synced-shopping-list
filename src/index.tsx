@@ -35,10 +35,3 @@ ReactDOM.render(
   </React.StrictMode>,
   document.getElementById('root')
 );
-
-serviceWorker.register({
-  onUpdate: async (registration) => {
-    await registration.unregister();
-    window.location.reload();
-  },
-});
