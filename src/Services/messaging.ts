@@ -5,7 +5,7 @@ const messaging = firebase.messaging();
 
 export function register(user: firebase.User) {
   navigator.serviceWorker
-    .register('firebase-messaging-sw.js')
+    .register('/firebase-messaging-sw.js')
     .then((registration) => {
       registration.active?.postMessage({
         type: 'appSettings',
