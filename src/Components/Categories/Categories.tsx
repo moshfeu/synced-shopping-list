@@ -6,16 +6,23 @@ import {
   ListItemText,
   ListItemSecondaryAction,
   makeStyles,
+  TextField,
+  InputProps,
 } from '@material-ui/core';
 import { Add, Delete } from '@material-ui/icons';
 import { useDB } from '../../Hooks/useDB';
 import { Header } from '../Header/Header';
-import { addCategory, deleteCategory } from '../../Services/db';
+import { addCategory, deleteCategory, updateCategory } from '../../Services/db';
 
 const useStyles = makeStyles((theme) => ({
   root: {
     width: '100%',
     backgroundColor: theme.palette.background.paper,
+  },
+  input: {
+    '& .MuiInput-underline:before': {
+      borderBottomColor: 'transparent',
+    },
   },
 }));
 
@@ -30,6 +37,12 @@ export const CategoriesList: FC = () => {
     });
   }
 
+  function onChange(id: string): InputProps['onChange'] {
+    return (e) => {
+      updateCategory(id, e.target.value);
+    };
+  }
+
   return (
     <>
       <Header
@@ -40,7 +53,14 @@ export const CategoriesList: FC = () => {
       <List className={classes.root}>
         {categories.map(({ id, name }) => (
           <ListItem dense button key={id}>
-            <ListItemText id={id} primary={name} />
+            <ListItemText>
+              <TextField
+                classes={{ root: classes.input }}
+                defaultValue={name}
+                size='medium'
+                onChange={onChange(id)}
+              />
+            </ListItemText>
             <ListItemSecondaryAction>
               <IconButton onClick={() => deleteCategory(id)}>
                 <Delete />

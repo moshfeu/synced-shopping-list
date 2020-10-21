@@ -9,7 +9,6 @@ import {
   MenuItem,
   Select,
   TextField,
-  Typography,
 } from '@material-ui/core';
 import { useDB } from '../../Hooks/useDB';
 import { addCategory, updateItem, updateListItem } from '../../Services/db';
@@ -28,9 +27,16 @@ const useStyles = makeStyles((theme) => ({
     width: 250,
     padding: theme.spacing(0, 2),
   },
+  name: {
+    font: theme.typography.h5.font,
+
+    '& .MuiInput-underline:before': {
+      borderBottomColor: 'transparent',
+    },
+  },
   formControl: {
     display: 'flex',
-    marginBottom: theme.spacing(4),
+    marginBottom: theme.spacing(3),
   },
   label: {
     '& + $select': {
@@ -51,10 +57,11 @@ export const ItemDetails: FC<ItemDetails> = ({ listItem }) => {
 
   function onChange(e: React.ChangeEvent<{ name?: string; value: any }>) {
     let { value, name } = e.target;
-    if (name === 'category') {
+    if (name?.startsWith('item_')) {
+      const [, prop] = name.split('_');
       value = value === UNCATEGORIZED ? null : value;
       updateItem(listItem!.item, {
-        categoryId: value,
+        [prop]: value,
       });
     } else {
       updateListItem(listItem!, {
@@ -92,9 +99,15 @@ export const ItemDetails: FC<ItemDetails> = ({ listItem }) => {
     <div className={classes.root}>
       {listItem ? (
         <CardContent>
-          <Typography gutterBottom variant='h5' component='h2'>
-            {listItem?.item.name}
-          </Typography>
+          <FormControl classes={{ root: classes.formControl }}>
+            <TextField
+              name='item_name'
+              classes={{ root: classes.name }}
+              defaultValue={listItem?.item.name}
+              size='medium'
+              onChange={onChange}
+            />
+          </FormControl>
           <Grid container wrap='nowrap' classes={{ root: classes.formControl }}>
             <Grid item classes={{ root: flexGrow }}>
               <FormControl classes={{ root: flex }}>
@@ -105,7 +118,7 @@ export const ItemDetails: FC<ItemDetails> = ({ listItem }) => {
                   Caetgory
                 </FormLabel>
                 <Select
-                  name='category'
+                  name='item_categoryId'
                   id='category'
                   onChange={onChange}
                   value={category?.id || UNCATEGORIZED}

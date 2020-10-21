@@ -94,6 +94,12 @@ export function addCategory(category: NewRecord<Category>) {
   return db.ref(DB_REF.CATEGORIES).push(category);
 }
 
+export function updateCategory(id: string, name: string) {
+  return db.ref(`${DB_REF.CATEGORIES}/${id}`).update({
+    name,
+  });
+}
+
 export function deleteCategory(categoryId: string) {
   return db.ref(`${DB_REF.CATEGORIES}/${categoryId}`).remove();
 }
