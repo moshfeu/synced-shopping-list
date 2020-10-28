@@ -112,10 +112,7 @@ export const List: FC = () => {
         open={isHistoryOpen}
         items={items}
         onAdd={handleAddFromHistory}
-        onClose={() => {
-          setIsHistoryOpen(false);
-          navigateToRoot();
-        }}
+        onClose={navigateToRoot}
       />
       {state.isAppLoading ? (
         <div className={globalClasses.centerContent}>

@@ -96,6 +96,7 @@ export const MainNav: FC = () => {
         open={isOpen}
         onClose={toggleMainNav}
         onOpen={toggleMainNav}
+        swipeAreaWidth={5}
       >
         <div className={classes.subHeader}>
           <NavIllustration className={classes.illustration} />
