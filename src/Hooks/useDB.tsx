@@ -10,6 +10,9 @@ import { db } from '../Services/firebase';
 import { useUIStore } from './useUIStore';
 import { useAuth } from './useAuth';
 import { dbRef, firebaseToState } from '../Services/converters';
+import { DB_REF } from '../Services/db';
+import * as cache from '../Services/cache';
+import { Item } from '../Types/entities';
 
 const initialValue: DBContext = {
   list: [],
@@ -26,6 +29,21 @@ export const DBProvider: FC = ({ children }) => {
 
   useEffect(() => {
     if (currentUser) {
+      db.db
+        .ref(DB_REF.ITEMS)
+        .orderByChild('image')
+        .startAt('!')
+        .endAt('~')
+        .on('value', (snapshot) => {
+          const snapshotItems = snapshot.val();
+          if (!snapshotItems) {
+            return;
+          }
+          const images = Object.values<Item>(snapshotItems).map(
+            (item) => item.image
+          );
+          images.forEach((image) => cache.add(image!));
+        });
       db.ref().off('value');
       db.ref().on(
         'value',

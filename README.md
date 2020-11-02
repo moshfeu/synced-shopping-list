@@ -41,6 +41,10 @@ yarn
 }
 ```
 
+### Storage (for item's image)
+
+- Enable cors - follow https://firebase.google.com/docs/storage/web/download-files#cors_configuration
+
 ### Messaging (Push Notifications)
 
 In order to let the server (the code will published soon) to send a push notification, the app should register itself to FCM ("Firebase Cloud Messaging"), get a token and submit it to server. In order to do this:
