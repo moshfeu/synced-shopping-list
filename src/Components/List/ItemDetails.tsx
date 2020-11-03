@@ -48,8 +48,9 @@ const useStyles = makeStyles((theme) => ({
     maxHeight: 100,
   },
   name: {
-    font: theme.typography.h5.font,
-
+    '& .MuiInput-input': {
+      fontSize: theme.typography.h5.fontSize,
+    },
     '& .MuiInput-underline:before': {
       borderBottomColor: 'transparent',
     },
@@ -57,7 +58,10 @@ const useStyles = makeStyles((theme) => ({
   formControl: {
     display: 'flex',
     marginBottom: theme.spacing(3),
-    padding: theme.spacing(0, 2),
+  },
+  addCategoryButton: {
+    paddingInlineStart: `${theme.spacing(0.5)}px`,
+    paddingInlineEnd: 0,
   },
   label: {
     '& + $select': {
@@ -205,7 +209,10 @@ export const ItemDetails: FC<ItemDetails> = ({ listItem }) => {
                 </FormControl>
               </Grid>
               <Grid item>
-                <IconButton onClick={showAddCategory}>
+                <IconButton
+                  onClick={showAddCategory}
+                  className={classes.addCategoryButton}
+                >
                   <Add />
                 </IconButton>
               </Grid>
