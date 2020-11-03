@@ -21,6 +21,24 @@ const initialValue: DBContext = {
 };
 const dbContext = createContext<DBContext>(initialValue);
 
+function cacheItemsImage() {
+  db.db
+    .ref(DB_REF.ITEMS)
+    .orderByChild('image')
+    .startAt('!')
+    .endAt('~')
+    .on('value', (snapshot) => {
+      const snapshotItems = snapshot.val();
+      if (!snapshotItems) {
+        return;
+      }
+      const images = Object.values<Item>(snapshotItems).map(
+        (item) => item.image
+      );
+      images.forEach((image) => cache.add(image!));
+    });
+}
+
 export const DBProvider: FC = ({ children }) => {
   const [loaded, setLoaded] = useState(false);
   const [state, setState] = useState<DBState>(initialValue);
@@ -29,21 +47,7 @@ export const DBProvider: FC = ({ children }) => {
 
   useEffect(() => {
     if (currentUser) {
-      db.db
-        .ref(DB_REF.ITEMS)
-        .orderByChild('image')
-        .startAt('!')
-        .endAt('~')
-        .on('value', (snapshot) => {
-          const snapshotItems = snapshot.val();
-          if (!snapshotItems) {
-            return;
-          }
-          const images = Object.values<Item>(snapshotItems).map(
-            (item) => item.image
-          );
-          images.forEach((image) => cache.add(image!));
-        });
+      cacheItemsImage();
       db.ref().off('value');
       db.ref().on(
         'value',
