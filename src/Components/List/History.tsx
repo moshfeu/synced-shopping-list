@@ -132,6 +132,7 @@ const ItemTextComposition: FC<ItemTextCompositionProps> = ({
             defaultValue={value}
             classes={{ root: classes.quantity, input: classes.quantityInput }}
             color='primary'
+            onFocus={(e) => e.target.select()}
             onChange={(e) => onChange(Number(e.target.value))}
           />
         </Grid>

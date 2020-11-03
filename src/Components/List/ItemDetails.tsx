@@ -223,6 +223,7 @@ export const ItemDetails: FC<ItemDetails> = ({ listItem }) => {
                 name='quantity'
                 type='number'
                 defaultValue={listItem.quantity || 1}
+                onFocus={(e) => e.target.select()}
                 onChange={onChange}
               />
             </FormControl>
