@@ -10,7 +10,7 @@ import {
 
 type NewRecord<T> = Omit<T, 'id'>;
 
-const DB_REF = {
+export const DB_REF = {
   ITEMS: 'items',
   CATEGORIES: 'categories',
   LIST: 'list',

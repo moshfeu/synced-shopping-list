@@ -15,6 +15,11 @@ export const ServiceWorkerWrapper: FC = () => {
 
   useEffect(() => {
     serviceWorker.register({ onUpdate: onSWUpdate });
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker
+        .register('/sw-cache.js')
+        .then(() => 'sw-cache registered');
+    }
   }, []);
 
   const reloadPage = () => {

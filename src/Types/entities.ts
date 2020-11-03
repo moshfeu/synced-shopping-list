@@ -5,6 +5,7 @@ export type DBItem = {
 export type Item = DBItem & {
   name: string;
   categoryId?: string | null;
+  image?: string | null;
 };
 
 export type Category = DBItem & {
