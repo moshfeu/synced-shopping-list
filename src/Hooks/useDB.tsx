@@ -46,7 +46,7 @@ export const DBProvider: FC = ({ children }) => {
   const { dispatch } = useUIStore();
 
   useEffect(() => {
-    if (currentUser) {
+    if (currentUser || db.hasLocal) {
       cacheItemsImage();
       db.ref().off('value');
       db.ref().on(

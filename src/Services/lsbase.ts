@@ -19,6 +19,7 @@ export class Lsbase {
   private listeners: { [key in Event]?: Function } = {};
   private queue: Array<Updates>;
   private isOnline: boolean = false;
+  public hasLocal: boolean = false;
 
   constructor(public db: firebase.database.Database) {
     this.data = this.getFromLocalOrDefault('data', emptyData);
@@ -33,6 +34,9 @@ export class Lsbase {
         await this.execQueue();
       }
     });
+    if (this.data !== emptyData) {
+      this.hasLocal = true;
+    }
   }
 
   private async execQueue() {
