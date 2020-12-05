@@ -1,8 +1,8 @@
 import { get, groupBy, startCase, sortBy } from 'lodash';
 import { GroupedListItem } from '../Components/GroupedList/GroupedList';
-import { UNCATEGORIZED } from '../consts';
 import { DBState } from '../Types/db';
 import { Categories, Item, ListItem } from '../Types/entities';
+import { UNCATEGORIZED } from '../consts';
 
 export function groupItemsBy<
   T extends Array<unknown>,

@@ -1,4 +1,3 @@
-import { db } from './firebase';
 import {
   ListItem,
   Item,
@@ -7,6 +6,7 @@ import {
   DBItem,
   ItemView,
 } from '../Types/entities';
+import { db } from './firebase';
 
 type NewRecord<T> = Omit<T, 'id'>;
 

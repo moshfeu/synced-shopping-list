@@ -10,11 +10,11 @@ import {
   Grid,
 } from '@material-ui/core';
 import { Delete } from '@material-ui/icons';
-import { ItemView } from '../../Types/entities';
+import { groupItemsBy } from '../../Services/converters';
 import { deleteItem } from '../../Services/db';
+import { ItemView } from '../../Types/entities';
 import { EmptyState } from '../EmptyState/EmptyState';
 import { GroupedList } from '../GroupedList/GroupedList';
-import { groupItemsBy } from '../../Services/converters';
 
 type HistoryProps = {
   open: boolean;

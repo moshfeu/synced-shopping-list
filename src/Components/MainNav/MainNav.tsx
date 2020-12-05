@@ -1,4 +1,6 @@
 import React, { FC, useEffect, useState } from 'react';
+import { Link, useHistory } from 'react-router-dom';
+import { Location } from 'history';
 import {
   makeStyles,
   createStyles,
@@ -11,15 +13,12 @@ import {
   SwipeableDrawer,
   Typography,
 } from '@material-ui/core';
-import { version } from '../../../package.json';
 import { List as ListIcon, Category as CategoryIcon } from '@material-ui/icons';
-import { Link, useHistory } from 'react-router-dom';
-import { Location } from 'history';
+import { version } from '../../../package.json';
 import { ReactComponent as NavIllustration } from '../../Assets/nav.svg';
-
 import { useAuth } from '../../Hooks/useAuth';
-import { login, logout } from '../../Services/auth';
 import { useToggleMainNav } from '../../Hooks/useToggleMainNav';
+import { login, logout } from '../../Services/auth';
 
 const drawerWidth = 240;
 

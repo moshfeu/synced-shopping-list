@@ -10,17 +10,17 @@ import {
   Select,
   TextField,
 } from '@material-ui/core';
+import { Add } from '@material-ui/icons';
+import ImagePlaceholder from '../../Assets/imagePlaceholder.svg';
 import { useDB } from '../../Hooks/useDB';
+import { useUIStore } from '../../Hooks/useUIStore';
 import { addCategory, updateItem, updateListItem } from '../../Services/db';
+import { inputFileToArrayBuffer, showFileDialog } from '../../Services/file';
+import { getImageUrl, remove, upload } from '../../Services/storage';
+import { useGlobalStyles } from '../../Styles/common';
 import { ListItemView } from '../../Types/entities';
 import { UNCATEGORIZED } from '../../consts';
-import { Add } from '@material-ui/icons';
-import { useGlobalStyles } from '../../Styles/common';
-import { useUIStore } from '../../Hooks/useUIStore';
-import { getImageUrl, remove, upload } from '../../Services/storage';
-import { inputFileToArrayBuffer, showFileDialog } from '../../Services/file';
 import { Menu } from '../Menu/Menu';
-import ImagePlaceholder from '../../Assets/imagePlaceholder.svg';
 
 type ItemDetails = {
   listItem?: ListItemView;

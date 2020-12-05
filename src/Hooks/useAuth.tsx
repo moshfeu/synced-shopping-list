@@ -6,6 +6,7 @@ import React, {
   useContext,
 } from 'react';
 import { auth } from '../Services/auth';
+
 // import { register } from '../Services/messaging';
 
 type CurrentUser = firebase.User | null | undefined;

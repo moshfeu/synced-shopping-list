@@ -1,3 +1,4 @@
+import React, { FC, ReactChild } from 'react';
 import {
   List,
   makeStyles,
@@ -9,7 +10,6 @@ import {
   ListItemSecondaryAction,
   ListItemText,
 } from '@material-ui/core';
-import React, { FC, ReactChild } from 'react';
 import { useGlobalStyles } from '../../Styles/common';
 
 export type GroupedListItem = {

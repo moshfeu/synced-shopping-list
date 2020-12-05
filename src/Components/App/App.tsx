@@ -1,10 +1,10 @@
 import React from 'react';
 import { Switch, Route } from 'react-router-dom';
+import { CssBaseline } from '@material-ui/core';
+import { CategoriesList } from '../Categories/Categories';
 import { List } from '../List/List';
 import { MainNav } from '../MainNav/MainNav';
-import { CategoriesList } from '../Categories/Categories';
 import { ServiceWorkerWrapper } from '../ServiceWorkerWrapper/ServiceWorkerWrapper';
-import { CssBaseline } from '@material-ui/core';
 
 function App() {
   return (

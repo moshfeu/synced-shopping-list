@@ -1,5 +1,6 @@
 import firebase from 'firebase';
 import * as cache from './cache';
+
 const storageRef = firebase.storage().ref();
 
 export const ITEMS_PATH = 'items';

@@ -11,8 +11,8 @@ import {
 } from '@material-ui/core';
 import { Add, Delete } from '@material-ui/icons';
 import { useDB } from '../../Hooks/useDB';
-import { Header } from '../Header/Header';
 import { addCategory, deleteCategory, updateCategory } from '../../Services/db';
+import { Header } from '../Header/Header';
 
 const useStyles = makeStyles((theme) => ({
   root: {

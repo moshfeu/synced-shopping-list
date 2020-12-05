@@ -9,9 +9,9 @@ export const useGlobalStyles = makeStyles(() => ({
     minWidth: 'auto',
   },
   flexGrow: {
-    flex: 1
+    flex: 1,
   },
   flex: {
-    display: 'flex'
+    display: 'flex',
   },
 }));

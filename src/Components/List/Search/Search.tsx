@@ -1,15 +1,15 @@
 import React, { FC } from 'react';
-import { makeStyles } from '@material-ui/core/styles';
+import { Link } from 'react-router-dom';
 import { IconButton, Divider } from '@material-ui/core';
+import { makeStyles } from '@material-ui/core/styles';
 import {
   Search as SearchIcon,
   History as HistoryIcon,
 } from '@material-ui/icons';
-import { Link } from 'react-router-dom';
-import { addListItem } from '../../../Services/db';
-import { Header } from '../../Header/Header';
 import { useDB } from '../../../Hooks/useDB';
+import { addListItem } from '../../../Services/db';
 import { Item } from '../../../Types/entities';
+import { Header } from '../../Header/Header';
 
 const useStyles = makeStyles(() => ({
   iconButton: {

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, FC, useMemo } from 'react';
+import { useHistory, useParams } from 'react-router-dom';
 import { partition } from 'lodash';
 import {
   CircularProgress,
@@ -6,21 +7,20 @@ import {
   makeStyles,
   Typography,
 } from '@material-ui/core';
-import { useHistory, useParams } from 'react-router-dom';
 import { useDB } from '../../Hooks/useDB';
-import { Search } from './Search/Search';
-import { ItemDetails } from './ItemDetails';
+import { useUIStore } from '../../Hooks/useUIStore';
 import {
   addListItems,
   deleteListItems,
   updateListItem,
 } from '../../Services/db';
-import { ListItems } from './ListItems';
-import { History } from './History';
-import { CheckedListHeader } from './CheckedListHeader';
-import { useUIStore } from '../../Hooks/useUIStore';
-import { EmptyState } from '../EmptyState/EmptyState';
 import { useGlobalStyles } from '../../Styles/common';
+import { EmptyState } from '../EmptyState/EmptyState';
+import { CheckedListHeader } from './CheckedListHeader';
+import { History } from './History';
+import { ItemDetails } from './ItemDetails';
+import { ListItems } from './ListItems';
+import { Search } from './Search/Search';
 
 const useStyles = makeStyles((theme) => ({
   root: {

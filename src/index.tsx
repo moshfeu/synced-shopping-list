@@ -1,11 +1,11 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import App from './Components/App/App';
-import { DBProvider } from './Hooks/useDB';
-import { UIStoreProvider } from './Hooks/useUIStore';
-import { AuthProvider } from './Hooks/useAuth';
 import { BrowserRouter as Router } from 'react-router-dom';
 import { createMuiTheme, ThemeProvider } from '@material-ui/core';
+import App from './Components/App/App';
+import { AuthProvider } from './Hooks/useAuth';
+import { DBProvider } from './Hooks/useDB';
+import { UIStoreProvider } from './Hooks/useUIStore';
 
 const theme = createMuiTheme({
   overrides: {
