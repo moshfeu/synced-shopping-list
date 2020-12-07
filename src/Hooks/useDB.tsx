@@ -5,10 +5,10 @@ import React, {
   useEffect,
   useState,
 } from 'react';
+import { db } from '../Services/firebase';
 import * as cache from '../Services/cache';
 import { dbRef, firebaseToState } from '../Services/converters';
 import { DB_REF } from '../Services/db';
-import { db } from '../Services/firebase';
 import { DBContext, DBState } from '../Types/db';
 import { Item } from '../Types/entities';
 import { useAuth } from './useAuth';

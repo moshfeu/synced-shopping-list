@@ -1,6 +1,12 @@
 {
   "singleQuote": true,
   "jsxSingleQuote": true,
-  "importOrder": ["^react", "^(?!react)\\w+$", "^@.*", "^[./]"],
+  "importOrder": [
+    "^react",
+    "^(?!react)\\w+$",
+    "^@.*$",
+    "./firebase",
+    "^(\\.*\\/)((?!firebase).)*$"
+  ],
   "plugins": ["./node_modules/@trivago/prettier-plugin-sort-imports"]
 }
