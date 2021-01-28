@@ -18,6 +18,7 @@ export type ListItem = DBItem & {
   quantity: number;
   note: string;
   checked: boolean;
+  urgency: '1' | '2' | '3';
 };
 
 export type ItemView = Omit<Item, 'categoryId'> & {

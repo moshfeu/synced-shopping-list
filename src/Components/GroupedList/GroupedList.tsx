@@ -3,7 +3,7 @@ import {
   List,
   makeStyles,
   ListSubheader,
-  ListItem,
+  ListItem as MuiListItem,
   Checkbox,
   IconButton,
   ListItemIcon,
@@ -11,12 +11,14 @@ import {
   ListItemText,
 } from '@material-ui/core';
 import { useGlobalStyles } from '../../Styles/common';
+import { ListItem } from '../../Types/entities';
 
 export type GroupedListItem = {
   key: string;
   checked: boolean;
   primary: ReactChild;
   secondary?: ReactChild;
+  level?: ListItem['urgency'];
 };
 
 type GroupedListProps = {
@@ -34,6 +36,14 @@ const useStyles = makeStyles((theme) => ({
   listSubheader: {
     backgroundColor: theme.palette.background.default,
   },
+
+  level1: {},
+  level2: {
+    boxShadow: 'inset 8px 0px 0 -4px #edce5e',
+  },
+  level3: {
+    boxShadow: 'inset 8px 0px 0 -4px #be302d',
+  },
 }));
 
 export const GroupedList: FC<GroupedListProps> = ({
@@ -44,6 +54,16 @@ export const GroupedList: FC<GroupedListProps> = ({
 }) => {
   const classes = useStyles();
   const globalClasses = useGlobalStyles();
+
+  const getLevelClass = (level: GroupedListItem['level']) => {
+    return level
+      ? {
+          '1': '',
+          '2': classes.level2,
+          '3': classes.level3,
+        }[level]
+      : '';
+  };
 
   return (
     <List subheader={<li />}>
@@ -57,7 +77,14 @@ export const GroupedList: FC<GroupedListProps> = ({
               {category}
             </ListSubheader>
             {categoryItems.map((item) => (
-              <ListItem key={item.key} dense button>
+              <MuiListItem
+                classes={{
+                  root: getLevelClass(item.level),
+                }}
+                key={item.key}
+                dense
+                button
+              >
                 <ListItemIcon classes={{ root: globalClasses.listItemIcon }}>
                   <Checkbox
                     onChange={() => onCheckItem(item)}
@@ -79,7 +106,7 @@ export const GroupedList: FC<GroupedListProps> = ({
                     </IconButton>
                   )}
                 </ListItemSecondaryAction>
-              </ListItem>
+              </MuiListItem>
             ))}
           </ul>
         </li>

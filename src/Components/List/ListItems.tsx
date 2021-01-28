@@ -32,6 +32,7 @@ export const ListItems: FC<ItemProps> = ({
         />
       ),
       secondary: item.note,
+      level: item.urgency,
     }));
   }, [items]);
 

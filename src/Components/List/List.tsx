@@ -98,6 +98,7 @@ export const List: FC = () => {
         quantity,
         note: '',
         checked: false,
+        urgency: '1',
       }))
     );
   }

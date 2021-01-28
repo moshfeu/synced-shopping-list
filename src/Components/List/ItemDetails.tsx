@@ -11,6 +11,11 @@ import {
   TextField,
 } from '@material-ui/core';
 import { Add } from '@material-ui/icons';
+import {
+  ToggleButtonGroup,
+  ToggleButton,
+  ToggleButtonGroupProps,
+} from '@material-ui/lab';
 import ImagePlaceholder from '../../Assets/imagePlaceholder.svg';
 import { useDB } from '../../Hooks/useDB';
 import { useUIStore } from '../../Hooks/useUIStore';
@@ -22,7 +27,7 @@ import { ListItemView } from '../../Types/entities';
 import { UNCATEGORIZED } from '../../consts';
 import { Menu } from '../Menu/Menu';
 
-type ItemDetails = {
+type ItemDetailsProps = {
   listItem?: ListItemView;
 };
 
@@ -69,9 +74,16 @@ const useStyles = makeStyles((theme) => ({
     },
   },
   select: {},
+  urgency: {
+    marginTop: theme.spacing(1),
+  },
+  urgencyButton: {
+    flex: 1,
+    color: 'inherit',
+  },
 }));
 
-export const ItemDetails: FC<ItemDetails> = ({ listItem }) => {
+export const ItemDetails: FC<ItemDetailsProps> = ({ listItem }) => {
   const classes = useStyles();
   const { flexGrow, flex } = useGlobalStyles();
   const { categories } = useDB();
@@ -80,8 +92,10 @@ export const ItemDetails: FC<ItemDetails> = ({ listItem }) => {
     ({ id }) => id === listItem?.item.category?.id
   );
 
-  function onChange(e: React.ChangeEvent<{ name?: string; value: any }>) {
-    let { value, name } = e.target;
+  function onChange(
+    e: React.ChangeEvent<{ name?: string; value: any }> | React.ChangeEvent<{}>
+  ) {
+    let { value, name } = e.currentTarget as any;
     if (name?.startsWith('item_')) {
       const [, prop] = name.split('_');
       value = value === UNCATEGORIZED ? null : value;
@@ -228,6 +242,18 @@ export const ItemDetails: FC<ItemDetails> = ({ listItem }) => {
               />
             </FormControl>
             <FormControl classes={{ root: classes.formControl }}>
+              <FormLabel htmlFor='urgency'>Urgency</FormLabel>
+              <Urgency
+                classes={{
+                  root: classes.urgency,
+                  grouped: classes.urgencyButton,
+                }}
+                exclusive={true}
+                onChange={onChange}
+                value={listItem.urgency || '1'}
+              />
+            </FormControl>
+            <FormControl classes={{ root: classes.formControl }}>
               <FormLabel htmlFor='notes'>Note</FormLabel>
               <TextField
                 name='note'
@@ -245,3 +271,18 @@ export const ItemDetails: FC<ItemDetails> = ({ listItem }) => {
     </div>
   );
 };
+
+const Urgency: FC<ToggleButtonGroupProps> = (props) => (
+  <ToggleButtonGroup {...props}>
+    {['🟢', '🟡', '🔴'].map((level, index) => (
+      <ToggleButton
+        key={index}
+        name='urgency'
+        value={`${index + 1}`}
+        selected={props.value === `${index + 1}`}
+      >
+        {level}
+      </ToggleButton>
+    ))}
+  </ToggleButtonGroup>
+);
