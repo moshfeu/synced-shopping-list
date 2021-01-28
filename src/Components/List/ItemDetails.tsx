@@ -93,9 +93,12 @@ export const ItemDetails: FC<ItemDetailsProps> = ({ listItem }) => {
   );
 
   function onChange(
-    e: React.ChangeEvent<{ name?: string; value: any }> | React.ChangeEvent<{}>
+    e: React.ChangeEvent<{ name?: string; value: any }> | React.ChangeEvent<any>
   ) {
-    let { value, name } = e.currentTarget as any;
+    let { value, name } = e.currentTarget;
+    if (!name) {
+      ({ value, name } = e.target);
+    }
     if (name?.startsWith('item_')) {
       const [, prop] = name.split('_');
       value = value === UNCATEGORIZED ? null : value;
