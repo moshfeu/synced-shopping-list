@@ -14,7 +14,7 @@ type CurrentUser = firebase.User | null | undefined;
 const AuthContext = createContext<CurrentUser>(undefined);
 
 export const AuthProvider: FC = ({ children }) => {
-  const [currentUser, setCurrentUser] = useState<CurrentUser>(undefined);
+  const [currentUser, setCurrentUser] = useState<CurrentUser>(null);
 
   useEffect(() => {
     auth.onAuthStateChanged(function (user) {
@@ -28,9 +28,9 @@ export const AuthProvider: FC = ({ children }) => {
     });
   }, []);
 
-  return currentUser !== undefined ? (
+  return (
     <AuthContext.Provider value={currentUser}>{children}</AuthContext.Provider>
-  ) : null;
+  );
 };
 
 export const useAuth = () => {
