@@ -51,6 +51,7 @@ export const Autocomplete: FC<AutocompleteOptions> = ({
   function onItemClick(option: Partial<Item> | string) {
     setInputValue('');
     onSelect(option);
+    inputRef.current?.focus();
   }
 
   function onSubmit(e: FormEvent<HTMLFormElement>) {
@@ -63,12 +64,11 @@ export const Autocomplete: FC<AutocompleteOptions> = ({
       <form onSubmit={onSubmit}>
         <InputBase
           classes={{ root: classes.input }}
-          ref={inputRef}
           placeholder={placeholder}
           name='name'
+          inputRef={inputRef}
           onFocus={() => setInputInFocus(true)}
           // hold it, let the item's `onClick` to fire
-          onBlur={() => setTimeout(() => setInputInFocus(false), 300)}
           onChange={(e) => setInputValue(e.target.value)}
           value={inputValue}
         />
