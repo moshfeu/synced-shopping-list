@@ -75,7 +75,7 @@ export const List: FC = () => {
   }
 
   function navigateToRoot() {
-    history.push('/');
+    history.goBack();
   }
 
   function onDeleteChecked() {
