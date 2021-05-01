@@ -1,6 +1,6 @@
 import React, { FC, useEffect, useState } from 'react';
 import { Snackbar, Button } from '@material-ui/core';
-import * as serviceWorker from '../../serviceWorker';
+import * as serviceWorker from '../../serviceWorkerRegistration';
 
 export const ServiceWorkerWrapper: FC = () => {
   const [showReload, setShowReload] = useState(false);
