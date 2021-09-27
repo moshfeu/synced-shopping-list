@@ -1,5 +1,6 @@
 import React, { FC } from 'react';
 import {
+  Avatar,
   CardContent,
   FormControl,
   FormLabel,
@@ -80,6 +81,9 @@ const useStyles = makeStyles((theme) => ({
   urgencyButton: {
     flex: 1,
     color: 'inherit',
+  },
+  addedBy: {
+    alignSelf: 'end',
   },
 }));
 
@@ -268,6 +272,14 @@ export const ItemDetails: FC<ItemDetailsProps> = ({ listItem }) => {
                 onChange={onChange}
               />
             </FormControl>
+            {listItem.addedBy && (
+              <FormControl classes={{ root: classes.formControl }}>
+                <Avatar
+                  src={listItem.addedBy.photoURL!}
+                  classes={{ root: classes.addedBy }}
+                />
+              </FormControl>
+            )}
           </CardContent>
         </>
       ) : null}

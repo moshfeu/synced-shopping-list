@@ -6,6 +6,7 @@ import {
   Search as SearchIcon,
   History as HistoryIcon,
 } from '@material-ui/icons';
+import { useAuth } from '../../../Hooks/useAuth';
 import { useDB } from '../../../Hooks/useDB';
 import { addListItem } from '../../../Services/db';
 import { Item } from '../../../Types/entities';
@@ -23,6 +24,7 @@ const useStyles = makeStyles(() => ({
 
 export const Search: FC = () => {
   const classes = useStyles();
+  const { displayName = '', photoURL = '' } = useAuth() || {};
   const { items } = useDB();
 
   function onAdd(option: string | Item) {
@@ -33,7 +35,11 @@ export const Search: FC = () => {
           }
         : {
             itemId: option.id,
-          }
+          },
+      {
+        displayName,
+        photoURL,
+      }
     );
   }
 

@@ -7,6 +7,7 @@ import {
   makeStyles,
   Typography,
 } from '@material-ui/core';
+import { useAuth } from '../../Hooks/useAuth';
 import { useDB } from '../../Hooks/useDB';
 import { useUIStore } from '../../Hooks/useUIStore';
 import {
@@ -50,6 +51,7 @@ export const List: FC = () => {
   const classes = useStyles();
   const globalClasses = useGlobalStyles();
   const { list, items } = useDB();
+  const currentUser = useAuth();
   const { state, dispatch } = useUIStore();
   const history = useHistory();
   const { id } = useParams<{ id: string }>();
@@ -99,6 +101,7 @@ export const List: FC = () => {
         note: '',
         checked: false,
         urgency: '1',
+        addedBy: currentUser,
       }))
     );
   }
