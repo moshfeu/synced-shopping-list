@@ -41,12 +41,14 @@ export async function addItem(item: NewRecord<Item>) {
 }
 
 export async function addListItem(
-  item: Pick<ListItem, 'itemId'> | NewRecord<Item>
+  item: Pick<ListItem, 'itemId'> | NewRecord<Item>,
+  user: ListItem['addedBy']
 ) {
   const newListItem: Partial<ListItem> = {
     checked: false,
     note: '',
     quantity: 1,
+    addedBy: user,
   };
 
   if (!('itemId' in item)) {
