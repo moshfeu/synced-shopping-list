@@ -276,6 +276,7 @@ export const ItemDetails: FC<ItemDetailsProps> = ({ listItem }) => {
               <FormControl classes={{ root: classes.formControl }}>
                 <Avatar
                   src={listItem.addedBy.photoURL!}
+                  alt={listItem.addedBy.displayName!}
                   classes={{ root: classes.addedBy }}
                 />
               </FormControl>
