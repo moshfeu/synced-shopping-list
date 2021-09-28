@@ -1,18 +1,43 @@
-import React, { FC, useState } from 'react';
-import { Button, IconButton, Snackbar as MuiSnackbar } from '@material-ui/core';
+import React from 'react';
+import {
+  Button,
+  IconButton,
+  makeStyles,
+  Snackbar as MuiSnackbar,
+  Theme,
+} from '@material-ui/core';
 import { Close } from '@material-ui/icons';
+import { useUIStore } from '../../../Hooks/useUIStore';
 
 type SnackbarProps = {
   open: boolean;
-  actionText: string;
-  onAction(): void;
+  onAction?(): void;
+  actionText?: string;
+  message: string;
 };
 
-export const Snackbar: FC<SnackbarProps> = ({ open, actionText, onAction }) => {
-  const [isOpen, setIsOpen] = useState(open);
+const useStyles = makeStyles((theme: Theme) => ({
+  root: {
+    '& .MuiSnackbarContent-root': {
+      backgroundColor: theme.palette.info.main,
+    },
+  },
+}));
+
+export const Snackbar = ({
+  open,
+  actionText,
+  message,
+  onAction,
+}: SnackbarProps) => {
+  const { root } = useStyles();
+  const { dispatch } = useUIStore();
 
   function handleClose() {
-    setIsOpen(false);
+    dispatch({
+      type: 'SNACK',
+      payload: null,
+    });
   }
 
   return (
@@ -21,10 +46,11 @@ export const Snackbar: FC<SnackbarProps> = ({ open, actionText, onAction }) => {
         vertical: 'bottom',
         horizontal: 'left',
       }}
-      open={isOpen}
+      classes={{ root }}
+      open={open}
       autoHideDuration={6000}
       onClose={handleClose}
-      message='Note archived'
+      message={message}
       action={
         <>
           {onAction ? (
