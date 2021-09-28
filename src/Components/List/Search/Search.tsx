@@ -8,9 +8,12 @@ import {
 } from '@material-ui/icons';
 import { useAuth } from '../../../Hooks/useAuth';
 import { useDB } from '../../../Hooks/useDB';
+import { useUIStore } from '../../../Hooks/useUIStore';
 import { addListItem } from '../../../Services/db';
 import { Item } from '../../../Types/entities';
 import { Header } from '../../Header/Header';
+
+type Option = string | Item;
 
 const useStyles = makeStyles(() => ({
   iconButton: {
@@ -24,23 +27,50 @@ const useStyles = makeStyles(() => ({
 
 export const Search: FC = () => {
   const classes = useStyles();
+  const { items, list } = useDB();
+  const { dispatch } = useUIStore();
   const { displayName = '', photoURL = '' } = useAuth() || {};
-  const { items } = useDB();
 
-  function onAdd(option: string | Item) {
-    addListItem(
-      typeof option === 'string'
-        ? {
-            name: option,
-          }
-        : {
-            itemId: option.id,
-          },
-      {
-        displayName,
-        photoURL,
+  function getItemOrNew(option: Option): Parameters<typeof addListItem>[0] {
+    if (typeof option === 'string') {
+      const existingInHistory = items.find(({ name }) => name === option);
+      if (existingInHistory) {
+        return {
+          itemId: existingInHistory.id,
+        };
       }
+      return {
+        name: option,
+      };
+    }
+    return {
+      itemId: option.id,
+    };
+  }
+
+  function isItemInList(option: Option): boolean {
+    return (
+      typeof option === 'string' &&
+      list.some(({ item }) => item.name === option)
     );
+  }
+
+  function onAdd(option: Option) {
+    if (isItemInList(option)) {
+      dispatch({
+        type: 'SNACK',
+        payload: {
+          message: 'Item already in list',
+        },
+      });
+      return;
+    }
+    const item = getItemOrNew(option);
+    const user = {
+      displayName,
+      photoURL,
+    };
+    addListItem(item, user);
   }
 
   return (

@@ -17,9 +17,9 @@ type ConfirmationState = {
 };
 
 type SnackState = {
-  title: string;
-  actionText: string;
-  onAction(): void;
+  message: string;
+  actionText?: string;
+  onAction?(): void;
 };
 
 type DialogState = {
@@ -101,13 +101,12 @@ export const UIStoreProvider: FC = ({ children }) => {
           handleClose={closeConfirm}
         />
       )}
-      {snackState && (
-        <Snackbar
-          open={true}
-          actionText={snackState.actionText}
-          onAction={snackState.onAction}
-        />
-      )}
+      <Snackbar
+        open={!!snackState}
+        message={snackState?.message || ''}
+        onAction={snackState?.onAction}
+        actionText={snackState?.actionText}
+      />
       {dialogState && (
         <FormDialog
           closeDialog={closeDialog}
