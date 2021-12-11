@@ -8,6 +8,7 @@ import {
   makeStyles,
   InputBase,
   Grid,
+  DialogProps,
 } from '@material-ui/core';
 import { Delete } from '@material-ui/icons';
 import { groupItemsBy } from '../../Services/converters';
@@ -57,6 +58,13 @@ export const History: FC<HistoryProps> = ({ open, items, onClose, onAdd }) => {
     }));
   }, [checkedItems, items]);
 
+  const onDialogClose: DialogProps['onClose'] = (_, reason) => {
+    if (reason === 'backdropClick') {
+      return;
+    }
+    onClose();
+  };
+
   function handleAdd() {
     onAdd(checkedItems);
     onClose();
@@ -71,7 +79,7 @@ export const History: FC<HistoryProps> = ({ open, items, onClose, onAdd }) => {
 
   return (
     <Dialog
-      onClose={onClose}
+      onClose={onDialogClose}
       aria-labelledby='dialog-title'
       open={open}
       fullWidth
