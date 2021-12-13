@@ -1,6 +1,7 @@
 import React, { FC, ReactChild } from 'react';
 import clsx from 'clsx';
-import { makeStyles, Typography } from '@material-ui/core';
+import { Typography } from '@mui/material';
+import makeStyles from '@mui/styles/makeStyles';
 import { ReactComponent as EmptyStateIllustration } from '../../Assets/emptyState.svg';
 import { useGlobalStyles } from '../../Styles/common';
 

@@ -1,13 +1,20 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { BrowserRouter as Router } from 'react-router-dom';
-import { createMuiTheme, ThemeProvider } from '@material-ui/core';
+import { createTheme, ThemeProvider, Theme, StyledEngineProvider, adaptV4Theme } from '@mui/material';
 import App from './Components/App/App';
 import { AuthProvider } from './Hooks/useAuth';
 import { DBProvider } from './Hooks/useDB';
 import { UIStoreProvider } from './Hooks/useUIStore';
 
-const theme = createMuiTheme({
+
+declare module '@mui/styles/defaultTheme' {
+  // eslint-disable-next-line @typescript-eslint/no-empty-interface
+  interface DefaultTheme extends Theme {}
+}
+
+
+const theme = createTheme(adaptV4Theme({
   overrides: {
     MuiListItemSecondaryAction: {
       root: {
@@ -15,20 +22,22 @@ const theme = createMuiTheme({
       },
     },
   },
-});
+}));
 
 ReactDOM.render(
   <React.StrictMode>
     <Router>
-      <ThemeProvider theme={theme}>
-        <UIStoreProvider>
-          <AuthProvider>
-            <DBProvider>
-              <App />
-            </DBProvider>
-          </AuthProvider>
-        </UIStoreProvider>
-      </ThemeProvider>
+      <StyledEngineProvider injectFirst>
+        <ThemeProvider theme={theme}>
+          <UIStoreProvider>
+            <AuthProvider>
+              <DBProvider>
+                <App />
+              </DBProvider>
+            </AuthProvider>
+          </UIStoreProvider>
+        </ThemeProvider>
+      </StyledEngineProvider>
     </Router>
   </React.StrictMode>,
   document.getElementById('root')

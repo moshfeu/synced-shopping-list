@@ -1,6 +1,6 @@
 import React, { FC, useRef, useState } from 'react';
-import { IconButton, Menu as MuiMenu } from '@material-ui/core';
-import { MoreVert } from '@material-ui/icons';
+import { IconButton, Menu as MuiMenu } from '@mui/material';
+import { MoreVert } from '@mui/icons-material';
 
 type MenuProps = {
   className?: string;
@@ -26,7 +26,7 @@ export const Menu: FC<MenuProps> = ({ children, className }) => {
         aria-haspopup='true'
         onClick={handleClick}
         ref={anchorEl}
-      >
+        size="large">
         <MoreVert />
       </IconButton>
       <MuiMenu

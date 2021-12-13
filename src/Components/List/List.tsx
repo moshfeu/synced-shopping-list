@@ -1,12 +1,8 @@
 import React, { useState, useEffect, FC, useMemo } from 'react';
 import { useHistory, useParams } from 'react-router-dom';
 import { partition } from 'lodash';
-import {
-  CircularProgress,
-  Drawer,
-  makeStyles,
-  Typography,
-} from '@material-ui/core';
+import { CircularProgress, Drawer, Typography } from '@mui/material';
+import makeStyles from '@mui/styles/makeStyles';
 import { useAuth } from '../../Hooks/useAuth';
 import { useDB } from '../../Hooks/useDB';
 import { useUIStore } from '../../Hooks/useUIStore';

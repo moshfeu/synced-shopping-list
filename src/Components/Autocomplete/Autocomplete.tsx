@@ -1,5 +1,6 @@
 import React, { FC, useEffect, useState, useRef, FormEvent } from 'react';
-import { InputBase, List, ListItem, makeStyles } from '@material-ui/core';
+import { InputBase, List, ListItem } from '@mui/material';
+import makeStyles from '@mui/styles/makeStyles';
 import { Item } from '../../Types/entities';
 
 type AutocompleteOptions = {

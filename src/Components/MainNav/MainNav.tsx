@@ -2,8 +2,6 @@ import React, { FC, useEffect, useState } from 'react';
 import { Link, useHistory } from 'react-router-dom';
 import { Location } from 'history';
 import {
-  makeStyles,
-  createStyles,
   Divider,
   Link as MuiLink,
   List,
@@ -12,8 +10,10 @@ import {
   ListItemText,
   SwipeableDrawer,
   Typography,
-} from '@material-ui/core';
-import { List as ListIcon, Category as CategoryIcon } from '@material-ui/icons';
+} from '@mui/material';
+import makeStyles from '@mui/styles/makeStyles';
+import createStyles from '@mui/styles/createStyles';
+import { List as ListIcon, Category as CategoryIcon } from '@mui/icons-material';
 import { version } from '../../../package.json';
 import { ReactComponent as NavIllustration } from '../../Assets/nav.svg';
 import { useAuth } from '../../Hooks/useAuth';
@@ -49,7 +49,7 @@ const useStyles = makeStyles((theme) =>
       padding: theme.spacing(1, 1, 0),
       lineHeight: 1,
       display: 'flex',
-      gap: `${theme.spacing(1)}px`,
+      gap: theme.spacing(1),
     },
   })
 );

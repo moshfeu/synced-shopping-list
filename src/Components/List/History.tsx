@@ -5,12 +5,12 @@ import {
   DialogContent,
   DialogActions,
   Button,
-  makeStyles,
   InputBase,
   Grid,
   DialogProps,
-} from '@material-ui/core';
-import { Delete } from '@material-ui/icons';
+} from '@mui/material';
+import makeStyles from '@mui/styles/makeStyles';
+import { Delete } from '@mui/icons-material';
 import { groupItemsBy } from '../../Services/converters';
 import { deleteItem } from '../../Services/db';
 import { ItemView } from '../../Types/entities';
@@ -131,7 +131,7 @@ const ItemTextComposition: FC<ItemTextCompositionProps> = ({
 }) => {
   const classes = useStyles();
   return (
-    <Grid container direction='row' justify='space-between' alignItems='center'>
+    <Grid container direction='row' justifyContent='space-between' alignItems='center'>
       <Grid item>{name}</Grid>
       {value ? (
         <Grid item>

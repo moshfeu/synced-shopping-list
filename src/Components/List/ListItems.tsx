@@ -1,6 +1,6 @@
 import React, { FC, ReactElement, useMemo } from 'react';
-import { Grid } from '@material-ui/core';
-import { MoreVert } from '@material-ui/icons';
+import { Grid } from '@mui/material';
+import { MoreVert } from '@mui/icons-material';
 import { groupItemsBy } from '../../Services/converters';
 import { ListItemView } from '../../Types/entities';
 import { GroupedList, GroupedListItem } from '../GroupedList/GroupedList';

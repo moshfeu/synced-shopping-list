@@ -1,6 +1,6 @@
 import React from 'react';
 import { Switch, Route } from 'react-router-dom';
-import { CssBaseline } from '@material-ui/core';
+import { CssBaseline } from '@mui/material';
 import { CategoriesList } from '../Categories/Categories';
 import { List } from '../List/List';
 import { MainNav } from '../MainNav/MainNav';

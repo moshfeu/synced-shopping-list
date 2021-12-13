@@ -1,6 +1,7 @@
 import React, { FC } from 'react';
-import { Box, Button, makeStyles } from '@material-ui/core';
-import { Delete } from '@material-ui/icons';
+import { Box, Button } from '@mui/material';
+import makeStyles from '@mui/styles/makeStyles';
+import { Delete } from '@mui/icons-material';
 
 type CheckedListHeaderProps = {
   onDelete(): void;
