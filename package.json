@@ -1,11 +1,13 @@
 {
   "name": "synced-shopping-list",
-  "version": "1.27.0",
+  "version": "1.27.1",
   "license": "CC-BY-NC-4.0",
   "dependencies": {
-    "@material-ui/core": "^4.11.0",
-    "@material-ui/icons": "^4.9.1",
-    "@material-ui/lab": "^4.0.0-alpha.57",
+    "@emotion/react": "^11.7.0",
+    "@emotion/styled": "^11.6.0",
+    "@mui/icons-material": "^5.2.1",
+    "@mui/material": "^5.2.3",
+    "@mui/styles": "^5.2.3",
     "firebase": "^7.21.1",
     "lodash": "^4.17.20",
     "react": "^16.13.1",

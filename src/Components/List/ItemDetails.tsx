@@ -6,17 +6,14 @@ import {
   FormLabel,
   Grid,
   IconButton,
-  makeStyles,
   MenuItem,
   Select,
   TextField,
-} from '@material-ui/core';
-import { Add } from '@material-ui/icons';
-import {
-  ToggleButtonGroup,
-  ToggleButton,
-  ToggleButtonGroupProps,
-} from '@material-ui/lab';
+} from '@mui/material';
+import makeStyles from '@mui/styles/makeStyles';
+import { Add } from '@mui/icons-material';
+import { ToggleButtonGroup, ToggleButton } from '@mui/material';
+import { ToggleButtonGroupProps } from '@mui/lab';
 import ImagePlaceholder from '../../Assets/imagePlaceholder.svg';
 import { useDB } from '../../Hooks/useDB';
 import { useUIStore } from '../../Hooks/useUIStore';
@@ -66,7 +63,7 @@ const useStyles = makeStyles((theme) => ({
     marginBottom: theme.spacing(3),
   },
   addCategoryButton: {
-    paddingInlineStart: `${theme.spacing(0.5)}px`,
+    paddingInlineStart: theme.spacing(0.5),
     paddingInlineEnd: 0,
   },
   label: {
@@ -233,7 +230,7 @@ export const ItemDetails: FC<ItemDetailsProps> = ({ listItem }) => {
                 <IconButton
                   onClick={showAddCategory}
                   className={classes.addCategoryButton}
-                >
+                  size="large">
                   <Add />
                 </IconButton>
               </Grid>
@@ -266,7 +263,7 @@ export const ItemDetails: FC<ItemDetailsProps> = ({ listItem }) => {
                 name='note'
                 type='text'
                 multiline
-                rowsMax={4}
+                maxRows={4}
                 placeholder='The blue one..'
                 defaultValue={listItem.note}
                 onChange={onChange}

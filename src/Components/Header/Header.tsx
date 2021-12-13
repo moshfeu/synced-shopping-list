@@ -1,6 +1,7 @@
 import React, { FC } from 'react';
-import { IconButton, makeStyles, Paper } from '@material-ui/core';
-import { Menu as MenuIcon, SvgIconComponent } from '@material-ui/icons';
+import { IconButton, Paper } from '@mui/material';
+import makeStyles from '@mui/styles/makeStyles';
+import { Menu as MenuIcon, SvgIconComponent } from '@mui/icons-material';
 import { useToggleMainNav } from '../../Hooks/useToggleMainNav';
 import { Item } from '../../Types/entities';
 import { Autocomplete } from '../Autocomplete/Autocomplete';
@@ -60,7 +61,7 @@ export const Header: FC<HeaderProps> = ({
         className={classes.iconButton}
         aria-label='menu'
         onClick={toggleMainNav}
-      >
+        size="large">
         <MenuIcon />
       </IconButton>
       {input && submit && (
@@ -75,7 +76,7 @@ export const Header: FC<HeaderProps> = ({
             type='submit'
             className={classes.iconButton}
             aria-label={submit.label}
-          >
+            size="large">
             <submit.icon />
           </IconButton>
         </div>

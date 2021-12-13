@@ -1,11 +1,11 @@
 import React, { FC } from 'react';
 import { Link } from 'react-router-dom';
-import { IconButton, Divider } from '@material-ui/core';
-import { makeStyles } from '@material-ui/core/styles';
+import { IconButton, Divider } from '@mui/material';
+import makeStyles from '@mui/styles/makeStyles';
 import {
   Search as SearchIcon,
   History as HistoryIcon,
-} from '@material-ui/icons';
+} from '@mui/icons-material';
 import { useAuth } from '../../../Hooks/useAuth';
 import { useDB } from '../../../Hooks/useDB';
 import { useUIStore } from '../../../Hooks/useUIStore';
@@ -85,7 +85,7 @@ export const Search: FC = () => {
         to='/history'
         className={classes.iconButton}
         aria-label='Add from history'
-      >
+        size="large">
         <HistoryIcon />
       </IconButton>
     </Header>

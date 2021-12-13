@@ -1,5 +1,5 @@
 import React, { FC, useEffect, useState } from 'react';
-import { Snackbar, Button } from '@material-ui/core';
+import { Snackbar, Button } from '@mui/material';
 import * as serviceWorker from '../../serviceWorkerRegistration';
 
 export const ServiceWorkerWrapper: FC = () => {

@@ -1,12 +1,7 @@
 import React from 'react';
-import {
-  Button,
-  IconButton,
-  makeStyles,
-  Snackbar as MuiSnackbar,
-  Theme,
-} from '@material-ui/core';
-import { Close } from '@material-ui/icons';
+import { Button, IconButton, Snackbar as MuiSnackbar, Theme } from '@mui/material';
+import makeStyles from '@mui/styles/makeStyles';
+import { Close } from '@mui/icons-material';
 import { useUIStore } from '../../../Hooks/useUIStore';
 
 type SnackbarProps = {

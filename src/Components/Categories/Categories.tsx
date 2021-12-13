@@ -5,11 +5,11 @@ import {
   ListItem,
   ListItemText,
   ListItemSecondaryAction,
-  makeStyles,
   TextField,
   InputProps,
-} from '@material-ui/core';
-import { Add, Delete } from '@material-ui/icons';
+} from '@mui/material';
+import makeStyles from '@mui/styles/makeStyles';
+import { Add, Delete } from '@mui/icons-material';
 import { useDB } from '../../Hooks/useDB';
 import { addCategory, deleteCategory, updateCategory } from '../../Services/db';
 import { Header } from '../Header/Header';
@@ -43,32 +43,30 @@ export const CategoriesList: FC = () => {
     };
   }
 
-  return (
-    <>
-      <Header
-        input={{ placeholder: 'Category Name' }}
-        submit={{ icon: Add, label: 'Add' }}
-        onSubmit={onSubmit}
-      />
-      <List className={classes.root}>
-        {categories.map(({ id, name }) => (
-          <ListItem dense button key={id}>
-            <ListItemText>
-              <TextField
-                classes={{ root: classes.input }}
-                defaultValue={name}
-                size='medium'
-                onChange={onChange(id)}
-              />
-            </ListItemText>
-            <ListItemSecondaryAction>
-              <IconButton onClick={() => deleteCategory(id)}>
-                <Delete />
-              </IconButton>
-            </ListItemSecondaryAction>
-          </ListItem>
-        ))}
-      </List>
-    </>
-  );
+  return <>
+    <Header
+      input={{ placeholder: 'Category Name' }}
+      submit={{ icon: Add, label: 'Add' }}
+      onSubmit={onSubmit}
+    />
+    <List className={classes.root}>
+      {categories.map(({ id, name }) => (
+        <ListItem dense button key={id}>
+          <ListItemText>
+            <TextField
+              classes={{ root: classes.input }}
+              defaultValue={name}
+              size='medium'
+              onChange={onChange(id)}
+            />
+          </ListItemText>
+          <ListItemSecondaryAction>
+            <IconButton onClick={() => deleteCategory(id)} size="large">
+              <Delete />
+            </IconButton>
+          </ListItemSecondaryAction>
+        </ListItem>
+      ))}
+    </List>
+  </>;
 };

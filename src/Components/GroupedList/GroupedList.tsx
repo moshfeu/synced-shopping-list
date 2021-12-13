@@ -1,7 +1,6 @@
 import React, { FC, ReactChild } from 'react';
 import {
   List,
-  makeStyles,
   ListSubheader,
   ListItem as MuiListItem,
   Checkbox,
@@ -9,7 +8,8 @@ import {
   ListItemIcon,
   ListItemSecondaryAction,
   ListItemText,
-} from '@material-ui/core';
+} from '@mui/material';
+import makeStyles from '@mui/styles/makeStyles';
 import { useGlobalStyles } from '../../Styles/common';
 import { ListItem } from '../../Types/entities';
 
@@ -101,7 +101,7 @@ export const GroupedList: FC<GroupedListProps> = ({
                 />
                 <ListItemSecondaryAction>
                   {onAction && (
-                    <IconButton onClick={() => onAction(item)}>
+                    <IconButton onClick={() => onAction(item)} size="large">
                       {actionIcon}
                     </IconButton>
                   )}
