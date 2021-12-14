@@ -1,28 +1,33 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { BrowserRouter as Router } from 'react-router-dom';
-import { createTheme, ThemeProvider, Theme, StyledEngineProvider, adaptV4Theme } from '@mui/material';
+import {
+  createTheme,
+  ThemeProvider,
+  Theme,
+  StyledEngineProvider,
+} from '@mui/material';
 import App from './Components/App/App';
 import { AuthProvider } from './Hooks/useAuth';
 import { DBProvider } from './Hooks/useDB';
 import { UIStoreProvider } from './Hooks/useUIStore';
-
 
 declare module '@mui/styles/defaultTheme' {
   // eslint-disable-next-line @typescript-eslint/no-empty-interface
   interface DefaultTheme extends Theme {}
 }
 
-
-const theme = createTheme(adaptV4Theme({
-  overrides: {
+const theme = createTheme({
+  components: {
     MuiListItemSecondaryAction: {
-      root: {
-        right: 0,
+      styleOverrides: {
+        root: {
+          right: 0,
+        },
       },
     },
   },
-}));
+});
 
 ReactDOM.render(
   <React.StrictMode>
