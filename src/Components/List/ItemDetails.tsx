@@ -1,4 +1,5 @@
 import React, { FC } from 'react';
+import { Add } from '@mui/icons-material';
 import {
   Avatar,
   CardContent,
@@ -8,12 +9,12 @@ import {
   IconButton,
   MenuItem,
   Select,
+  SelectChangeEvent,
   TextField,
+  ToggleButtonGroupProps,
 } from '@mui/material';
-import makeStyles from '@mui/styles/makeStyles';
-import { Add } from '@mui/icons-material';
 import { ToggleButtonGroup, ToggleButton } from '@mui/material';
-import { ToggleButtonGroupProps } from '@mui/lab';
+import makeStyles from '@mui/styles/makeStyles';
 import ImagePlaceholder from '../../Assets/imagePlaceholder.svg';
 import { useDB } from '../../Hooks/useDB';
 import { useUIStore } from '../../Hooks/useUIStore';
@@ -63,8 +64,7 @@ const useStyles = makeStyles((theme) => ({
     marginBottom: theme.spacing(3),
   },
   addCategoryButton: {
-    paddingInlineStart: theme.spacing(0.5),
-    paddingInlineEnd: 0,
+    padding: 0,
   },
   label: {
     '& + $select': {
@@ -94,11 +94,17 @@ export const ItemDetails: FC<ItemDetailsProps> = ({ listItem }) => {
   );
 
   function onChange(
-    e: React.ChangeEvent<{ name?: string; value: any }> | React.ChangeEvent<any>
+    e:
+      | React.ChangeEvent<{ name?: string; value: any }>
+      | SelectChangeEvent<any>
+      | React.MouseEvent<HTMLElement>
   ) {
-    let { value, name } = e.currentTarget;
+    let value = null;
+    let name = null;
+
+    ({ value, name } = (e.currentTarget as HTMLInputElement) || {});
     if (!name) {
-      ({ value, name } = e.target);
+      ({ value, name } = e.target as HTMLInputElement);
     }
     if (name?.startsWith('item_')) {
       const [, prop] = name.split('_');
@@ -132,7 +138,9 @@ export const ItemDetails: FC<ItemDetailsProps> = ({ listItem }) => {
       payload: {
         title: 'Add Category',
         actionText: 'Add',
-        content: <TextField name='category' type='text' required />,
+        content: (
+          <TextField name='category' type='text' required variant='standard' />
+        ),
         onAction: onAddCategory,
       },
     });
@@ -193,15 +201,18 @@ export const ItemDetails: FC<ItemDetailsProps> = ({ listItem }) => {
                 defaultValue={listItem?.item.name}
                 size='medium'
                 onChange={onChange}
+                variant='standard'
               />
             </FormControl>
             <Grid
+              gap={1}
               container
               wrap='nowrap'
+              alignItems='center'
               classes={{ root: classes.formControl }}
             >
               <Grid item classes={{ root: flexGrow }}>
-                <FormControl classes={{ root: flex }}>
+                <FormControl classes={{ root: flex }} variant='standard'>
                   <FormLabel
                     classes={{ filled: classes.label }}
                     htmlFor='category'
@@ -230,7 +241,8 @@ export const ItemDetails: FC<ItemDetailsProps> = ({ listItem }) => {
                 <IconButton
                   onClick={showAddCategory}
                   className={classes.addCategoryButton}
-                  size="large">
+                  size='large'
+                >
                   <Add />
                 </IconButton>
               </Grid>
@@ -243,6 +255,7 @@ export const ItemDetails: FC<ItemDetailsProps> = ({ listItem }) => {
                 defaultValue={listItem.quantity || 1}
                 onFocus={(e) => e.target.select()}
                 onChange={onChange}
+                variant='standard'
               />
             </FormControl>
             <FormControl classes={{ root: classes.formControl }}>
@@ -263,10 +276,11 @@ export const ItemDetails: FC<ItemDetailsProps> = ({ listItem }) => {
                 name='note'
                 type='text'
                 multiline
-                maxRows={4}
+                rows={4}
                 placeholder='The blue one..'
                 defaultValue={listItem.note}
                 onChange={onChange}
+                variant='standard'
               />
             </FormControl>
             {listItem.addedBy && (
