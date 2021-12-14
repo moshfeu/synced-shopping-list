@@ -1,8 +1,10 @@
 import React, { FC } from 'react';
-import { IconButton, Paper } from '@mui/material';
-import makeStyles from '@mui/styles/makeStyles';
 import { Menu as MenuIcon, SvgIconComponent } from '@mui/icons-material';
+import { Alert, Button, IconButton, Paper } from '@mui/material';
+import makeStyles from '@mui/styles/makeStyles';
+import { useAuth } from '../../Hooks/useAuth';
 import { useToggleMainNav } from '../../Hooks/useToggleMainNav';
+import { login } from '../../Services/auth';
 import { Item } from '../../Types/entities';
 import { Autocomplete } from '../Autocomplete/Autocomplete';
 
@@ -48,6 +50,7 @@ export const Header: FC<HeaderProps> = ({
 }) => {
   const classes = useStyles();
   const toggleMainNav = useToggleMainNav();
+  const currentUser = useAuth();
 
   function onFormSubmit(item: Item | string) {
     if (onSubmit) {
@@ -56,32 +59,48 @@ export const Header: FC<HeaderProps> = ({
   }
 
   return (
-    <Paper className={classes.root}>
-      <IconButton
-        className={classes.iconButton}
-        aria-label='menu'
-        onClick={toggleMainNav}
-        size="large">
-        <MenuIcon />
-      </IconButton>
-      {input && submit && (
-        <div className={classes.input}>
-          <Autocomplete
-            options={input.options || []}
-            onSelect={onFormSubmit}
-            placeholder='Product Name'
-            maxResult={5}
-          />
-          <IconButton
-            type='submit'
-            className={classes.iconButton}
-            aria-label={submit.label}
-            size="large">
-            <submit.icon />
-          </IconButton>
-        </div>
+    <>
+      <Paper className={classes.root}>
+        <IconButton
+          className={classes.iconButton}
+          aria-label='menu'
+          onClick={toggleMainNav}
+          size='large'
+        >
+          <MenuIcon />
+        </IconButton>
+        {input && submit && (
+          <div className={classes.input}>
+            <Autocomplete
+              options={input.options || []}
+              onSelect={onFormSubmit}
+              placeholder='Product Name'
+              maxResult={5}
+            />
+            <IconButton
+              type='submit'
+              className={classes.iconButton}
+              aria-label={submit.label}
+              size='large'
+            >
+              <submit.icon />
+            </IconButton>
+          </div>
+        )}
+        {children}
+      </Paper>
+      {!currentUser && (
+        <Alert
+          severity='warning'
+          action={
+            <Button color='inherit' size='small' onClick={login}>
+              Login
+            </Button>
+          }
+        >
+          Don't be stranger
+        </Alert>
       )}
-      {children}
-    </Paper>
+    </>
   );
 };
