@@ -11,10 +11,17 @@ import { auth } from '../Services/auth';
 
 type CurrentUser = firebase.User | null | undefined;
 
-const AuthContext = createContext<CurrentUser>(undefined);
+const AuthContext = createContext<{
+  currentUser: CurrentUser | null;
+  isLoading: boolean;
+}>({
+  currentUser: null,
+  isLoading: true,
+});
 
 export const AuthProvider: FC = ({ children }) => {
   const [currentUser, setCurrentUser] = useState<CurrentUser>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     auth.onAuthStateChanged(function (user) {
@@ -25,18 +32,21 @@ export const AuthProvider: FC = ({ children }) => {
         console.log('no');
         setCurrentUser(null);
       }
+      setIsLoading(false);
     });
   }, []);
 
   return (
-    <AuthContext.Provider value={currentUser}>{children}</AuthContext.Provider>
+    <AuthContext.Provider value={{ currentUser, isLoading }}>
+      {children}
+    </AuthContext.Provider>
   );
 };
 
 export const useAuth = () => {
-  const currentUser = useContext(AuthContext);
-  if (currentUser === undefined) {
+  const authContext = useContext(AuthContext);
+  if (authContext === undefined) {
     throw new Error('useAuth must be called from a AuthProvider!');
   }
-  return currentUser;
+  return authContext;
 };

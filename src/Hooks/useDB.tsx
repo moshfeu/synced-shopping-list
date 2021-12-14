@@ -42,7 +42,7 @@ function cacheItemsImage() {
 export const DBProvider: FC = ({ children }) => {
   const [loaded, setLoaded] = useState(false);
   const [state, setState] = useState<DBState>(initialValue);
-  const currentUser = useAuth();
+  const { currentUser } = useAuth();
   const { dispatch } = useUIStore();
 
   useEffect(() => {

@@ -50,7 +50,8 @@ export const Header: FC<HeaderProps> = ({
 }) => {
   const classes = useStyles();
   const toggleMainNav = useToggleMainNav();
-  const currentUser = useAuth();
+  const { currentUser, isLoading } = useAuth();
+  const shouldShowUserWarning = !currentUser && !isLoading;
 
   function onFormSubmit(item: Item | string) {
     if (onSubmit) {
@@ -89,7 +90,7 @@ export const Header: FC<HeaderProps> = ({
         )}
         {children}
       </Paper>
-      {!currentUser && (
+      {shouldShowUserWarning && (
         <Alert
           severity='warning'
           action={

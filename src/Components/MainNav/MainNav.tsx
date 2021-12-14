@@ -2,6 +2,10 @@ import React, { FC, useEffect, useState } from 'react';
 import { Link, useHistory } from 'react-router-dom';
 import { Location } from 'history';
 import {
+  List as ListIcon,
+  Category as CategoryIcon,
+} from '@mui/icons-material';
+import {
   Divider,
   Link as MuiLink,
   List,
@@ -11,9 +15,8 @@ import {
   SwipeableDrawer,
   Typography,
 } from '@mui/material';
-import makeStyles from '@mui/styles/makeStyles';
 import createStyles from '@mui/styles/createStyles';
-import { List as ListIcon, Category as CategoryIcon } from '@mui/icons-material';
+import makeStyles from '@mui/styles/makeStyles';
 import { version } from '../../../package.json';
 import { ReactComponent as NavIllustration } from '../../Assets/nav.svg';
 import { useAuth } from '../../Hooks/useAuth';
@@ -73,7 +76,7 @@ function shouldMainNavBeOpen(location: Location) {
 
 export const MainNav: FC = () => {
   const classes = useStyles();
-  const currentUser = useAuth();
+  const { currentUser } = useAuth();
   const history = useHistory();
   const toggleMainNav = useToggleMainNav();
   const [isOpen, setIsOpen] = useState(shouldMainNavBeOpen(history.location));
