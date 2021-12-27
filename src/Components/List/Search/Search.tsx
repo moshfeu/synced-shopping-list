@@ -1,11 +1,11 @@
 import React, { FC } from 'react';
 import { Link } from 'react-router-dom';
-import { IconButton, Divider } from '@mui/material';
-import makeStyles from '@mui/styles/makeStyles';
 import {
   Search as SearchIcon,
   History as HistoryIcon,
 } from '@mui/icons-material';
+import { IconButton, Divider } from '@mui/material';
+import makeStyles from '@mui/styles/makeStyles';
 import { useAuth } from '../../../Hooks/useAuth';
 import { useDB } from '../../../Hooks/useDB';
 import { useUIStore } from '../../../Hooks/useUIStore';
@@ -29,7 +29,7 @@ export const Search: FC = () => {
   const classes = useStyles();
   const { items, list } = useDB();
   const { dispatch } = useUIStore();
-  const { displayName = '', photoURL = '' } = useAuth() || {};
+  const { currentUser } = useAuth();
 
   function getItemOrNew(option: Option): Parameters<typeof addListItem>[0] {
     if (typeof option === 'string') {
@@ -66,11 +66,7 @@ export const Search: FC = () => {
       return;
     }
     const item = getItemOrNew(option);
-    const user = {
-      displayName,
-      photoURL,
-    };
-    addListItem(item, user);
+    addListItem(item, currentUser);
   }
 
   return (
@@ -85,7 +81,8 @@ export const Search: FC = () => {
         to='/history'
         className={classes.iconButton}
         aria-label='Add from history'
-        size="large">
+        size='large'
+      >
         <HistoryIcon />
       </IconButton>
     </Header>

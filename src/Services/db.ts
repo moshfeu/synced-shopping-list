@@ -42,13 +42,18 @@ export async function addItem(item: NewRecord<Item>) {
 
 export async function addListItem(
   item: Pick<ListItem, 'itemId'> | NewRecord<Item>,
-  user: ListItem['addedBy']
+  user?: ListItem['addedBy']
 ) {
   const newListItem: Partial<ListItem> = {
     checked: false,
     note: '',
     quantity: 1,
-    addedBy: user,
+    addedBy: user
+      ? {
+          displayName: user.displayName,
+          photoURL: user.photoURL,
+        }
+      : null,
   };
 
   if (!('itemId' in item)) {

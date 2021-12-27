@@ -12,6 +12,7 @@ import {
   SelectChangeEvent,
   TextField,
   ToggleButtonGroupProps,
+  Tooltip,
 } from '@mui/material';
 import { ToggleButtonGroup, ToggleButton } from '@mui/material';
 import makeStyles from '@mui/styles/makeStyles';
@@ -285,11 +286,13 @@ export const ItemDetails: FC<ItemDetailsProps> = ({ listItem }) => {
             </FormControl>
             {listItem.addedBy && (
               <FormControl classes={{ root: classes.formControl }}>
-                <Avatar
-                  src={listItem.addedBy.photoURL!}
-                  alt={listItem.addedBy.displayName!}
-                  classes={{ root: classes.addedBy }}
-                />
+                <Tooltip title={listItem.addedBy.displayName ?? 'Anonymous'}>
+                  <Avatar
+                    src={listItem.addedBy.photoURL!}
+                    alt={listItem.addedBy.displayName ?? 'Anonymous'}
+                    classes={{ root: classes.addedBy }}
+                  />
+                </Tooltip>
               </FormControl>
             )}
           </CardContent>
