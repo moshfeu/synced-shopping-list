@@ -12,6 +12,7 @@ import {
 import makeStyles from '@mui/styles/makeStyles';
 import { useGlobalStyles } from '../../Styles/common';
 import { ListItem } from '../../Types/entities';
+import { Swipable } from '../Swipeable/Swipeable';
 
 export type GroupedListItem = {
   key: string;
@@ -25,6 +26,7 @@ type GroupedListProps = {
   categories: Array<[string, Array<GroupedListItem>]>;
   actionIcon: ReactChild;
   onCheckItem(item: GroupedListItem): void;
+  onDeleteItem(item: GroupedListItem): void;
   onAction?(item: GroupedListItem): void;
 };
 
@@ -51,6 +53,7 @@ export const GroupedList: FC<GroupedListProps> = ({
   onAction,
   actionIcon,
   onCheckItem,
+  onDeleteItem,
 }) => {
   const classes = useStyles();
   const globalClasses = useGlobalStyles();
@@ -77,36 +80,46 @@ export const GroupedList: FC<GroupedListProps> = ({
               {category}
             </ListSubheader>
             {categoryItems.map((item) => (
-              <MuiListItem
-                classes={{
-                  root: getLevelClass(item.level),
-                }}
+              <Swipable
                 key={item.key}
-                dense
-                button
+                onSwipeRight={() => onCheckItem(item)}
+                onSwipeLeft={() => onDeleteItem(item)}
+                icons={{
+                  before: <span style={{ color: '#fff' }}>✓</span>,
+                  after: <span style={{ color: '#fff' }}>✗</span>,
+                }}
               >
-                <ListItemIcon classes={{ root: globalClasses.listItemIcon }}>
-                  <Checkbox
-                    onChange={() => onCheckItem(item)}
-                    edge='start'
-                    tabIndex={-1}
-                    disableRipple
-                    checked={item.checked}
+                <MuiListItem
+                  component='div'
+                  classes={{
+                    root: getLevelClass(item.level),
+                  }}
+                  key={item.key}
+                  dense
+                >
+                  <ListItemIcon classes={{ root: globalClasses.listItemIcon }}>
+                    <Checkbox
+                      onChange={() => onCheckItem(item)}
+                      edge='start'
+                      tabIndex={-1}
+                      disableRipple
+                      checked={item.checked}
+                    />
+                  </ListItemIcon>
+                  <ListItemText
+                    id={item.key}
+                    primary={item.primary}
+                    secondary={item.secondary}
                   />
-                </ListItemIcon>
-                <ListItemText
-                  id={item.key}
-                  primary={item.primary}
-                  secondary={item.secondary}
-                />
-                <ListItemSecondaryAction>
-                  {onAction && (
-                    <IconButton onClick={() => onAction(item)} size="large">
-                      {actionIcon}
-                    </IconButton>
-                  )}
-                </ListItemSecondaryAction>
-              </MuiListItem>
+                  <ListItemSecondaryAction>
+                    {onAction && (
+                      <IconButton onClick={() => onAction(item)} size='large'>
+                        {actionIcon}
+                      </IconButton>
+                    )}
+                  </ListItemSecondaryAction>
+                </MuiListItem>
+              </Swipable>
             ))}
           </ul>
         </li>
