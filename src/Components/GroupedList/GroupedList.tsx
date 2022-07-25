@@ -90,6 +90,7 @@ export const GroupedList: FC<GroupedListProps> = ({
                 }}
               >
                 <MuiListItem
+                  ContainerComponent='div'
                   component='div'
                   classes={{
                     root: getLevelClass(item.level),

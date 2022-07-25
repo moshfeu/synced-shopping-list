@@ -128,7 +128,6 @@ export const List: FC = () => {
         </div>
       ) : list.length ? (
         <div className={classes.lists}>
-          <>
             <ListItems
               items={uncheckedItems}
               className={classes.uncheckedList}
@@ -147,7 +146,6 @@ export const List: FC = () => {
                 updateListItem(listItem, { checked: false })
               }
             />
-          </>
         </div>
       ) : (
         <EmptyState
