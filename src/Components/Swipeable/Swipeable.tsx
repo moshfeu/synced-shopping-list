@@ -6,10 +6,12 @@ import React, {
   useReducer,
 } from 'react';
 import { SwipeDirections, useSwipeable } from 'react-swipeable';
+import { HandledEvents } from 'react-swipeable/es/types';
 
+type PercentageOrPX = `${string}${'%' | 'px'}`;
 type SwipableProps = PropsWithChildren<{
-  onSwipeRight(): void;
-  onSwipeLeft(): void;
+  onSwipeRight?(): void;
+  onSwipeLeft?(): void;
   treshold?: number;
   as?: ElementType;
   colors?: {
@@ -30,12 +32,15 @@ type Action =
       };
     }
   | {
-      type: 'SWIPE_END';
+      type: 'SWIPE_DONE';
+    }
+  | {
+      type: 'SWIPE_CANCEL';
     }
   | {
       type: 'SWIPE_MOVE';
       payload: {
-        offset: number;
+        offset: PercentageOrPX;
         direction: SwipeDirections;
       };
     };
@@ -43,7 +48,7 @@ type Action =
 type State = {
   isSwiping?: boolean;
   direction?: SwipeDirections;
-  offset?: number;
+  offset?: PercentageOrPX;
 };
 
 const wrapperStyle: CSSProperties = {
@@ -65,11 +70,17 @@ const reducer: Reducer<State, Action> = (state, action) => {
         direction: action.payload.direction,
         offset: action.payload.offset,
       };
-    case 'SWIPE_END':
+    case 'SWIPE_CANCEL':
       return {
         ...state,
         isSwiping: false,
-        offset: 0,
+        offset: '0px',
+      };
+    case 'SWIPE_DONE':
+      return {
+        ...state,
+        isSwiping: false,
+        offset: '100%',
       };
   }
 };
@@ -91,36 +102,58 @@ export const Swipable = ({
     {}
   );
 
-  const swipeEnd = () => {
-    dispatch({ type: 'SWIPE_END' });
+  const callbackWhenTransitionEnd = (event: HandledEvents) => {
+    (event.currentTarget as HTMLElement).addEventListener(
+      'transitionend',
+      () => {
+        direction === 'Right' ? onSwipeRight?.() : onSwipeLeft?.();
+      },
+      {
+        once: true,
+      }
+    );
+  };
+
+  const shouldNotSwipe = (direction: SwipeDirections) => {
+    return (
+      (direction === 'Right' && !onSwipeRight) ||
+      (direction === 'Left' && !onSwipeLeft)
+    );
   };
 
   const handlers = useSwipeable({
     touchEventOptions: {
       passive: false,
     },
+    delta: {
+      up: 1000,
+      down: 1000,
+    },
     onSwipeStart: ({ dir }) => {
       dispatch({ type: 'SWIPE_START', payload: { direction: dir } });
     },
     onSwiping: ({ absX, event, dir }) => {
       event.preventDefault();
+      if (shouldNotSwipe(dir)) {
+        return;
+      }
       if (absX < treshold) {
         dispatch({
           type: 'SWIPE_MOVE',
-          payload: { offset: absX, direction: dir },
+          payload: { offset: `${absX}px`, direction: dir },
         });
       } else if (isSwiping) {
-        direction === 'Right' ? onSwipeRight() : onSwipeLeft();
-        swipeEnd();
+        callbackWhenTransitionEnd(event);
+        dispatch({ type: 'SWIPE_DONE' });
       }
     },
     onSwiped: () => {
-      swipeEnd();
+      dispatch({ type: 'SWIPE_CANCEL' });
     },
   });
 
   const style: CSSProperties = {
-    transform: `translateX(${direction === 'Right' ? offset : -offset}px)`,
+    transform: `translateX(${direction === 'Right' ? offset : `-${offset}`})`,
     transition: isSwiping ? 'none' : 'transform 0.1s ease-out',
   };
 
@@ -132,8 +165,8 @@ export const Swipable = ({
     position: 'absolute',
     display: 'flex',
     alignItems: 'center',
-    paddingInlineStart: offset / 5,
-    transition: isSwiping ? 'none' : 'width 0.1s ease-out',
+    paddingInlineStart: `min(calc(${offset} / 5), 20px)`,
+    transition: isSwiping ? 'none' : 'width, padding 0.1s ease-out',
   };
 
   const beforeActionStyle: CSSProperties = {

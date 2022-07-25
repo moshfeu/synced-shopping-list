@@ -77,7 +77,7 @@ export class Lsbase {
   }
 
   private throwIfOffline = async (promise: Promise<void>) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise<void>(async (resolve, reject) => {
       if (!this.isOnline) {
         return reject();
       }
@@ -142,7 +142,7 @@ export class Lsbase {
           try {
             this.handleListener();
           } catch (error) {
-            onError?.(error);
+            onError?.(error as string);
           }
         }
       },

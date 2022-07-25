@@ -26,7 +26,7 @@ type GroupedListProps = {
   categories: Array<[string, Array<GroupedListItem>]>;
   actionIcon: ReactChild;
   onCheckItem(item: GroupedListItem): void;
-  onDeleteItem(item: GroupedListItem): void;
+  onDeleteItem?(item: GroupedListItem): void;
   onAction?(item: GroupedListItem): void;
 };
 
@@ -83,7 +83,7 @@ export const GroupedList: FC<GroupedListProps> = ({
               <Swipable
                 key={item.key}
                 onSwipeRight={() => onCheckItem(item)}
-                onSwipeLeft={() => onDeleteItem(item)}
+                onSwipeLeft={onDeleteItem ? () => onDeleteItem?.(item) : undefined}
                 icons={{
                   before: <span style={{ color: '#fff' }}>✓</span>,
                   after: <span style={{ color: '#fff' }}>✗</span>,
