@@ -104,7 +104,7 @@ export const GroupedList: FC<GroupedListProps> = ({
                       edge='start'
                       tabIndex={-1}
                       disableRipple
-                      checked={item.checked}
+                      checked={item.checked || false}
                     />
                   </ListItemIcon>
                   <ListItemText
