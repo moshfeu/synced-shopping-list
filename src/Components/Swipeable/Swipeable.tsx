@@ -102,7 +102,7 @@ export const Swipable = ({
     {}
   );
 
-  const callbackWhenTransitionEnd = (event: HandledEvents) => {
+  const registerCallbackWhenTransitionEnd = (event: HandledEvents) => {
     (event.currentTarget as HTMLElement).addEventListener(
       'transitionend',
       () => {
@@ -143,7 +143,7 @@ export const Swipable = ({
           payload: { offset: `${absX}px`, direction: dir },
         });
       } else if (isSwiping) {
-        callbackWhenTransitionEnd(event);
+        registerCallbackWhenTransitionEnd(event);
         dispatch({ type: 'SWIPE_DONE' });
       }
     },
@@ -166,7 +166,7 @@ export const Swipable = ({
     display: 'flex',
     alignItems: 'center',
     paddingInlineStart: `min(calc(${offset} / 5), 20px)`,
-    transition: isSwiping ? 'none' : 'width, padding 0.1s ease-out',
+    transition: isSwiping ? 'none' : 'width 0.1s ease-out, padding 0.1s ease-out',
   };
 
   const beforeActionStyle: CSSProperties = {
