@@ -92,6 +92,7 @@ export const History: FC<HistoryProps> = ({ open, items, onClose, onAdd }) => {
             categories={groupByCategories}
             actionIcon={<Delete />}
             onAction={(item) => deleteItem(item.key)}
+            onDeleteItem={(item) => deleteItem(item.key)}
             onCheckItem={(item) =>
               setCheckedItems(
                 (prevState) =>

@@ -6,18 +6,16 @@ import makeStyles from '@mui/styles/makeStyles';
 import { useAuth } from '../../Hooks/useAuth';
 import { useDB } from '../../Hooks/useDB';
 import { useUIStore } from '../../Hooks/useUIStore';
-import {
-  addListItems,
-  deleteListItems,
-  updateListItem,
-} from '../../Services/db';
+import { addListItems, deleteItem, deleteListItems, updateListItem } from '../../Services/db';
 import { useGlobalStyles } from '../../Styles/common';
+import { ListItemView } from '../../Types/entities';
 import { EmptyState } from '../EmptyState/EmptyState';
 import { CheckedListHeader } from './CheckedListHeader';
 import { History } from './History';
 import { ItemDetails } from './ItemDetails';
 import { ListItems } from './ListItems';
 import { Search } from './Search/Search';
+
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -89,6 +87,11 @@ export const List: FC = () => {
     });
   }
 
+  function deleteListItem(item: ListItemView) {
+    deleteListItems([item]);
+    deleteItem(item.item.id);
+  }
+
   function handleAddFromHistory(items: Map<string, number>) {
     addListItems(
       Array.from(items.entries()).map(([itemId, quantity]) => ({
@@ -125,24 +128,24 @@ export const List: FC = () => {
         </div>
       ) : list.length ? (
         <div className={classes.lists}>
-          <>
             <ListItems
               items={uncheckedItems}
               className={classes.uncheckedList}
               onCheckItem={(listItem) =>
                 updateListItem(listItem, { checked: true })
               }
+              onDeleteItem={deleteListItem}
               onClickMoreItem={(listItem) => navigateToItem(listItem.id)}
             />
             <ListItems
               header={<CheckedListHeader onDelete={onDeleteChecked} />}
               items={checkedItems}
               className={classes.checkedList}
+              onDeleteItem={deleteListItem}
               onCheckItem={(listItem) =>
                 updateListItem(listItem, { checked: false })
               }
             />
-          </>
         </div>
       ) : (
         <EmptyState

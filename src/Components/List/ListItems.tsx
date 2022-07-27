@@ -1,6 +1,6 @@
 import React, { FC, ReactElement, useMemo } from 'react';
-import { Grid } from '@mui/material';
 import { MoreVert } from '@mui/icons-material';
+import { Grid } from '@mui/material';
 import { groupItemsBy } from '../../Services/converters';
 import { ListItemView } from '../../Types/entities';
 import { GroupedList, GroupedListItem } from '../GroupedList/GroupedList';
@@ -11,6 +11,7 @@ type ItemProps = {
   className: string;
   groupByCategory?: boolean;
   onCheckItem(listItem: ListItemView): void;
+  onDeleteItem(listItem: ListItemView): void;
   onClickMoreItem?(listItem: ListItemView): void;
 };
 
@@ -19,6 +20,7 @@ export const ListItems: FC<ItemProps> = ({
   header,
   className,
   onCheckItem,
+  onDeleteItem,
   onClickMoreItem,
 }) => {
   const groupByCategories = useMemo(() => {
@@ -56,6 +58,7 @@ export const ListItems: FC<ItemProps> = ({
         categories={groupByCategories}
         actionIcon={<MoreVert />}
         onCheckItem={handleItemAction(onCheckItem)!}
+        onDeleteItem={handleItemAction(onDeleteItem)!}
         onAction={handleItemAction(onClickMoreItem)}
       />
     </div>
