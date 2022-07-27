@@ -9,8 +9,8 @@ import makeStyles from '@mui/styles/makeStyles';
 import { useAuth } from '../../../Hooks/useAuth';
 import { useDB } from '../../../Hooks/useDB';
 import { useUIStore } from '../../../Hooks/useUIStore';
-import { addListItem } from '../../../Services/db';
-import { Item } from '../../../Types/entities';
+import { addListItem, updateListItem } from '../../../Services/db';
+import { Item, ListItemView } from '../../../Types/entities';
 import { Header } from '../../Header/Header';
 
 type Option = string | Item;
@@ -48,22 +48,30 @@ export const Search: FC = () => {
     };
   }
 
-  function isItemInList(option: Option): boolean {
-    return (
-      typeof option === 'string' &&
-      list.some(({ item }) => item.name === option)
-    );
+  function findItemInList(option: string): ListItemView | undefined {
+    return list.find(({ item }) => item.name === option);
   }
 
-  function onAdd(option: Option) {
-    if (isItemInList(option)) {
+  function handleItemAlreadyInList(item: ListItemView): void {
+    if (!item.checked) {
       dispatch({
         type: 'SNACK',
         payload: {
           message: 'Item already in list',
         },
       });
-      return;
+    } else {
+      updateListItem(item, { checked: false });
+    }
+  }
+
+  function onAdd(option: Option) {
+    if (typeof option === 'string') {
+      const itemInList = findItemInList(option);
+      if (itemInList) {
+        handleItemAlreadyInList(itemInList);
+        return;
+      }
     }
     const item = getItemOrNew(option);
     addListItem(item, currentUser);
