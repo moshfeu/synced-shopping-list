@@ -11,7 +11,7 @@ import {
 } from '@mui/material';
 import makeStyles from '@mui/styles/makeStyles';
 import { useGlobalStyles } from '../../Styles/common';
-import { ListItem } from '../../Types/entities';
+import { Item, ListItem } from '../../Types/entities';
 import { Swipable } from '../Swipeable/Swipeable';
 
 export type GroupedListItem = {
@@ -20,11 +20,12 @@ export type GroupedListItem = {
   primary: ReactChild;
   secondary?: ReactChild;
   level?: ListItem['urgency'];
+  image?: Item['image'];
 };
 
 type GroupedListProps = {
   categories: Array<[string, Array<GroupedListItem>]>;
-  actionIcon: ReactChild;
+  actionIcon: ReactChild | ((item: GroupedListItem) => ReactChild);
   onCheckItem(item: GroupedListItem): void;
   onDeleteItem?(item: GroupedListItem): void;
   onAction?(item: GroupedListItem): void;
@@ -83,7 +84,9 @@ export const GroupedList: FC<GroupedListProps> = ({
               <Swipable
                 key={item.key}
                 onSwipeRight={() => onCheckItem(item)}
-                onSwipeLeft={onDeleteItem ? () => onDeleteItem?.(item) : undefined}
+                onSwipeLeft={
+                  onDeleteItem ? () => onDeleteItem?.(item) : undefined
+                }
                 icons={{
                   before: <span style={{ color: '#fff' }}>✓</span>,
                   after: <span style={{ color: '#fff' }}>✗</span>,
@@ -115,7 +118,9 @@ export const GroupedList: FC<GroupedListProps> = ({
                   <ListItemSecondaryAction>
                     {onAction && (
                       <IconButton onClick={() => onAction(item)} size='large'>
-                        {actionIcon}
+                        {typeof actionIcon === 'function'
+                          ? actionIcon(item)
+                          : actionIcon}
                       </IconButton>
                     )}
                   </ListItemSecondaryAction>

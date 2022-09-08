@@ -1,6 +1,6 @@
-import React, { FC, ReactElement, useMemo } from 'react';
+import { FC, ReactElement, useMemo } from 'react';
 import { MoreVert } from '@mui/icons-material';
-import { Grid } from '@mui/material';
+import { Badge, Grid } from '@mui/material';
 import { groupItemsBy } from '../../Services/converters';
 import { ListItemView } from '../../Types/entities';
 import { GroupedList, GroupedListItem } from '../GroupedList/GroupedList';
@@ -13,6 +13,17 @@ type ItemProps = {
   onCheckItem(listItem: ListItemView): void;
   onDeleteItem(listItem: ListItemView): void;
   onClickMoreItem?(listItem: ListItemView): void;
+};
+
+const MoreIcon = ({ image }: Pick<GroupedListItem, 'image'>) => {
+  if (image) {
+    return (
+      <Badge color='secondary' badgeContent=' ' variant='dot'>
+        <MoreVert />
+      </Badge>
+    );
+  }
+  return <MoreVert />;
 };
 
 export const ListItems: FC<ItemProps> = ({
@@ -35,6 +46,7 @@ export const ListItems: FC<ItemProps> = ({
       ),
       secondary: item.note,
       level: item.urgency,
+      image: item.item.image,
     }));
   }, [items]);
 
@@ -56,7 +68,7 @@ export const ListItems: FC<ItemProps> = ({
       {header}
       <GroupedList
         categories={groupByCategories}
-        actionIcon={<MoreVert />}
+        actionIcon={(item) => <MoreIcon image={item.image} />}
         onCheckItem={handleItemAction(onCheckItem)!}
         onDeleteItem={handleItemAction(onDeleteItem)!}
         onAction={handleItemAction(onClickMoreItem)}
