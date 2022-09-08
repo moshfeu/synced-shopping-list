@@ -3,6 +3,7 @@ import { Add } from '@mui/icons-material';
 import {
   Avatar,
   CardContent,
+  CircularProgress,
   FormControl,
   FormLabel,
   Grid,
@@ -45,6 +46,9 @@ const useStyles = makeStyles((theme) => ({
     position: 'absolute',
     top: 0,
     right: 0,
+  },
+  uploadingSpinner: {
+    padding: theme.spacing(1.5),
   },
   image: {
     maxWidth: '100%',
@@ -90,6 +94,7 @@ export const ItemDetails: FC<ItemDetailsProps> = ({ listItem }) => {
   const { flexGrow, flex } = useGlobalStyles();
   const { categories } = useDB();
   const { dispatch } = useUIStore();
+  const [isUploading, setIsUploading] = React.useState(false);
   const category = categories.find(
     ({ id }) => id === listItem?.item.category?.id
   );
@@ -152,15 +157,22 @@ export const ItemDetails: FC<ItemDetailsProps> = ({ listItem }) => {
     if (!imageFile) {
       return;
     }
-    const file = await inputFileToArrayBuffer(imageFile);
-    const name = `${listItem?.item.id}#${imageFile.name}`;
-    const uploadedPath = await upload(name, file);
-    if (listItem?.item.image) {
-      remove(listItem.item.image);
+    try {
+      setIsUploading(true);
+      const file = await inputFileToArrayBuffer(imageFile);
+      const name = `${listItem?.item.id}#${imageFile.name}`;
+      const uploadedPath = await upload(name, file);
+      if (listItem?.item.image) {
+        remove(listItem.item.image);
+      }
+      updateItem(listItem!.item, {
+        image: uploadedPath,
+      });
+    } catch (error) {
+      console.error(`can't replace image`, error);
+    } finally {
+      setIsUploading(false);
     }
-    updateItem(listItem!.item, {
-      image: uploadedPath,
-    });
   }
 
   function removeImage() {
@@ -187,12 +199,19 @@ export const ItemDetails: FC<ItemDetailsProps> = ({ listItem }) => {
                   : ImagePlaceholder
               }
             />
-            <Menu className={classes.imageMenu}>
-              <MenuItem onClick={onReplace}>Replace</MenuItem>
-              {listItem.item.image && (
-                <MenuItem onClick={removeImage}>Remove</MenuItem>
-              )}
-            </Menu>
+            {isUploading ? (
+              <CircularProgress
+                className={`${classes.imageMenu} ${classes.uploadingSpinner}`}
+                color='secondary'
+              />
+            ) : (
+              <Menu className={classes.imageMenu}>
+                <MenuItem onClick={onReplace}>Replace</MenuItem>
+                {listItem.item.image && (
+                  <MenuItem onClick={removeImage}>Remove</MenuItem>
+                )}
+              </Menu>
+            )}
           </div>
           <CardContent>
             <FormControl classes={{ root: classes.formControl }}>
