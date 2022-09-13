@@ -1,7 +1,6 @@
 import React, { FC } from 'react';
 import { Link } from 'react-router-dom';
 import {
-  Search as SearchIcon,
   History as HistoryIcon,
 } from '@mui/icons-material';
 import { IconButton, Divider } from '@mui/material';
@@ -12,6 +11,7 @@ import { useUIStore } from '../../../Hooks/useUIStore';
 import { addListItem, updateListItem } from '../../../Services/db';
 import { Item, ListItemView } from '../../../Types/entities';
 import { Header } from '../../Header/Header';
+import { ListsPicker } from '../ListsPicker';
 
 type Option = string | Item;
 
@@ -81,8 +81,9 @@ export const Search: FC = () => {
     <Header
       onSubmit={onAdd}
       input={{ placeholder: 'Product Name', options: items }}
-      submit={{ icon: SearchIcon, label: 'Add' }}
+      // submit={{ icon: ArrowDropDownIcon, label: 'Switch Lists', onClick: console.log }}
     >
+      <ListsPicker />
       <Divider className={classes.divider} orientation='vertical' />
       <IconButton
         component={Link}

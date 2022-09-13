@@ -17,6 +17,7 @@ type HeaderProps = {
   submit?: {
     label: string;
     icon: SvgIconComponent;
+    onClick?(): void;
   };
 };
 
@@ -70,7 +71,7 @@ export const Header: FC<HeaderProps> = ({
         >
           <MenuIcon />
         </IconButton>
-        {input && submit && (
+        {input && (
           <div className={classes.input}>
             <Autocomplete
               options={input.options || []}
@@ -78,14 +79,17 @@ export const Header: FC<HeaderProps> = ({
               placeholder='Product Name'
               maxResult={5}
             />
-            <IconButton
-              type='submit'
-              className={classes.iconButton}
-              aria-label={submit.label}
-              size='large'
-            >
-              <submit.icon />
-            </IconButton>
+            {submit && (
+              <IconButton
+                type='submit'
+                className={classes.iconButton}
+                aria-label={submit.label}
+                size='large'
+                onClick={submit.onClick}
+              >
+                <submit.icon />
+              </IconButton>
+            )}
           </div>
         )}
         {children}
