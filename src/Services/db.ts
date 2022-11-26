@@ -6,6 +6,7 @@ import {
   ListItemView,
   DBItem,
   ItemView,
+  List,
 } from '../Types/entities';
 
 type NewRecord<T> = Omit<T, 'id'>;
@@ -14,6 +15,7 @@ export const DB_REF = {
   ITEMS: 'items',
   CATEGORIES: 'categories',
   LIST: 'list',
+  LISTS: 'lists',
 } as const;
 
 type DBRef = typeof DB_REF[keyof typeof DB_REF];
@@ -35,6 +37,20 @@ function updateRef<T extends DBItem>(
   );
   return db.ref().update(updates);
 }
+
+// export default {
+//   item: {
+//     add: (item: NewRecord<Item>) => db.ref(DB_REF.ITEMS).push(item),
+//     delete: (itemId: string) => db.ref(`${DB_REF.ITEMS}/${itemId}`).remove(),
+//   },
+//   listItem: {
+//     add: (item: NewRecord<ListItem>) => db.ref(DB_REF.LIST).push(item),
+//   },
+//   listItems: (items: Array<NewRecord<ListItem>>) => {
+//     const listItemsRef = db.ref(DB_REF.LIST);
+//     return Promise.all(items.map((item) => listItemsRef.push(item)));
+//   }
+// }
 
 export async function addItem(item: NewRecord<Item>) {
   return db.ref(DB_REF.ITEMS).push(item);
@@ -109,4 +125,8 @@ export function updateCategory(id: string, name: string) {
 
 export function deleteCategory(categoryId: string) {
   return db.ref(`${DB_REF.CATEGORIES}/${categoryId}`).remove();
+}
+
+export function addList(list: NewRecord<List>) {
+  return db.ref(DB_REF.LISTS).push(list);
 }

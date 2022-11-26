@@ -2,6 +2,10 @@ export type DBItem = {
   readonly id: string;
 };
 
+export type List = DBItem & {
+  name: string;
+};
+
 export type Item = DBItem & {
   name: string;
   categoryId?: string | null;
@@ -33,3 +37,4 @@ export type ListItemView = Omit<ListItem, 'itemId'> & {
 export type Items = Array<Item>;
 export type ListItems = Array<ListItemView>;
 export type Categories = Array<Category>;
+export type Lists = Array<List>;

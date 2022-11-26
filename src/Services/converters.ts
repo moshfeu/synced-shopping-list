@@ -28,26 +28,43 @@ export function groupItemsBy<
     );
 }
 
-export type DBStructure = {
+type DBStructureList = {
+  id: string;
+  name: string;
   list: Array<ListItem>;
   items: Array<Item>;
   categories: Categories;
+}
+
+export type DBStructure = {
+  [id: string]: DBStructureList;
 };
 
 export type dbRef = {
-  [key in keyof DBStructure]: { [key: string]: DBStructure[key][0] };
+  [id: string]: {
+    [key in keyof DBStructureList]: { [key: string]: DBStructureList[key][0] };
+  }
 };
 
 export function firebaseToState(snapshot: dbRef): DBState {
   const dbData = Object.entries(snapshot).reduce(
-    (prev, [ref, items]) => ({
+    (prev, [id, {name, ...refs}]) => ([
       ...prev,
-      [ref]: Object.entries(items!).map(([id, props]) => ({
+      {
         id,
-        ...props,
-      })),
-    }),
-    {} as DBStructure
+        name,
+        ...(
+          Object.entries(refs).reduce((prevRefs, [ref, items]) => ({
+            ...prevRefs,
+            [ref]: Object.entries(items!).map(([id, props]) => ({
+              id,
+              ...props,
+            })),
+          }), {})
+        )
+      }
+    ]),
+    [] as DBStructure
   );
 
   const categories = sortBy(dbData.categories || [], 'name');
