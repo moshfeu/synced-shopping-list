@@ -76,15 +76,15 @@ export class Lsbase {
     return firebasePath.replace(/\//g, '.');
   }
 
-  private throwIfOffline = async (promise: Promise<void>) => {
-    return new Promise<void>(async (resolve, reject) => {
+  private throwIfOffline = async (promise: Promise<unknown>) => {
+    return new Promise<unknown>(async (resolve, reject) => {
       if (!this.isOnline) {
         return reject();
       }
       const timeout = setTimeout(reject, 2000);
-      await promise;
+      const result = await promise;
       clearTimeout(timeout);
-      resolve();
+      resolve(result);
     });
   };
 
@@ -102,7 +102,8 @@ export class Lsbase {
         this.save();
         try {
           await this.throwIfOffline(this.db.ref(path).update(updates));
-        } catch {
+        } catch (e) {
+          console.error('failed to update', e, updates);
           this.queue.push(updates);
           this.save();
         }
@@ -116,18 +117,17 @@ export class Lsbase {
 
         try {
           await this.throwIfOffline(this.db.ref().update(updates));
-        } catch {
+        } catch (e) {
+          console.error(e);
           this.queue.push(updates);
           this.save(true);
         }
-
-        return Promise.resolve({ key });
+        return { key };
       },
       remove: () => {
         this.data = omit(this.data, path || '') as dbRef;
         this.save();
-        this.db.ref(path).remove();
-        return Promise.resolve();
+        return this.db.ref(path).remove();
       },
       off: (event: Event) => {
         delete this.listeners[event];

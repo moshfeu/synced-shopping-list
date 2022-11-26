@@ -1,12 +1,6 @@
+import { omit } from 'lodash';
 import { db } from './firebase';
-import {
-  ListItem,
-  Item,
-  Category,
-  ListItemView,
-  DBItem,
-  ItemView,
-} from '../Types/entities';
+import { ListItem, Item, Category, ListItemView, DBItem, ItemView } from '../Types/entities';
 
 type NewRecord<T> = Omit<T, 'id'>;
 
@@ -17,6 +11,16 @@ export const DB_REF = {
 } as const;
 
 type DBRef = typeof DB_REF[keyof typeof DB_REF];
+
+function getAddedByFromUser(user?: ListItem['addedBy']) {
+  if (!user) {
+    return null;
+  }
+  return {
+    displayName: user.displayName,
+    photoURL: user.photoURL,
+  };
+}
 
 function updateRef<T extends DBItem>(
   item: T,
@@ -48,12 +52,7 @@ export async function addListItem(
     checked: false,
     note: '',
     quantity: 1,
-    addedBy: user
-      ? {
-          displayName: user.displayName,
-          photoURL: user.photoURL,
-        }
-      : null,
+    addedBy: getAddedByFromUser(user),
   };
 
   if (!('itemId' in item)) {
@@ -64,6 +63,27 @@ export async function addListItem(
   }
   return db.ref(DB_REF.LIST).push(newListItem);
 }
+
+export const addListItemFull = async (item: ListItemView) => {
+  const itemToAdd: NewRecord<Item> = omit(item.item, ['id', 'category']);
+  if (item.item.category) {
+    itemToAdd.categoryId = item.item.category.id;
+  }
+  const { key: itemId } = await addItem(itemToAdd);
+  if (!itemId) {
+    throw new Error('added item must have id');
+  }
+  const listItem: NewRecord<ListItem> = {
+    ...omit(item, ['id', 'item', 'category']) as ListItem,
+    itemId,
+  };
+
+  const { key: addedListItemId } = await db.ref(DB_REF.LIST).push({
+    ...listItem,
+    itemId,
+  });
+  return { itemId, addedListItemId };
+};
 
 export function addListItems(items: Array<NewRecord<ListItem>>) {
   const listItemsRef = db.ref(DB_REF.LIST);
@@ -81,7 +101,7 @@ export function deleteItem(itemId: string) {
   return db.ref(`${DB_REF.ITEMS}/${itemId}`).remove();
 }
 
-export function deleteListItems(items: Array<ListItemView>) {
+export async function deleteListItems(items: Array<ListItemView>) {
   const updates = items.reduce(
     (prev, next) => ({
       ...prev,
@@ -89,8 +109,8 @@ export function deleteListItems(items: Array<ListItemView>) {
     }),
     {}
   );
-
-  return db.ref().update(updates);
+  console.log('deleteListItems', updates);
+  await db.ref().update(updates);
 }
 
 export function updateItem(item: ItemView, itemData: Partial<Item>) {

@@ -1,4 +1,3 @@
-import React from 'react';
 import { Button, IconButton, Snackbar as MuiSnackbar, Theme } from '@mui/material';
 import makeStyles from '@mui/styles/makeStyles';
 import { Close } from '@mui/icons-material';
@@ -9,14 +8,39 @@ type SnackbarProps = {
   onAction?(): void;
   actionText?: string;
   message: string;
+  autoHideDuration?: number;
+  withProgress?: boolean;
 };
 
 const useStyles = makeStyles((theme: Theme) => ({
-  root: {
-    '& .MuiSnackbarContent-root': {
-      backgroundColor: theme.palette.info.main,
+  '@global': {
+    '@keyframes brrrrr': {
+      '0%': {
+        width: 0,
+      },
+      '100%': {
+        width: '100%',
+      },
     },
   },
+  root: (props: Pick<SnackbarProps, 'withProgress' | 'autoHideDuration'>) => ({
+    '& .MuiSnackbarContent-root': {
+      backgroundColor: theme.palette.info.main,
+      overflow: 'hidden',
+
+      '&:before': {
+        content: props.withProgress ? '""' : undefined,
+        top: 0,
+        left: 0,
+        width: '100%',
+        position: 'absolute',
+        animation: `brrrrr ${props.autoHideDuration}ms linear forwards`,
+        borderTopLeftRadius: theme.shape.borderRadius,
+        borderTopRightRadius: theme.shape.borderRadius,
+        borderTop: `10px solid ${theme.palette.info.dark}`,
+      }
+    },
+  }),
 }));
 
 export const Snackbar = ({
@@ -24,8 +48,10 @@ export const Snackbar = ({
   actionText,
   message,
   onAction,
+  autoHideDuration = 6000,
+  withProgress = false,
 }: SnackbarProps) => {
-  const { root } = useStyles();
+  const { root } = useStyles({withProgress, autoHideDuration});
   const { dispatch } = useUIStore();
 
   function handleClose() {
@@ -43,7 +69,7 @@ export const Snackbar = ({
       }}
       classes={{ root }}
       open={open}
-      autoHideDuration={6000}
+      autoHideDuration={autoHideDuration}
       onClose={handleClose}
       message={message}
       action={

@@ -6,7 +6,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import { useAuth } from '../../Hooks/useAuth';
 import { useDB } from '../../Hooks/useDB';
 import { useUIStore } from '../../Hooks/useUIStore';
-import { addListItems, deleteItem, deleteListItems, updateListItem } from '../../Services/db';
+import { addListItemFull, addListItems, deleteItem, deleteListItems, updateListItem } from '../../Services/db';
 import { useGlobalStyles } from '../../Styles/common';
 import { ListItemView } from '../../Types/entities';
 import { EmptyState } from '../EmptyState/EmptyState';
@@ -15,6 +15,7 @@ import { History } from './History';
 import { ItemDetails } from './ItemDetails';
 import { ListItems } from './ListItems';
 import { Search } from './Search/Search';
+import { useUndo } from '../../Hooks/useUndo';
 
 
 const useStyles = makeStyles((theme) => ({
@@ -43,6 +44,7 @@ const useStyles = makeStyles((theme) => ({
 
 export const List: FC = () => {
   const classes = useStyles();
+  const showUndo = useUndo();
   const globalClasses = useGlobalStyles();
   const { list, items } = useDB();
   const { currentUser } = useAuth();
@@ -87,9 +89,18 @@ export const List: FC = () => {
     });
   }
 
-  function deleteListItem(item: ListItemView) {
-    deleteListItems([item]);
+  async function deleteListItem(item: ListItemView) {
+    console.log('deleteListItem', item);
+    await deleteListItems([item]);
+    console.log('deleteItem', item.item);
     deleteItem(item.item.id);
+
+    showUndo({
+      message: 'Item deleted',
+      onAction: () => {
+        addListItemFull(item);
+      }
+    })
   }
 
   function handleAddFromHistory(items: Map<string, number>) {
