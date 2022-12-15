@@ -49,7 +49,7 @@ const useStyles = makeStyles((theme) => ({
 export const List: FC = () => {
   const classes = useStyles();
   const showUndo = useUndo();
-  const { list, items } = useDB();
+  const { list, items, isDBReady } = useDB();
   const { currentUser } = useAuth();
   const { state, dispatch } = useUIStore();
   const history = useHistory();
@@ -120,6 +120,10 @@ export const List: FC = () => {
           : null,
       }))
     );
+  }
+
+  if (!isDBReady) {
+    return null;
   }
 
   return (

@@ -1,6 +1,7 @@
-import React, {
+import {
   createContext,
   FC,
+  useCallback,
   useContext,
   useEffect,
   useReducer,
@@ -12,15 +13,18 @@ import { dbRef, firebaseToState } from '../Services/converters';
 import { DB_REF } from '../Services/db';
 import { DBContext, DBState } from '../Types/db';
 import { Item } from '../Types/entities';
-import { useAuth } from './useAuth';
 import { useUIStore } from './useUIStore';
 
-const initialValue: DBContext = {
+type DBContextProvider = DBContext & { isDBReady: boolean };
+
+const initialValue: DBContextProvider = {
   list: [],
   items: [],
   categories: [],
+  isDBReady: true,
 };
-const dbContext = createContext<DBContext>(initialValue);
+
+const dbContext = createContext<DBContextProvider>(initialValue);
 
 function cacheItemsImage() {
   db.db
@@ -41,34 +45,18 @@ function cacheItemsImage() {
 }
 
 export const DBProvider: FC = ({ children }) => {
-  const [isLoading, doneLoading] = useReducer(() => false, true);
+  const [isDBReady, dbIsReady] = useReducer(() => true, false);
   const [state, setState] = useState<DBState>(initialValue);
-  const { currentUser, isLoading: isAuthLoading } = useAuth();
   const { dispatch } = useUIStore();
 
-  const isFetchDone = !isLoading && !isAuthLoading;
-  const isAnonymous = isFetchDone && !currentUser;
+  const dbIsLoaded = useCallback(() => {
+    dispatch({
+      type: 'IS_APP_LOADING',
+      payload: false,
+    });
+  }, [dispatch]);
 
-  useEffect(() => {
-    if (db.hasLocal) {
-      init();
-    } else if (isAnonymous) {
-      doneLoading();
-    }
-
-    init();
-  }, [isAnonymous]);
-
-  useEffect(() => {
-    if (isFetchDone) {
-      dispatch({
-        type: 'IS_APP_LOADING',
-        payload: false,
-      });
-    }
-  }, [dispatch, isFetchDone]);
-
-  function init() {
+  const init = useCallback(() => {
     cacheItemsImage();
     db.ref().off('value');
     db.ref().on(
@@ -79,23 +67,32 @@ export const DBProvider: FC = ({ children }) => {
           const state = firebaseToState(snapshotJson);
           setState(state);
         }
-
-        doneLoading();
+        if (!db.isLoading) {
+          dbIsLoaded();
+        }
       },
       (error: string) => {
-        doneLoading();
         alert(error);
       }
     );
-  }
+  }, [dbIsLoaded]);
 
-  return <dbContext.Provider value={state}>{children}</dbContext.Provider>;
+  useEffect(() => {
+    init();
+    dbIsReady();
+  }, [init]);
+
+  return (
+    <dbContext.Provider value={{ ...state, isDBReady }}>
+      {children}
+    </dbContext.Provider>
+  );
 };
 
 export const useDB = () => {
-  const { items, categories, list } = useContext(dbContext);
+  const { items, categories, list, isDBReady } = useContext(dbContext);
   if (!items || !categories || !list) {
     throw new Error('useDB must be called from a DBProvider!');
   }
-  return { items, categories, list };
+  return { items, categories, list, isDBReady };
 };
