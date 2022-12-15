@@ -76,7 +76,7 @@ export const Snackbar = ({
         <>
           {onAction ? (
             <Button
-              color='secondary'
+              color='inherit'
               size='small'
               onClick={() => {
                 handleClose();

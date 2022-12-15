@@ -90,9 +90,7 @@ export const List: FC = () => {
   }
 
   async function deleteListItem(item: ListItemView) {
-    console.log('deleteListItem', item);
     await deleteListItems([item]);
-    console.log('deleteItem', item.item);
     deleteItem(item.item.id);
 
     showUndo({
@@ -100,7 +98,7 @@ export const List: FC = () => {
       onAction: () => {
         addListItemFull(item);
       }
-    })
+    });
   }
 
   function handleAddFromHistory(items: Map<string, number>) {

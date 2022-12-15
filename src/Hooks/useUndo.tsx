@@ -12,6 +12,7 @@ export const useUndo = () => {
         message,
         onAction,
         actionText: 'Undo',
+        withProgress: true,
       },
     });
   };
