@@ -20,6 +20,8 @@ type SnackState = {
   message: string;
   actionText?: string;
   onAction?(): void;
+  withProgress?: boolean;
+  autoHideDuration?: number;
 };
 
 type DialogState = {
@@ -106,6 +108,8 @@ export const UIStoreProvider: FC = ({ children }) => {
         message={snackState?.message || ''}
         onAction={snackState?.onAction}
         actionText={snackState?.actionText}
+        autoHideDuration={snackState?.autoHideDuration}
+        withProgress={snackState?.withProgress}
       />
       {dialogState && (
         <FormDialog
