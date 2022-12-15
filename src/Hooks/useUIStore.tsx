@@ -132,6 +132,6 @@ export const useUIStore = () => {
   }
   return {
     state,
-    dispatch: dispatch,
+    dispatch,
   };
 };

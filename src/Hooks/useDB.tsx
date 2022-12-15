@@ -3,6 +3,7 @@ import React, {
   FC,
   useContext,
   useEffect,
+  useReducer,
   useState,
 } from 'react';
 import { db } from '../Services/firebase';
@@ -40,51 +41,53 @@ function cacheItemsImage() {
 }
 
 export const DBProvider: FC = ({ children }) => {
-  const [loaded, setLoaded] = useState(false);
+  const [isLoading, doneLoading] = useReducer(() => false, true);
   const [state, setState] = useState<DBState>(initialValue);
-  const { currentUser } = useAuth();
+  const { currentUser, isLoading: isAuthLoading } = useAuth();
   const { dispatch } = useUIStore();
 
-  useEffect(() => {
-    if (currentUser || db.hasLocal) {
-      cacheItemsImage();
-      db.ref().off('value');
-      db.ref().on(
-        'value',
-        (snapshot) => {
-          const snapshotJson = snapshot.toJSON() as dbRef;
-          if (snapshot && snapshotJson) {
-            const state = firebaseToState(snapshotJson);
-            setState(state);
-          }
+  const isFetchDone = !isLoading && !isAuthLoading;
+  const isAnonymous = isFetchDone && !currentUser;
 
-          if (!loaded) {
-            setLoaded(true);
-          }
-        },
-        (error: string) => {
-          setLoaded(true);
-          alert(error);
-        }
-      );
-    } else {
-      setLoaded(true);
-      setState({
-        categories: [],
-        items: [],
-        list: [],
-      });
+  useEffect(() => {
+    if (db.hasLocal) {
+      init();
+    } else if (isAnonymous) {
+      doneLoading();
     }
-  }, [currentUser, loaded]);
+
+    init();
+  }, [isAnonymous]);
 
   useEffect(() => {
-    if (loaded) {
+    if (isFetchDone) {
       dispatch({
         type: 'IS_APP_LOADING',
         payload: false,
       });
     }
-  }, [dispatch, loaded]);
+  }, [dispatch, isFetchDone]);
+
+  function init() {
+    cacheItemsImage();
+    db.ref().off('value');
+    db.ref().on(
+      'value',
+      (snapshot) => {
+        const snapshotJson = snapshot.toJSON() as dbRef;
+        if (snapshot && snapshotJson) {
+          const state = firebaseToState(snapshotJson);
+          setState(state);
+        }
+
+        doneLoading();
+      },
+      (error: string) => {
+        doneLoading();
+        alert(error);
+      }
+    );
+  }
 
   return <dbContext.Provider value={state}>{children}</dbContext.Provider>;
 };

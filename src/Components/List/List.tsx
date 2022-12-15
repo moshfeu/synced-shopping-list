@@ -1,13 +1,12 @@
-import React, { useState, useEffect, FC, useMemo } from 'react';
+import { useState, useEffect, FC, useMemo } from 'react';
 import { useHistory, useParams } from 'react-router-dom';
 import { partition } from 'lodash';
-import { CircularProgress, Drawer, Typography } from '@mui/material';
+import { LinearProgress, Drawer, Typography } from '@mui/material';
 import makeStyles from '@mui/styles/makeStyles';
 import { useAuth } from '../../Hooks/useAuth';
 import { useDB } from '../../Hooks/useDB';
 import { useUIStore } from '../../Hooks/useUIStore';
 import { addListItemFull, addListItems, deleteItem, deleteListItems, updateListItem } from '../../Services/db';
-import { useGlobalStyles } from '../../Styles/common';
 import { ListItemView } from '../../Types/entities';
 import { EmptyState } from '../EmptyState/EmptyState';
 import { CheckedListHeader } from './CheckedListHeader';
@@ -40,12 +39,16 @@ const useStyles = makeStyles((theme) => ({
     display: 'flex',
     justifyContent: 'space-around',
   },
+  loader: {
+    top: 0,
+    width: '100%',
+    position: 'absolute',
+  }
 }));
 
 export const List: FC = () => {
   const classes = useStyles();
   const showUndo = useUndo();
-  const globalClasses = useGlobalStyles();
   const { list, items } = useDB();
   const { currentUser } = useAuth();
   const { state, dispatch } = useUIStore();
@@ -131,11 +134,10 @@ export const List: FC = () => {
         onAdd={handleAddFromHistory}
         onClose={navigateToRoot}
       />
-      {state.isAppLoading ? (
-        <div className={globalClasses.centerContent}>
-          <CircularProgress color='secondary' />
-        </div>
-      ) : list.length ? (
+      {
+        state.isAppLoading && <LinearProgress classes={{root: classes.loader}} />
+      }
+      {list.length ? (
         <div className={classes.lists}>
             <ListItems
               items={uncheckedItems}
