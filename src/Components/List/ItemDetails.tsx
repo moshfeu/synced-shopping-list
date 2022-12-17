@@ -19,6 +19,8 @@ import { ToggleButtonGroup, ToggleButton } from '@mui/material';
 import makeStyles from '@mui/styles/makeStyles';
 import ImagePlaceholder from '../../Assets/imagePlaceholder.svg';
 import { useDB } from '../../Hooks/useDB';
+import { useDeleteListItem } from '../../Hooks/useDeleteListItem';
+import { useNavigation } from '../../Hooks/useRoute';
 import { useUIStore } from '../../Hooks/useUIStore';
 import { addCategory, updateItem, updateListItem } from '../../Services/db';
 import { inputFileToArrayBuffer, showFileDialog } from '../../Services/file';
@@ -27,8 +29,6 @@ import { useGlobalStyles } from '../../Styles/common';
 import { ListItemView } from '../../Types/entities';
 import { UNCATEGORIZED } from '../../consts';
 import { Menu } from '../Menu/Menu';
-import { useDeleteListItem } from '../../Hooks/useDeleteListItem';
-import { useNavigation } from '../../Hooks/useRoute';
 import { Tooltip } from '../TouchTooltip/TouchTooltip';
 
 type ItemDetailsProps = {
@@ -108,7 +108,7 @@ const useStyles = makeStyles((theme) => ({
 export const ItemDetails: FC<ItemDetailsProps> = ({ listItem }) => {
   const classes = useStyles();
   const deleteListItem = useDeleteListItem();
-  const {navigateToHome} = useNavigation();
+  const { navigateToHome } = useNavigation();
   const { flexGrow, flex } = useGlobalStyles();
   const { categories } = useDB();
   const { dispatch } = useUIStore();
@@ -236,7 +236,7 @@ export const ItemDetails: FC<ItemDetailsProps> = ({ listItem }) => {
               </Menu>
             )}
           </div>
-          <CardContent classes={{root: classes.form}}>
+          <CardContent classes={{ root: classes.form }}>
             <FormControl classes={{ root: classes.formControl }}>
               <TextField
                 name='item_name'
@@ -328,9 +328,7 @@ export const ItemDetails: FC<ItemDetailsProps> = ({ listItem }) => {
             </FormControl>
             {listItem.addedBy && (
               <FormControl classes={{ root: classes.formControl }}>
-                <Tooltip
-                  title={listItem.addedBy.displayName ?? 'Anonymous'}
-                >
+                <Tooltip title={listItem.addedBy.displayName ?? 'Anonymous'}>
                   <Avatar
                     src={listItem.addedBy.photoURL!}
                     alt={listItem.addedBy.displayName ?? 'Anonymous'}
@@ -339,7 +337,11 @@ export const ItemDetails: FC<ItemDetailsProps> = ({ listItem }) => {
                 </Tooltip>
               </FormControl>
             )}
-            <FormControl classes={{ root: `${classes.formControl} ${classes.deleteItemFormControl}` }}>
+            <FormControl
+              classes={{
+                root: `${classes.formControl} ${classes.deleteItemFormControl}`,
+              }}
+            >
               <Button variant='outlined' color='error' onClick={onDeleteItem}>
                 Delete
               </Button>

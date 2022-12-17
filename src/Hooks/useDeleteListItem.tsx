@@ -13,7 +13,7 @@ export const useDeleteListItem = () => {
       message: 'Item deleted',
       onAction: () => {
         addListItemFull(item);
-      }
+      },
     });
-  }
-}
+  };
+};
