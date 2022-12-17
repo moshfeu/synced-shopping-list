@@ -18,6 +18,13 @@
       "sizes": "512x512"
     }
   ],
+  "shortcuts" : [
+    {
+      "name": "Add from History",
+      "url": "/history",
+      "description": "Add items from history"
+    }
+  ],
   "start_url": ".",
   "display": "standalone",
   "theme_color": "#FFFFFF",
