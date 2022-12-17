@@ -2,6 +2,7 @@ import React, { FC } from 'react';
 import { Add } from '@mui/icons-material';
 import {
   Avatar,
+  Button,
   CardContent,
   CircularProgress,
   FormControl,
@@ -18,6 +19,8 @@ import { ToggleButtonGroup, ToggleButton } from '@mui/material';
 import makeStyles from '@mui/styles/makeStyles';
 import ImagePlaceholder from '../../Assets/imagePlaceholder.svg';
 import { useDB } from '../../Hooks/useDB';
+import { useDeleteListItem } from '../../Hooks/useDeleteListItem';
+import { useNavigation } from '../../Hooks/useRoute';
 import { useUIStore } from '../../Hooks/useUIStore';
 import { addCategory, updateItem, updateListItem } from '../../Services/db';
 import { inputFileToArrayBuffer, showFileDialog } from '../../Services/file';
@@ -29,12 +32,15 @@ import { Menu } from '../Menu/Menu';
 import { Tooltip } from '../TouchTooltip/TouchTooltip';
 
 type ItemDetailsProps = {
-  listItem?: ListItemView;
+  listItem: ListItemView;
 };
 
 const useStyles = makeStyles((theme) => ({
   root: {
     width: 250,
+    display: 'flex',
+    flexDirection: 'column',
+    height: '100%',
   },
   imageWrapper: {
     position: 'relative',
@@ -64,9 +70,19 @@ const useStyles = makeStyles((theme) => ({
       borderBottomColor: 'transparent',
     },
   },
+  form: {
+    flexDirection: 'column',
+    display: 'flex',
+    flex: 1,
+  },
   formControl: {
     display: 'flex',
     marginBottom: theme.spacing(3),
+  },
+  deleteItemFormControl: {
+    justifyContent: 'end',
+    marginBottom: 0,
+    flex: 1,
   },
   addCategoryButton: {
     padding: 0,
@@ -91,6 +107,8 @@ const useStyles = makeStyles((theme) => ({
 
 export const ItemDetails: FC<ItemDetailsProps> = ({ listItem }) => {
   const classes = useStyles();
+  const deleteListItem = useDeleteListItem();
+  const { navigateToHome } = useNavigation();
   const { flexGrow, flex } = useGlobalStyles();
   const { categories } = useDB();
   const { dispatch } = useUIStore();
@@ -185,6 +203,11 @@ export const ItemDetails: FC<ItemDetailsProps> = ({ listItem }) => {
     });
   }
 
+  function onDeleteItem() {
+    navigateToHome();
+    deleteListItem(listItem);
+  }
+
   return (
     <div className={classes.root}>
       {listItem ? (
@@ -213,7 +236,7 @@ export const ItemDetails: FC<ItemDetailsProps> = ({ listItem }) => {
               </Menu>
             )}
           </div>
-          <CardContent>
+          <CardContent classes={{ root: classes.form }}>
             <FormControl classes={{ root: classes.formControl }}>
               <TextField
                 name='item_name'
@@ -305,9 +328,7 @@ export const ItemDetails: FC<ItemDetailsProps> = ({ listItem }) => {
             </FormControl>
             {listItem.addedBy && (
               <FormControl classes={{ root: classes.formControl }}>
-                <Tooltip
-                  title={listItem.addedBy.displayName ?? 'Anonymous'}
-                >
+                <Tooltip title={listItem.addedBy.displayName ?? 'Anonymous'}>
                   <Avatar
                     src={listItem.addedBy.photoURL!}
                     alt={listItem.addedBy.displayName ?? 'Anonymous'}
@@ -316,6 +337,15 @@ export const ItemDetails: FC<ItemDetailsProps> = ({ listItem }) => {
                 </Tooltip>
               </FormControl>
             )}
+            <FormControl
+              classes={{
+                root: `${classes.formControl} ${classes.deleteItemFormControl}`,
+              }}
+            >
+              <Button variant='outlined' color='error' onClick={onDeleteItem}>
+                Delete
+              </Button>
+            </FormControl>
           </CardContent>
         </>
       ) : null}

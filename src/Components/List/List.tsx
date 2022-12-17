@@ -6,15 +6,15 @@ import makeStyles from '@mui/styles/makeStyles';
 import { useAuth } from '../../Hooks/useAuth';
 import { useDB } from '../../Hooks/useDB';
 import { useUIStore } from '../../Hooks/useUIStore';
-import { addListItemFull, addListItems, deleteItem, deleteListItems, updateListItem } from '../../Services/db';
-import { ListItemView } from '../../Types/entities';
+import { addListItems, deleteListItems, updateListItem } from '../../Services/db';
 import { EmptyState } from '../EmptyState/EmptyState';
 import { CheckedListHeader } from './CheckedListHeader';
 import { History } from './History';
 import { ItemDetails } from './ItemDetails';
 import { ListItems } from './ListItems';
 import { Search } from './Search/Search';
-import { useUndo } from '../../Hooks/useUndo';
+import { useDeleteListItem } from '../../Hooks/useDeleteListItem';
+import { useNavigation } from '../../Hooks/useRoute';
 
 
 const useStyles = makeStyles((theme) => ({
@@ -48,11 +48,11 @@ const useStyles = makeStyles((theme) => ({
 
 export const List: FC = () => {
   const classes = useStyles();
-  const showUndo = useUndo();
+  const deleteListItem = useDeleteListItem();
+  const {navigateToItem, navigateToHome} = useNavigation();
   const { list, items, isDBReady } = useDB();
   const { currentUser } = useAuth();
   const { state, dispatch } = useUIStore();
-  const history = useHistory();
   const { id } = useParams<{ id: string }>();
   const { location } = useHistory();
   const [isDrawOpen, setIsDrawOpen] = useState(false);
@@ -71,14 +71,6 @@ export const List: FC = () => {
     setIsHistoryOpen(location.pathname === '/history');
   }, [location.pathname]);
 
-  function navigateToItem(itemId: string) {
-    history.push(`/item/${itemId}`);
-  }
-
-  function navigateToRoot() {
-    history.goBack();
-  }
-
   function onDeleteChecked() {
     dispatch({
       type: 'CONFIRMATION',
@@ -89,18 +81,6 @@ export const List: FC = () => {
           deleteListItems(checkedItems);
         },
       },
-    });
-  }
-
-  async function deleteListItem(item: ListItemView) {
-    await deleteListItems([item]);
-    deleteItem(item.item.id);
-
-    showUndo({
-      message: 'Item deleted',
-      onAction: () => {
-        addListItemFull(item);
-      }
     });
   }
 
@@ -129,14 +109,14 @@ export const List: FC = () => {
   return (
     <div className={classes.root}>
       <Search />
-      <Drawer anchor='right' open={isDrawOpen} onClose={navigateToRoot}>
-        <ItemDetails listItem={focusedItem} />
+      <Drawer anchor='right' open={isDrawOpen} onClose={navigateToHome}>
+        {focusedItem && <ItemDetails listItem={focusedItem} />}
       </Drawer>
       <History
         open={isHistoryOpen}
         items={items}
         onAdd={handleAddFromHistory}
-        onClose={navigateToRoot}
+        onClose={navigateToHome}
       />
       {
         state.isAppLoading && <LinearProgress classes={{root: classes.loader}} />
