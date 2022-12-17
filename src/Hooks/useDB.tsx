@@ -1,8 +1,10 @@
-import React, {
+import {
   createContext,
   FC,
+  useCallback,
   useContext,
   useEffect,
+  useReducer,
   useState,
 } from 'react';
 import { db } from '../Services/firebase';
@@ -11,15 +13,18 @@ import { dbRef, firebaseToState } from '../Services/converters';
 import { DB_REF } from '../Services/db';
 import { DBContext, DBState } from '../Types/db';
 import { Item } from '../Types/entities';
-import { useAuth } from './useAuth';
 import { useUIStore } from './useUIStore';
 
-const initialValue: DBContext = {
+type DBContextProvider = DBContext & { isDBReady: boolean };
+
+const initialValue: DBContextProvider = {
   list: [],
   items: [],
   categories: [],
+  isDBReady: true,
 };
-const dbContext = createContext<DBContext>(initialValue);
+
+const dbContext = createContext<DBContextProvider>(initialValue);
 
 function cacheItemsImage() {
   db.db
@@ -40,59 +45,50 @@ function cacheItemsImage() {
 }
 
 export const DBProvider: FC = ({ children }) => {
-  const [loaded, setLoaded] = useState(false);
+  const [isDBReady, dbIsReady] = useReducer(() => true, false);
   const [state, setState] = useState<DBState>(initialValue);
-  const { currentUser } = useAuth();
   const { dispatch } = useUIStore();
 
-  useEffect(() => {
-    if (currentUser || db.hasLocal) {
-      cacheItemsImage();
-      db.ref().off('value');
-      db.ref().on(
-        'value',
-        (snapshot) => {
-          const snapshotJson = snapshot.toJSON() as dbRef;
-          if (snapshot && snapshotJson) {
-            const state = firebaseToState(snapshotJson);
-            setState(state);
-          }
-
-          if (!loaded) {
-            setLoaded(true);
-          }
-        },
-        (error: string) => {
-          setLoaded(true);
-          alert(error);
+  const init = useCallback(() => {
+    cacheItemsImage();
+    db.ref().off('value');
+    db.ref().on(
+      'value',
+      (snapshot) => {
+        const snapshotJson = snapshot.toJSON() as dbRef;
+        if (snapshot && snapshotJson) {
+          const state = firebaseToState(snapshotJson);
+          setState(state);
         }
-      );
-    } else {
-      setLoaded(true);
-      setState({
-        categories: [],
-        items: [],
-        list: [],
-      });
-    }
-  }, [currentUser, loaded]);
+        if (!db.isLoading) {
+          dispatch({
+            type: 'IS_APP_LOADING',
+            payload: false,
+          });
+        }
+      },
+      (error: string) => {
+        alert(error);
+      }
+    );
+  }, [dispatch]);
 
   useEffect(() => {
-    if (loaded) {
-      dispatch({
-        type: 'IS_APP_LOADING',
-        payload: false,
-      });
-    }
-  }, [dispatch, loaded]);
+    init();
+    dbIsReady();
+  }, [init]);
 
-  return <dbContext.Provider value={state}>{children}</dbContext.Provider>;
+  return (
+    <dbContext.Provider value={{ ...state, isDBReady }}>
+      {children}
+    </dbContext.Provider>
+  );
 };
 
 export const useDB = () => {
-  const { items, categories, list } = useContext(dbContext);
+  const { items, categories, list, isDBReady } = useContext(dbContext);
   if (!items || !categories || !list) {
     throw new Error('useDB must be called from a DBProvider!');
   }
-  return { items, categories, list };
+  return { items, categories, list, isDBReady };
 };

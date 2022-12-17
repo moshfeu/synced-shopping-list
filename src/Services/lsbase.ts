@@ -20,14 +20,12 @@ export class Lsbase {
   private queue: Array<Updates>;
   private isOnline: boolean = false;
   public hasLocal: boolean = false;
+  public isLoading: boolean = true;
 
   constructor(public db: firebase.database.Database) {
     this.data = this.getFromLocalOrDefault('data', emptyData);
     this.queue = this.getFromLocalOrDefault('queue', []);
-    db.ref().on('value', (snapshot) => {
-      this.data = snapshot.toJSON() as dbRef;
-      this.save();
-    });
+
     db.ref('.info/connected').on('value', async (snapshot) => {
       this.isOnline = snapshot.val();
       if (this.isOnline) {
@@ -139,11 +137,15 @@ export class Lsbase {
       ) => {
         if (event === 'value') {
           this.listeners[event] = onSucess;
-          try {
+          if (this.hasLocal) {
             this.handleListener();
-          } catch (error) {
-            onError?.(error as string);
           }
+          this.db.ref().on(event, (snapshot) => {
+            this.isLoading = false;
+            this.data = snapshot.toJSON() as dbRef;
+            this.save();
+            onSucess(snapshot as Snapshot);
+          }, onError);
         }
       },
     };
