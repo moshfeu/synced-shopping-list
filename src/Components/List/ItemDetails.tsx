@@ -2,6 +2,7 @@ import React, { FC } from 'react';
 import { Add } from '@mui/icons-material';
 import {
   Avatar,
+  Button,
   CardContent,
   CircularProgress,
   FormControl,
@@ -27,14 +28,19 @@ import { useGlobalStyles } from '../../Styles/common';
 import { ListItemView } from '../../Types/entities';
 import { UNCATEGORIZED } from '../../consts';
 import { Menu } from '../Menu/Menu';
+import { useDeleteListItem } from '../../Hooks/useDeleteListItem';
+import { useNavigation } from '../../Hooks/useRoute';
 
 type ItemDetailsProps = {
-  listItem?: ListItemView;
+  listItem: ListItemView;
 };
 
 const useStyles = makeStyles((theme) => ({
   root: {
     width: 250,
+    display: 'flex',
+    flexDirection: 'column',
+    height: '100%',
   },
   imageWrapper: {
     position: 'relative',
@@ -64,9 +70,19 @@ const useStyles = makeStyles((theme) => ({
       borderBottomColor: 'transparent',
     },
   },
+  form: {
+    flexDirection: 'column',
+    display: 'flex',
+    flex: 1,
+  },
   formControl: {
     display: 'flex',
     marginBottom: theme.spacing(3),
+  },
+  deleteItemFormControl: {
+    justifyContent: 'end',
+    marginBottom: 0,
+    flex: 1,
   },
   addCategoryButton: {
     padding: 0,
@@ -91,6 +107,8 @@ const useStyles = makeStyles((theme) => ({
 
 export const ItemDetails: FC<ItemDetailsProps> = ({ listItem }) => {
   const classes = useStyles();
+  const deleteListItem = useDeleteListItem();
+  const {navigateToHome} = useNavigation();
   const { flexGrow, flex } = useGlobalStyles();
   const { categories } = useDB();
   const { dispatch } = useUIStore();
@@ -185,6 +203,11 @@ export const ItemDetails: FC<ItemDetailsProps> = ({ listItem }) => {
     });
   }
 
+  function onDeleteItem() {
+    navigateToHome();
+    deleteListItem(listItem);
+  }
+
   return (
     <div className={classes.root}>
       {listItem ? (
@@ -213,7 +236,7 @@ export const ItemDetails: FC<ItemDetailsProps> = ({ listItem }) => {
               </Menu>
             )}
           </div>
-          <CardContent>
+          <CardContent classes={{root: classes.form}}>
             <FormControl classes={{ root: classes.formControl }}>
               <TextField
                 name='item_name'
@@ -314,6 +337,11 @@ export const ItemDetails: FC<ItemDetailsProps> = ({ listItem }) => {
                 </Tooltip>
               </FormControl>
             )}
+            <FormControl classes={{ root: `${classes.formControl} ${classes.deleteItemFormControl}` }}>
+              <Button variant='outlined' color='error' onClick={onDeleteItem}>
+                Delete
+              </Button>
+            </FormControl>
           </CardContent>
         </>
       ) : null}
