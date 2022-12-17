@@ -1,4 +1,5 @@
-import React, { FC, useState, useEffect, useMemo } from 'react';
+import { FC, useState, useEffect, useMemo } from 'react';
+import { Delete } from '@mui/icons-material';
 import {
   Dialog,
   DialogTitle,
@@ -10,7 +11,6 @@ import {
   DialogProps,
 } from '@mui/material';
 import makeStyles from '@mui/styles/makeStyles';
-import { Delete } from '@mui/icons-material';
 import { groupItemsBy } from '../../Services/converters';
 import { deleteItem } from '../../Services/db';
 import { ItemView } from '../../Types/entities';
@@ -36,6 +36,10 @@ const useStyles = makeStyles((theme) => ({
     textAlign: 'center',
     lineHeight: 1,
   },
+  counter: {
+    color: theme.palette.grey[200],
+    paddingInline: theme.spacing(0.5),
+  }
 }));
 
 export const History: FC<HistoryProps> = ({ open, items, onClose, onAdd }) => {
@@ -77,6 +81,9 @@ export const History: FC<HistoryProps> = ({ open, items, onClose, onAdd }) => {
     });
   }, [open]);
 
+  const ItemsCounter = () =>
+    checkedItems.size ? <span className={classes.counter}>({checkedItems.size})</span> : null;
+
   return (
     <Dialog
       onClose={onDialogClose}
@@ -109,11 +116,15 @@ export const History: FC<HistoryProps> = ({ open, items, onClose, onAdd }) => {
         )}
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose} color='secondary'>
+        <Button onClick={onClose} color='inherit'>
           Cancel
         </Button>
-        <Button onClick={handleAdd} color='primary'>
-          Add
+        <Button
+          variant='contained'
+          onClick={handleAdd}
+          color='primary'
+        >
+          Add <ItemsCounter />
         </Button>
       </DialogActions>
     </Dialog>
@@ -132,7 +143,12 @@ const ItemTextComposition: FC<ItemTextCompositionProps> = ({
 }) => {
   const classes = useStyles();
   return (
-    <Grid container direction='row' justifyContent='space-between' alignItems='center'>
+    <Grid
+      container
+      direction='row'
+      justifyContent='space-between'
+      alignItems='center'
+    >
       <Grid item>{name}</Grid>
       {value ? (
         <Grid item>
