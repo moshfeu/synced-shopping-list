@@ -49,13 +49,6 @@ export const DBProvider: FC = ({ children }) => {
   const [state, setState] = useState<DBState>(initialValue);
   const { dispatch } = useUIStore();
 
-  const dbIsLoaded = useCallback(() => {
-    dispatch({
-      type: 'IS_APP_LOADING',
-      payload: false,
-    });
-  }, [dispatch]);
-
   const init = useCallback(() => {
     cacheItemsImage();
     db.ref().off('value');
@@ -68,14 +61,17 @@ export const DBProvider: FC = ({ children }) => {
           setState(state);
         }
         if (!db.isLoading) {
-          dbIsLoaded();
+          dispatch({
+            type: 'IS_APP_LOADING',
+            payload: false,
+          });
         }
       },
       (error: string) => {
         alert(error);
       }
     );
-  }, [dbIsLoaded]);
+  }, [dispatch]);
 
   useEffect(() => {
     init();
