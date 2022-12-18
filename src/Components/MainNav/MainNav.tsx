@@ -4,6 +4,8 @@ import { Location } from 'history';
 import {
   List as ListIcon,
   Category as CategoryIcon,
+  NetworkWifi as OnlineIcon,
+  SignalCellularConnectedNoInternet0Bar as OfflineIcon,
 } from '@mui/icons-material';
 import {
   Divider,
@@ -14,12 +16,15 @@ import {
   ListItemText,
   SwipeableDrawer,
   Typography,
+  Chip,
+  Grid,
 } from '@mui/material';
 import createStyles from '@mui/styles/createStyles';
 import makeStyles from '@mui/styles/makeStyles';
 import { version } from '../../../package.json';
 import { ReactComponent as NavIllustration } from '../../Assets/nav.svg';
 import { useAuth } from '../../Hooks/useAuth';
+import { useOnline } from '../../Hooks/useOnline';
 import { useToggleMainNav } from '../../Hooks/useToggleMainNav';
 import { login, logout } from '../../Services/auth';
 
@@ -53,6 +58,9 @@ const useStyles = makeStyles((theme) =>
       lineHeight: 1,
       display: 'flex',
       gap: theme.spacing(1),
+    },
+    footer: {
+      padding: theme.spacing(0, 0, 1),
     },
   })
 );
@@ -134,9 +142,16 @@ export const MainNav: FC = () => {
             </ListItem>
           ))}
         </List>
-        <Typography variant='caption' align='center'>
-          {version}
-        </Typography>
+        <Grid
+          container
+          className={classes.footer}
+          alignItems='center'
+          justifyContent='center'
+          gap={1}
+        >
+          <OnlineIndication />
+          <Typography variant='caption'>{version}</Typography>
+        </Grid>
       </SwipeableDrawer>
     </>
   );
@@ -158,5 +173,29 @@ const HelloSection: FC<HelloSectionProps> = ({ text, actionText, action }) => {
         {actionText}
       </MuiLink>
     </div>
+  );
+};
+
+const OnlineIndication = () => {
+  const isOnline = useOnline();
+
+  if (isOnline === undefined) {
+    return null;
+  }
+
+  return (
+    <Chip
+      size='small'
+      variant='outlined'
+      color={isOnline ? 'success' : 'warning'}
+      label={isOnline ? 'online' : 'offline'}
+      icon={
+        isOnline ? (
+          <OnlineIcon />
+        ) : (
+          <OfflineIcon />
+        )
+      }
+    />
   );
 };

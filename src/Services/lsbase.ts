@@ -18,7 +18,7 @@ export class Lsbase {
   private data: dbRef;
   private listeners: { [key in Event]?: Function } = {};
   private queue: Array<Updates>;
-  private isOnline: boolean = false;
+  public isOnline: boolean | undefined;
   public hasLocal: boolean = false;
   public isLoading: boolean = true;
 
@@ -26,15 +26,22 @@ export class Lsbase {
     this.data = this.getFromLocalOrDefault('data', emptyData);
     this.queue = this.getFromLocalOrDefault('queue', []);
 
-    db.ref('.info/connected').on('value', async (snapshot) => {
-      this.isOnline = snapshot.val();
+    this.onConnectionChange(async isOnline => {
+      this.isOnline = isOnline;
       if (this.isOnline) {
         await this.execQueue();
       }
     });
+
     if (this.data !== emptyData) {
       this.hasLocal = true;
     }
+  }
+
+  public onConnectionChange(callback: (value: boolean) => void) {
+    this.db.ref('.info/connected').on('value', async (snapshot) => {
+      callback(snapshot.val());
+    });
   }
 
   private async execQueue() {

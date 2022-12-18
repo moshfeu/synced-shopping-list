@@ -14,6 +14,7 @@ import { DB_REF } from '../Services/db';
 import { DBContext, DBState } from '../Types/db';
 import { Item } from '../Types/entities';
 import { useUIStore } from './useUIStore';
+import { useOnline } from './useOnline';
 
 type DBContextProvider = DBContext & { isDBReady: boolean };
 
@@ -47,7 +48,9 @@ function cacheItemsImage() {
 export const DBProvider: FC = ({ children }) => {
   const [isDBReady, dbIsReady] = useReducer(() => true, false);
   const [state, setState] = useState<DBState>(initialValue);
-  const { dispatch } = useUIStore();
+  const isOnline = useOnline();
+  const { appDoneLoading } = useUIStore();
+  const isDbDoneLoadingOrIsOffline = !db.isLoading || isOnline === false;
 
   const init = useCallback(() => {
     cacheItemsImage();
@@ -60,18 +63,16 @@ export const DBProvider: FC = ({ children }) => {
           const state = firebaseToState(snapshotJson);
           setState(state);
         }
-        if (!db.isLoading) {
-          dispatch({
-            type: 'IS_APP_LOADING',
-            payload: false,
-          });
+
+        if (isDbDoneLoadingOrIsOffline) {
+          appDoneLoading();
         }
       },
       (error: string) => {
         alert(error);
       }
     );
-  }, [dispatch]);
+  }, [appDoneLoading, isDbDoneLoadingOrIsOffline]);
 
   useEffect(() => {
     init();
