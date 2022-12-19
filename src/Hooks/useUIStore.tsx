@@ -5,6 +5,7 @@ import React, {
   useReducer,
   Dispatch,
   ReactChild,
+  useCallback,
 } from 'react';
 import { ConfirmationDialog } from '../Components/Dialogs/Confirmation/Confirmation';
 import { FormDialog } from '../Components/Dialogs/FormDialog/FormDialog';
@@ -54,8 +55,12 @@ const initialState: UIState = {
 const UIContext = createContext<{
   state: UIState;
   dispatch?: Dispatch<Action>;
+  appDoneLoading: () => void;
 }>({
   state: initialState,
+  appDoneLoading: () => {
+    console.warn(`appDoneLoading hasn't initilized yet`);
+  },
 });
 
 function reducer(state: UIState, action: Action): UIState {
@@ -89,8 +94,15 @@ export const UIStoreProvider: FC = ({ children }) => {
     });
   }
 
+  const appDoneLoading = useCallback(() => {
+    dispatch({
+      type: 'IS_APP_LOADING',
+      payload: false,
+    });
+  }, []);
+
   return (
-    <UIContext.Provider value={{ state, dispatch }}>
+    <UIContext.Provider value={{ state, dispatch, appDoneLoading }}>
       {confirmationState && (
         <ConfirmationDialog
           open={true}
@@ -126,12 +138,13 @@ export const UIStoreProvider: FC = ({ children }) => {
 };
 
 export const useUIStore = () => {
-  const { state, dispatch } = useContext(UIContext);
+  const { state, dispatch, appDoneLoading } = useContext(UIContext);
   if (!dispatch) {
     throw new Error('useUIStore must be called from a UIStoreProvider!');
   }
   return {
     state,
     dispatch,
+    appDoneLoading,
   };
 };

@@ -10,6 +10,7 @@ import {
 import App from './Components/App/App';
 import { AuthProvider } from './Hooks/useAuth';
 import { DBProvider } from './Hooks/useDB';
+import { OnlineProvider } from './Hooks/useOnline';
 import { UIStoreProvider } from './Hooks/useUIStore';
 
 declare module '@mui/styles/defaultTheme' {
@@ -39,17 +40,19 @@ const theme = createTheme({
 ReactDOM.render(
   <React.StrictMode>
     <Router>
-      <StyledEngineProvider injectFirst>
-        <ThemeProvider theme={theme}>
-          <UIStoreProvider>
-            <AuthProvider>
-              <DBProvider>
-                <App />
-              </DBProvider>
-            </AuthProvider>
-          </UIStoreProvider>
-        </ThemeProvider>
-      </StyledEngineProvider>
+      <OnlineProvider>
+        <StyledEngineProvider injectFirst>
+          <ThemeProvider theme={theme}>
+            <UIStoreProvider>
+              <AuthProvider>
+                <DBProvider>
+                  <App />
+                </DBProvider>
+              </AuthProvider>
+            </UIStoreProvider>
+          </ThemeProvider>
+        </StyledEngineProvider>
+      </OnlineProvider>
     </Router>
   </React.StrictMode>,
   document.getElementById('root')
