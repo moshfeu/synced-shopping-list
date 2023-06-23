@@ -1,16 +1,22 @@
-import React, { FC } from 'react';
+import React, { FC, FormEvent, useState } from 'react';
 import { Switch, Route, useRouteMatch } from 'react-router-dom';
-import { Add, ArrowBack } from '@mui/icons-material';
+import { Add, ArrowBack, Search as SearchIcon } from '@mui/icons-material';
 import {
   Avatar,
+  Box,
   Button,
   CardContent,
   CircularProgress,
+  Container,
   FormControl,
   FormLabel,
   Grid,
   IconButton,
+  ImageList,
+  ImageListItem,
+  InputBase,
   MenuItem,
+  Paper,
   Select,
   SelectChangeEvent,
   TextField,
@@ -27,7 +33,7 @@ import { useNavigation } from '../../Hooks/useRoute';
 import { useUIStore } from '../../Hooks/useUIStore';
 import { addCategory, updateItem, updateListItem } from '../../Services/db';
 import { inputFileToArrayBuffer, showFileDialog } from '../../Services/file';
-import { searchGoogle } from '../../Services/googleSearch';
+import { GoogleSearchResult, searchGoogle } from '../../Services/googleSearch';
 import { getImageUrl, remove, upload } from '../../Services/storage';
 import { useGlobalStyles } from '../../Styles/common';
 import { ListItemView } from '../../Types/entities';
@@ -379,17 +385,7 @@ export const ItemDetails: FC<ItemDetailsProps> = ({ listItem }) => {
           ) : null}
         </Route>
         <Route path={`${path}/google-search`}>
-          <Toolbar>
-            <IconButton
-              edge='start'
-              color='inherit'
-              aria-label='menu'
-              onClick={() => navigateTo('/')}
-            >
-              <ArrowBack />
-            </IconButton>
-            <Typography variant='h6'>Search Google</Typography>
-          </Toolbar>
+          <GoogleSearch />
         </Route>
       </Switch>
     </div>
@@ -410,3 +406,93 @@ const Urgency: FC<ToggleButtonGroupProps> = (props) => (
     ))}
   </ToggleButtonGroup>
 );
+
+const defaultImages: GoogleSearchResult[] = [
+  {
+    title: 'test',
+    link: 'https://www.google.com',
+    image: {
+      contextLink: 'https://www.google.com',
+      thumbnailLink:
+        'https://v4.mui.com/static/images/image-list/breakfast.jpg',
+    },
+  },
+  {
+    title: 'test2',
+    link: 'https://www.google1.com',
+    image: {
+      contextLink: 'https://www.google.com',
+      thumbnailLink: 'https://v4.mui.com/static/images/image-list/burgers.jpg',
+    },
+  },
+];
+
+const useGoogleSearchStyles = makeStyles((theme) => ({
+  googleSearchForm: {
+    paddingInline: theme.spacing(1.5),
+  },
+  input: {
+    flex: 1,
+  },
+}));
+
+export const GoogleSearch = () => {
+  const { url } = useRouteMatch();
+  const { navigateTo } = useNavigation();
+  const [itemData, setItemData] = useState<GoogleSearchResult[]>(defaultImages);
+  const classes = useGoogleSearchStyles();
+
+  async function search(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    console.log(new FormData(e.target as HTMLFormElement).get('query'));
+    throw new Error('Not implemented');
+  }
+
+  return (
+    <>
+      <Toolbar>
+        <IconButton
+          edge='start'
+          color='inherit'
+          aria-label='menu'
+          onClick={() => navigateTo(url)}
+        >
+          <ArrowBack />
+        </IconButton>
+        <Typography variant='h6'>Search Google</Typography>
+      </Toolbar>
+      <Box
+        component='form'
+        onSubmit={search}
+        className={classes.googleSearchForm}
+        display='flex'
+        flexDirection='column'
+      >
+        <Box display='flex'>
+          <InputBase
+            name="query"
+            className={classes.input}
+            placeholder='Search Google Maps'
+            inputProps={{ 'aria-label': 'search google maps' }}
+          />
+          <IconButton
+            type='submit'
+            // className={classes.iconButton}
+            aria-label='search'
+          >
+            <SearchIcon />
+          </IconButton>
+        </Box>
+        <Box flexDirection='column'>
+          <ImageList rowHeight={120}>
+            {itemData.map((item) => (
+              <ImageListItem key={item.link} onClick={console.log}>
+                <img src={item.image.thumbnailLink} alt={item.title} />
+              </ImageListItem>
+            ))}
+          </ImageList>
+        </Box>
+      </Box>
+    </>
+  );
+};

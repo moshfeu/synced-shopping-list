@@ -1,4 +1,4 @@
-type GoogleSearchResult = {
+export type GoogleSearchResult = {
   title: string
   link: string
   image: {
