@@ -5,9 +5,9 @@ import {
   Avatar,
   Box,
   Button,
+  ButtonBase,
   CardContent,
   CircularProgress,
-  Container,
   FormControl,
   FormLabel,
   Grid,
@@ -16,7 +16,6 @@ import {
   ImageListItem,
   InputBase,
   MenuItem,
-  Paper,
   Select,
   SelectChangeEvent,
   Skeleton,
@@ -41,6 +40,7 @@ import { ListItemView } from '../../Types/entities';
 import { UNCATEGORIZED } from '../../consts';
 import { Menu } from '../Menu/Menu';
 import { Tooltip } from '../TouchTooltip/TouchTooltip';
+import { add } from '../../Services/cache';
 
 type ItemDetailsProps = {
   listItem: ListItemView;
@@ -197,6 +197,12 @@ export const ItemDetails: FC<ItemDetailsProps> = ({ listItem }) => {
 
   async function onReplaceGoogle() {
     navigateTo(`${url}/google-search`);
+  }
+
+  async function onGoogleResult(imagePath: string) {
+    updateImage(imagePath);
+    navigateTo(url);
+    add(imagePath);
   }
 
   async function onReplace() {
@@ -386,7 +392,7 @@ export const ItemDetails: FC<ItemDetailsProps> = ({ listItem }) => {
           ) : null}
         </Route>
         <Route path={`${path}/google-search`}>
-          <GoogleSearch />
+          <GoogleSearch onSelect={onGoogleResult} />
         </Route>
       </Switch>
     </div>
@@ -408,25 +414,6 @@ const Urgency: FC<ToggleButtonGroupProps> = (props) => (
   </ToggleButtonGroup>
 );
 
-const defaultImages: GoogleSearchResult[] = [
-  {
-    title: 'test',
-    link: 'https://www.google.com',
-    image: {
-      contextLink: 'https://www.google.com',
-      thumbnailLink:
-        'https://v4.mui.com/static/images/image-list/breakfast.jpg',
-    },
-  },
-  {
-    title: 'test2',
-    link: 'https://www.google1.com',
-    image: {
-      contextLink: 'https://www.google.com',
-      thumbnailLink: 'https://v4.mui.com/static/images/image-list/burgers.jpg',
-    },
-  },
-];
 
 const useGoogleSearchStyles = makeStyles((theme) => ({
   googleSearchForm: {
@@ -441,12 +428,12 @@ const useGoogleSearchStyles = makeStyles((theme) => ({
   },
 }));
 
-export const GoogleSearch = () => {
+export const GoogleSearch = ({onSelect}: {onSelect: (url: string) => void}) => {
   const { url } = useRouteMatch();
   const { navigateTo } = useNavigation();
-  const [itemData, setItemData] = useState<GoogleSearchResult[]>(defaultImages);
+  const [itemData, setItemData] = useState<GoogleSearchResult[]>([]);
   const classes = useGoogleSearchStyles();
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
 
   async function search(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -468,7 +455,7 @@ export const GoogleSearch = () => {
         >
           <ArrowBack />
         </IconButton>
-        <Typography variant='h6'>Search Google</Typography>
+        <Typography variant='h6'>Search on Google</Typography>
       </Toolbar>
       <Box
         component='form'
@@ -505,7 +492,7 @@ export const GoogleSearch = () => {
                   </ImageListItem>
                 ))
               : itemData.map((item) => (
-                  <ImageListItem key={item.link} onClick={console.log}>
+                  <ImageListItem component={ButtonBase} key={item.link} onClick={() => onSelect(item.link)}>
                     <img src={item.image.thumbnailLink} alt={item.title} />
                   </ImageListItem>
                 ))}

@@ -2,6 +2,7 @@ import firebase from 'firebase';
 import * as cache from './cache';
 
 const storageRef = firebase.storage().ref();
+const isFirebaseFile = (urlOrPath: string) => !urlOrPath.startsWith('https');
 
 export const ITEMS_PATH = 'items';
 
@@ -17,13 +18,19 @@ export async function upload(fileName: string, file: ArrayBuffer) {
   return fullPath;
 }
 
-export function remove(filePath: string) {
+export async function remove(filePath: string) {
   cache.remove(getImageUrl(filePath));
-  const productImageRef = storageRef.child(filePath);
-  return productImageRef.delete();
+  if (isFirebaseFile(filePath)) {
+    const productImageRef = storageRef.child(filePath);
+    return productImageRef.delete();
+  }
 }
 
 export function getImageUrl(image: string) {
+  if (!isFirebaseFile(image)) {
+    return image
+  };
+
   return `https://firebasestorage.googleapis.com/v0/b/sync-shopping-list-5e6ea.appspot.com/o/${encodeURIComponent(
     image
   )}?alt=media`;
