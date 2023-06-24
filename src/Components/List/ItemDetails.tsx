@@ -19,6 +19,7 @@ import {
   Paper,
   Select,
   SelectChangeEvent,
+  Skeleton,
   TextField,
   ToggleButtonGroupProps,
   Toolbar,
@@ -431,6 +432,10 @@ const useGoogleSearchStyles = makeStyles((theme) => ({
   googleSearchForm: {
     paddingInline: theme.spacing(1.5),
   },
+  imageList: {
+    margin: 0,
+    overflow: 'unset',
+  },
   input: {
     flex: 1,
   },
@@ -441,11 +446,15 @@ export const GoogleSearch = () => {
   const { navigateTo } = useNavigation();
   const [itemData, setItemData] = useState<GoogleSearchResult[]>(defaultImages);
   const classes = useGoogleSearchStyles();
+  const [isLoading, setIsLoading] = useState(true);
 
   async function search(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    console.log(new FormData(e.target as HTMLFormElement).get('query'));
-    throw new Error('Not implemented');
+    setIsLoading(true);
+    const query = new FormData(e.target as HTMLFormElement).get('query');
+    const result = await searchGoogle(query as string);
+    setItemData(result);
+    setIsLoading(false);
   }
 
   return (
@@ -470,7 +479,7 @@ export const GoogleSearch = () => {
       >
         <Box display='flex'>
           <InputBase
-            name="query"
+            name='query'
             className={classes.input}
             placeholder='Search Google Maps'
             inputProps={{ 'aria-label': 'search google maps' }}
@@ -484,12 +493,22 @@ export const GoogleSearch = () => {
           </IconButton>
         </Box>
         <Box flexDirection='column'>
-          <ImageList rowHeight={120}>
-            {itemData.map((item) => (
-              <ImageListItem key={item.link} onClick={console.log}>
-                <img src={item.image.thumbnailLink} alt={item.title} />
-              </ImageListItem>
-            ))}
+          <ImageList className={classes.imageList} rowHeight={120} cols={2}>
+            {isLoading
+              ? [1, 2].map((i) => (
+                  <ImageListItem key={i} onClick={console.log}>
+                    <Skeleton
+                      variant='rectangular'
+                      height="auto"
+                      style={{ aspectRatio: '1 / 1' }}
+                    />
+                  </ImageListItem>
+                ))
+              : itemData.map((item) => (
+                  <ImageListItem key={item.link} onClick={console.log}>
+                    <img src={item.image.thumbnailLink} alt={item.title} />
+                  </ImageListItem>
+                ))}
           </ImageList>
         </Box>
       </Box>
