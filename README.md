@@ -8,7 +8,7 @@ A shopping list <a href="https://developer.mozilla.org/en-US/docs/Web/Progressiv
 - Typescript
 - Material-UI
 - Firebase
-- Netlify
+- Netlify (hosting + functions)
 
 ## Additional Capabilities
 
@@ -62,6 +62,20 @@ Notes:
 
 1. If you configure netlify manually (not via the "Deploy" button), don't forget to <a href="https://docs.netlify.com/configure-builds/environment-variables/#declare-variables" target="_blank">configure</a> the build variables.
 2. `yarn push` triggers also `npm version` which bumps the app's version which reflected in the UI (main nav at the bottom)
+
+## Run
+
+```sh
+yarn start
+```
+
+### Run local functions under port 9999
+
+```sh
+netlify functions:serve
+```
+
+The *proxy* function aims to solve the CORS issue when trying to save an image from Google search result (Item Details > Image > Replace (Google)).
 
 ### Credits
 

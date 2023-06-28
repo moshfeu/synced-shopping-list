@@ -27,11 +27,7 @@ export async function remove(filePath: string) {
 }
 
 export function getImageUrl(image: string) {
-  if (!isFirebaseFile(image)) {
-    return image
-  };
-
-  return `https://firebasestorage.googleapis.com/v0/b/sync-shopping-list-5e6ea.appspot.com/o/${encodeURIComponent(
+  return `https://firebasestorage.googleapis.com/v0/b/${process.env.REACT_APP_STORAGE_BUCKET}/o/${encodeURIComponent(
     image
   )}?alt=media`;
 }
