@@ -32,15 +32,19 @@ import { useDeleteListItem } from '../../Hooks/useDeleteListItem';
 import { useNavigation } from '../../Hooks/useRoute';
 import { useUIStore } from '../../Hooks/useUIStore';
 import { addCategory, updateItem, updateListItem } from '../../Services/db';
-import { base64ToArrayBuffer, inputFileToArrayBuffer, showFileDialog } from '../../Services/file';
+import {
+  base64ToArrayBuffer,
+  inputFileToArrayBuffer,
+  showFileDialog,
+} from '../../Services/file';
 import { GoogleSearchResult, searchGoogle } from '../../Services/googleSearch';
+import { proxy } from '../../Services/proxy';
 import { getImageUrl, remove, upload } from '../../Services/storage';
 import { useGlobalStyles } from '../../Styles/common';
 import { ListItemView } from '../../Types/entities';
 import { UNCATEGORIZED } from '../../consts';
 import { Menu } from '../Menu/Menu';
 import { Tooltip } from '../TouchTooltip/TouchTooltip';
-import { proxy } from '../../Services/proxy';
 
 type ItemDetailsProps = {
   listItem: ListItemView;
@@ -418,7 +422,6 @@ const Urgency: FC<ToggleButtonGroupProps> = (props) => (
   </ToggleButtonGroup>
 );
 
-
 const useGoogleSearchStyles = makeStyles((theme) => ({
   googleSearchForm: {
     paddingInline: theme.spacing(1.5),
@@ -432,12 +435,17 @@ const useGoogleSearchStyles = makeStyles((theme) => ({
   },
 }));
 
-export const GoogleSearch = ({onSelect}: {onSelect: (url: string) => void}) => {
+export const GoogleSearch = ({
+  onSelect,
+}: {
+  onSelect: (url: string) => Promise<void>;
+}) => {
   const { url } = useRouteMatch();
   const { navigateTo } = useNavigation();
   const [itemData, setItemData] = useState<GoogleSearchResult[]>([]);
   const classes = useGoogleSearchStyles();
   const [isLoading, setIsLoading] = useState(false);
+  const [selected, setSelected] = useState<string>();
 
   async function search(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -446,6 +454,11 @@ export const GoogleSearch = ({onSelect}: {onSelect: (url: string) => void}) => {
     const result = await searchGoogle(query as string);
     setItemData(result);
     setIsLoading(false);
+  }
+
+  async function onResultClick(imagePath: string) {
+    setSelected(imagePath);
+    await onSelect(imagePath);
   }
 
   return (
@@ -484,19 +497,55 @@ export const GoogleSearch = ({onSelect}: {onSelect: (url: string) => void}) => {
           </IconButton>
         </Box>
         <Box flexDirection='column'>
-          <ImageList className={classes.imageList} rowHeight={120} cols={2}>
+          <ImageList
+            className={classes.imageList}
+            cols={2}
+            component='div'
+          >
             {isLoading
               ? [1, 2].map((i) => (
-                  <ImageListItem key={i} onClick={console.log}>
+                  <ImageListItem key={i}>
                     <Skeleton
                       variant='rectangular'
-                      height="auto"
+                      height='auto'
                       style={{ aspectRatio: '1 / 1' }}
                     />
                   </ImageListItem>
                 ))
               : itemData.map((item) => (
-                  <ImageListItem component={ButtonBase} key={item.link} onClick={() => onSelect(item.link)}>
+                  <ImageListItem
+                    style={{
+                      overflow: 'hidden',
+                      aspectRatio: '1 / 1',
+                      opacity: selected === item.link ? 0.5 : 1,
+                    }}
+                    component={ButtonBase}
+                    key={item.link}
+                    onClick={() => onResultClick(item.link)}
+                  >
+                    {selected === item.link && (
+                      <Box
+                        className='blabla'
+                        alignItems={'center'}
+                        justifyContent={'center'}
+                        position={'absolute'}
+                        style={{
+                          inset: 0,
+                          opacity: 1,
+                          position: 'absolute',
+                          background: '#ffffff90',
+                        }}
+                      >
+                        <Skeleton
+                          variant='rectangular'
+                          height='100%'
+                          animation='wave'
+                          style={{ aspectRatio: '1 / 1' }}
+                        >
+                          <CircularProgress />
+                        </Skeleton>
+                      </Box>
+                    )}
                     <img src={item.image.thumbnailLink} alt={item.title} />
                   </ImageListItem>
                 ))}
