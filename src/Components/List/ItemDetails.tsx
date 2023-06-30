@@ -485,8 +485,8 @@ export const GoogleSearch = ({
           <InputBase
             name='query'
             className={classes.input}
-            placeholder='Search Google Maps'
-            inputProps={{ 'aria-label': 'search google maps' }}
+            placeholder='Search Google Images'
+            inputProps={{ 'aria-label': 'search google images' }}
           />
           <IconButton
             type='submit'
@@ -497,13 +497,9 @@ export const GoogleSearch = ({
           </IconButton>
         </Box>
         <Box flexDirection='column'>
-          <ImageList
-            className={classes.imageList}
-            cols={2}
-            component='div'
-          >
+          <ImageList className={classes.imageList} cols={2} component='div'>
             {isLoading
-              ? [1, 2].map((i) => (
+              ? [...Array(8)].map((i) => (
                   <ImageListItem key={i}>
                     <Skeleton
                       variant='rectangular'
@@ -514,39 +510,29 @@ export const GoogleSearch = ({
                 ))
               : itemData.map((item) => (
                   <ImageListItem
+                    key={item.link}
                     style={{
                       overflow: 'hidden',
                       aspectRatio: '1 / 1',
-                      opacity: selected === item.link ? 0.5 : 1,
                     }}
                     component={ButtonBase}
-                    key={item.link}
                     onClick={() => onResultClick(item.link)}
-                  >
+                    disabled={!!selected}
+                    >
+                    <img
+                      alt=''
+                      src={item.image.thumbnailLink}
+                      style={{
+                        opacity: selected ? 0.5 : 1,
+                        transition: 'opacity 0.3s',
+                      }}
+                    />
                     {selected === item.link && (
-                      <Box
-                        className='blabla'
-                        alignItems={'center'}
-                        justifyContent={'center'}
-                        position={'absolute'}
-                        style={{
-                          inset: 0,
-                          opacity: 1,
-                          position: 'absolute',
-                          background: '#ffffff90',
-                        }}
-                      >
-                        <Skeleton
-                          variant='rectangular'
-                          height='100%'
-                          animation='wave'
-                          style={{ aspectRatio: '1 / 1' }}
-                        >
-                          <CircularProgress />
-                        </Skeleton>
-                      </Box>
+                      <CircularProgress
+                        color='secondary'
+                        sx={{ position: 'absolute', inset: 0, margin: 'auto' }}
+                      />
                     )}
-                    <img src={item.image.thumbnailLink} alt={item.title} />
                   </ImageListItem>
                 ))}
           </ImageList>
