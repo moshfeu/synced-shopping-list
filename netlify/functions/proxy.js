@@ -1,4 +1,4 @@
-// netlify function to fetch image from url and return it as base64
+// netlify function to fetch image from url and return it as base64 - prompt for Copilot
 const fetch = require('node-fetch');
 
 exports.handler = async (event, context) => {
