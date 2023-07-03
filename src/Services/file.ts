@@ -12,15 +12,6 @@ export function inputFileToArrayBuffer(file: File): Promise<ArrayBuffer> {
   });
 }
 
-export function base64ToArrayBuffer(base64: string): ArrayBuffer {
-  const binaryString = atob(base64);
-  const bytes = new Uint8Array(binaryString.length);
-  for (let i = 0; i < binaryString.length; i++) {
-    bytes[i] = binaryString.charCodeAt(i);
-  }
-  return bytes.buffer;
-}
-
 export function showFileDialog(): Promise<FileList> {
   return new Promise((resolve) => {
     const input = document.createElement('input');

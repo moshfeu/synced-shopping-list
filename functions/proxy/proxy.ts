@@ -10,14 +10,17 @@ export const handler: Handler = async (event, context) => {
     };
   }
   const response = await fetch(url, {});
-  const data = await response.buffer();
+  const arrayBuffer = await response.arrayBuffer();
+  const data = Buffer.from(arrayBuffer);
   const base64 = data.toString('base64');
+  const contentType = response.headers.get('Content-type') || '';
   return {
     headers: {
-      'Content-type': response.headers.get('Content-type'),
-      'Content-Length': base64.length,
+      'Content-type': contentType,
+      'Content-Length': data.length,
       'Access-Control-Allow-Origin': '*',
     },
+    isBase64Encoded: true,
     statusCode: 200,
     body: base64,
   };
