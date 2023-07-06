@@ -32,11 +32,7 @@ import { useDeleteListItem } from '../../Hooks/useDeleteListItem';
 import { useNavigation } from '../../Hooks/useRoute';
 import { useUIStore } from '../../Hooks/useUIStore';
 import { addCategory, updateItem, updateListItem } from '../../Services/db';
-import {
-  base64ToArrayBuffer,
-  inputFileToArrayBuffer,
-  showFileDialog,
-} from '../../Services/file';
+import { inputFileToArrayBuffer, showFileDialog } from '../../Services/file';
 import { GoogleSearchResult, searchGoogle } from '../../Services/googleSearch';
 import { proxy } from '../../Services/proxy';
 import { getImageUrl, remove, upload } from '../../Services/storage';
@@ -204,8 +200,7 @@ export const ItemDetails: FC<ItemDetailsProps> = ({ listItem }) => {
   }
 
   async function onGoogleResult(imagePath: string) {
-    const base64 = await proxy(imagePath);
-    const file = base64ToArrayBuffer(base64);
+    const file = await proxy(imagePath);
     const name = `${listItem?.item.id}#${listItem?.item.name}.png`;
     const uploadedPath = await upload(name, file);
 
@@ -518,7 +513,7 @@ export const GoogleSearch = ({
                     component={ButtonBase}
                     onClick={() => onResultClick(item.link)}
                     disabled={!!selected}
-                    >
+                  >
                     <img
                       alt=''
                       src={item.image.thumbnailLink}
