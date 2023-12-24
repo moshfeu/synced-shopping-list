@@ -43,7 +43,7 @@ export const Autocomplete: FC<AutocompleteOptions> = ({
     setOptionsList(
       inputValue && inputInFocus
         ? options
-            .filter((option) => option.name.includes(inputValue))
+            .filter((option) => option.name.includes(inputValue.trim()))
             .slice(0, maxResult)
         : []
     );
