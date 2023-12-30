@@ -16,6 +16,7 @@ export function showFileDialog(): Promise<FileList> {
   return new Promise((resolve) => {
     const input = document.createElement('input');
     input.type = 'file';
+    input.accept = 'image/*';
     input.addEventListener('change', (e) => {
       const { files } = e.target as HTMLInputElement;
       resolve(files || new FileList());
