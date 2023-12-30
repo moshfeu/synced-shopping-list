@@ -15,7 +15,8 @@
     "react-dom": "^16.13.1",
     "react-router-dom": "^5.2.0",
     "react-scripts": "^4.0.3",
-    "react-swipeable": "^7.0.0"
+    "react-swipeable": "^7.0.0",
+    "react-zoom-pan-pinch": "^3.3.0"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^4.2.4",

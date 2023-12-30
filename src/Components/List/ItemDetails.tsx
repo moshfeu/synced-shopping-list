@@ -1,28 +1,27 @@
-import React, { FC, FormEvent, useState } from 'react';
+import React, { FC } from 'react';
 import { Switch, Route, useRouteMatch } from 'react-router-dom';
-import { Add, ArrowBack, Search as SearchIcon } from '@mui/icons-material';
+import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
+import { Add, ZoomIn } from '@mui/icons-material';
 import {
   Avatar,
   Box,
   Button,
-  ButtonBase,
+  CardActionArea,
   CardContent,
+  CardHeader,
+  CardMedia,
   CircularProgress,
   FormControl,
   FormLabel,
   Grid,
   IconButton,
-  ImageList,
-  ImageListItem,
-  InputBase,
   MenuItem,
+  Modal,
   Select,
   SelectChangeEvent,
-  Skeleton,
   TextField,
   ToggleButtonGroupProps,
-  Toolbar,
-  Typography,
+  Zoom,
 } from '@mui/material';
 import { ToggleButtonGroup, ToggleButton } from '@mui/material';
 import makeStyles from '@mui/styles/makeStyles';
@@ -33,7 +32,6 @@ import { useNavigation } from '../../Hooks/useRoute';
 import { useUIStore } from '../../Hooks/useUIStore';
 import { addCategory, updateItem, updateListItem } from '../../Services/db';
 import { inputFileToArrayBuffer, showFileDialog } from '../../Services/file';
-import { GoogleSearchResult, searchGoogle } from '../../Services/googleSearch';
 import { proxy } from '../../Services/proxy';
 import { getImageUrl, remove, upload } from '../../Services/storage';
 import { useGlobalStyles } from '../../Styles/common';
@@ -41,6 +39,7 @@ import { ListItemView } from '../../Types/entities';
 import { UNCATEGORIZED } from '../../consts';
 import { Menu } from '../Menu/Menu';
 import { Tooltip } from '../TouchTooltip/TouchTooltip';
+import { GoogleSearch } from './GoogleSearch';
 
 type ItemDetailsProps = {
   listItem: ListItemView;
@@ -52,6 +51,7 @@ const useStyles = makeStyles((theme) => ({
     display: 'flex',
     flexDirection: 'column',
     height: '100%',
+    overflowX: 'hidden',
   },
   imageWrapper: {
     position: 'relative',
@@ -88,7 +88,7 @@ const useStyles = makeStyles((theme) => ({
   },
   formControl: {
     display: 'flex',
-    marginBottom: theme.spacing(3),
+    marginBottom: theme.spacing(2),
   },
   deleteItemFormControl: {
     justifyContent: 'end',
@@ -114,6 +114,16 @@ const useStyles = makeStyles((theme) => ({
   addedBy: {
     alignSelf: 'end',
   },
+  modal: {
+    padding: theme.spacing(1),
+    display: 'flex',
+    alignItems: 'center',
+
+    '& img': {
+      maxWidth: '100%',
+      maxHeight: '100%',
+    },
+  },
 }));
 
 export const ItemDetails: FC<ItemDetailsProps> = ({ listItem }) => {
@@ -125,6 +135,13 @@ export const ItemDetails: FC<ItemDetailsProps> = ({ listItem }) => {
   const { categories } = useDB();
   const { dispatch } = useUIStore();
   const [isUploading, setIsUploading] = React.useState(false);
+  const [open, setOpen] = React.useState(false);
+  const imageSrc = listItem?.item.image
+    ? getImageUrl(listItem.item.image)
+    : ImagePlaceholder;
+
+  const handleClose = () => setOpen(false);
+
   const category = categories.find(
     ({ id }) => id === listItem?.item.category?.id
   );
@@ -247,33 +264,65 @@ export const ItemDetails: FC<ItemDetailsProps> = ({ listItem }) => {
         <Route path={path} exact>
           {listItem ? (
             <>
-              <div className={classes.imageWrapper}>
-                <img
-                  className={classes.image}
-                  alt={listItem.item.name}
-                  src={
-                    listItem.item.image
-                      ? getImageUrl(listItem.item.image)
-                      : ImagePlaceholder
-                  }
-                />
-                {isUploading ? (
-                  <CircularProgress
-                    className={`${classes.imageMenu} ${classes.uploadingSpinner}`}
-                    color='secondary'
-                  />
-                ) : (
-                  <Menu className={classes.imageMenu}>
-                    <MenuItem onClick={onReplace}>Replace</MenuItem>
-                    <MenuItem onClick={onReplaceGoogle}>
-                      Replace (Google)
-                    </MenuItem>
+              <CardHeader
+                sx={{
+                  padding: 0,
+                  '.MuiCardHeader-content': {
+                    flex: 'initial',
+                    width: '100%',
+                  },
+                }}
+                title={
+                  <CardActionArea
+                    sx={{
+                      position: 'relative',
+                      overflow: 'hidden',
+                    }}
+                    disabled={!listItem.item.image}
+                    onClick={() => listItem.item.image && setOpen(true)}
+                  >
+                    <CardMedia
+                      sx={{ height: 130, objectPosition: 'center' }}
+                      image={imageSrc}
+                      title={listItem.item.name}
+                    />
                     {listItem.item.image && (
-                      <MenuItem onClick={removeImage}>Remove</MenuItem>
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          position: 'absolute',
+                          bottom: 0,
+                          right: 0,
+                          background: 'rgba(255,255,255,0.9)',
+                          borderTopLeftRadius: 5,
+                          boxShadow: 2,
+                          padding: 0.5,
+                        }}
+                      >
+                        <ZoomIn />
+                      </Box>
                     )}
-                  </Menu>
-                )}
-              </div>
+                  </CardActionArea>
+                }
+                action={
+                  isUploading ? (
+                    <CircularProgress
+                      className={`${classes.imageMenu} ${classes.uploadingSpinner}`}
+                      color='secondary'
+                    />
+                  ) : (
+                    <Menu className={classes.imageMenu}>
+                      <MenuItem onClick={onReplace}>Replace</MenuItem>
+                      <MenuItem onClick={onReplaceGoogle}>
+                        Replace (Google)
+                      </MenuItem>
+                      {listItem.item.image && (
+                        <MenuItem onClick={removeImage}>Remove</MenuItem>
+                      )}
+                    </Menu>
+                  )
+                }
+              />
               <CardContent classes={{ root: classes.form }}>
                 <FormControl classes={{ root: classes.formControl }}>
                   <TextField
@@ -391,6 +440,22 @@ export const ItemDetails: FC<ItemDetailsProps> = ({ listItem }) => {
                   </Button>
                 </FormControl>
               </CardContent>
+              <Modal
+                classes={{ root: classes.modal }}
+                open={open}
+                onClose={handleClose}
+                aria-labelledby='parent-modal-title'
+                aria-describedby='parent-modal-description'
+              >
+                {/* https://stackoverflow.com/a/73130768/863110 */}
+                <>
+                  <TransformWrapper disablePadding>
+                    <TransformComponent>
+                      <img src={imageSrc} alt={listItem.item.name} />
+                    </TransformComponent>
+                  </TransformWrapper>
+                </>
+              </Modal>
             </>
           ) : null}
         </Route>
@@ -416,123 +481,3 @@ const Urgency: FC<ToggleButtonGroupProps> = (props) => (
     ))}
   </ToggleButtonGroup>
 );
-
-const useGoogleSearchStyles = makeStyles((theme) => ({
-  googleSearchForm: {
-    paddingInline: theme.spacing(1.5),
-  },
-  imageList: {
-    margin: 0,
-    overflow: 'unset',
-  },
-  input: {
-    flex: 1,
-  },
-}));
-
-export const GoogleSearch = ({
-  onSelect,
-}: {
-  onSelect: (url: string) => Promise<void>;
-}) => {
-  const { url } = useRouteMatch();
-  const { navigateTo } = useNavigation();
-  const [itemData, setItemData] = useState<GoogleSearchResult[]>([]);
-  const classes = useGoogleSearchStyles();
-  const [isLoading, setIsLoading] = useState(false);
-  const [selected, setSelected] = useState<string>();
-
-  async function search(e: FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    setIsLoading(true);
-    const query = new FormData(e.target as HTMLFormElement).get('query');
-    const result = await searchGoogle(query as string);
-    setItemData(result);
-    setIsLoading(false);
-  }
-
-  async function onResultClick(imagePath: string) {
-    setSelected(imagePath);
-    await onSelect(imagePath);
-  }
-
-  return (
-    <>
-      <Toolbar>
-        <IconButton
-          edge='start'
-          color='inherit'
-          aria-label='menu'
-          onClick={() => navigateTo(url)}
-        >
-          <ArrowBack />
-        </IconButton>
-        <Typography variant='h6'>Search on Google</Typography>
-      </Toolbar>
-      <Box
-        component='form'
-        onSubmit={search}
-        className={classes.googleSearchForm}
-        display='flex'
-        flexDirection='column'
-      >
-        <Box display='flex'>
-          <InputBase
-            name='query'
-            className={classes.input}
-            placeholder='Search Google Images'
-            inputProps={{ 'aria-label': 'search google images' }}
-          />
-          <IconButton
-            type='submit'
-            // className={classes.iconButton}
-            aria-label='search'
-          >
-            <SearchIcon />
-          </IconButton>
-        </Box>
-        <Box flexDirection='column'>
-          <ImageList className={classes.imageList} cols={2} component='div'>
-            {isLoading
-              ? [...Array(8)].map((i) => (
-                  <ImageListItem key={i}>
-                    <Skeleton
-                      variant='rectangular'
-                      height='auto'
-                      style={{ aspectRatio: '1 / 1' }}
-                    />
-                  </ImageListItem>
-                ))
-              : itemData.map((item) => (
-                  <ImageListItem
-                    key={item.link}
-                    style={{
-                      overflow: 'hidden',
-                      aspectRatio: '1 / 1',
-                    }}
-                    component={ButtonBase}
-                    onClick={() => onResultClick(item.link)}
-                    disabled={!!selected}
-                  >
-                    <img
-                      alt=''
-                      src={item.image.thumbnailLink}
-                      style={{
-                        opacity: selected ? 0.5 : 1,
-                        transition: 'opacity 0.3s',
-                      }}
-                    />
-                    {selected === item.link && (
-                      <CircularProgress
-                        color='secondary'
-                        sx={{ position: 'absolute', inset: 0, margin: 'auto' }}
-                      />
-                    )}
-                  </ImageListItem>
-                ))}
-          </ImageList>
-        </Box>
-      </Box>
-    </>
-  );
-};
