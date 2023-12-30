@@ -21,10 +21,8 @@ import {
   SelectChangeEvent,
   TextField,
   ToggleButtonGroupProps,
-  Zoom,
 } from '@mui/material';
 import { ToggleButtonGroup, ToggleButton } from '@mui/material';
-import makeStyles from '@mui/styles/makeStyles';
 import ImagePlaceholder from '../../Assets/imagePlaceholder.svg';
 import { useDB } from '../../Hooks/useDB';
 import { useDeleteListItem } from '../../Hooks/useDeleteListItem';
@@ -40,91 +38,11 @@ import { UNCATEGORIZED } from '../../consts';
 import { Menu } from '../Menu/Menu';
 import { Tooltip } from '../TouchTooltip/TouchTooltip';
 import { GoogleSearch } from './GoogleSearch';
+import { useStyles } from './ItemDetails.style';
 
 type ItemDetailsProps = {
   listItem: ListItemView;
 };
-
-const useStyles = makeStyles((theme) => ({
-  root: {
-    width: 250,
-    display: 'flex',
-    flexDirection: 'column',
-    height: '100%',
-    overflowX: 'hidden',
-  },
-  imageWrapper: {
-    position: 'relative',
-    background: '#fdfdfd',
-    borderBottom: '1px solid #efefef',
-    padding: theme.spacing(2, 0),
-  },
-  imageMenu: {
-    position: 'absolute',
-    top: 0,
-    right: 0,
-  },
-  uploadingSpinner: {
-    padding: theme.spacing(1.5),
-  },
-  image: {
-    maxWidth: '100%',
-    margin: '0 auto',
-    display: 'block',
-    maxHeight: 100,
-  },
-  name: {
-    '& .MuiInput-input': {
-      fontSize: theme.typography.h5.fontSize,
-    },
-    '& .MuiInput-underline:before': {
-      borderBottomColor: 'transparent',
-    },
-  },
-  form: {
-    flexDirection: 'column',
-    display: 'flex',
-    flex: 1,
-  },
-  formControl: {
-    display: 'flex',
-    marginBottom: theme.spacing(2),
-  },
-  deleteItemFormControl: {
-    justifyContent: 'end',
-    marginBottom: 0,
-    flex: 1,
-  },
-  addCategoryButton: {
-    padding: 0,
-  },
-  label: {
-    '& + $select': {
-      margin: 0,
-    },
-  },
-  select: {},
-  urgency: {
-    marginTop: theme.spacing(1),
-  },
-  urgencyButton: {
-    flex: 1,
-    color: 'inherit',
-  },
-  addedBy: {
-    alignSelf: 'end',
-  },
-  modal: {
-    padding: theme.spacing(1),
-    display: 'flex',
-    alignItems: 'center',
-
-    '& img': {
-      maxWidth: '100%',
-      maxHeight: '100%',
-    },
-  },
-}));
 
 export const ItemDetails: FC<ItemDetailsProps> = ({ listItem }) => {
   const classes = useStyles();
@@ -265,40 +183,20 @@ export const ItemDetails: FC<ItemDetailsProps> = ({ listItem }) => {
           {listItem ? (
             <>
               <CardHeader
-                sx={{
-                  padding: 0,
-                  '.MuiCardHeader-content': {
-                    flex: 'initial',
-                    width: '100%',
-                  },
-                }}
+                classes={{ root: classes.cardHeader, content: classes.cardHeaderContent }}
                 title={
                   <CardActionArea
-                    sx={{
-                      position: 'relative',
-                      overflow: 'hidden',
-                    }}
+                    className={classes.cardActionArea}
                     disabled={!listItem.item.image}
                     onClick={() => listItem.item.image && setOpen(true)}
                   >
                     <CardMedia
-                      sx={{ height: 130, objectPosition: 'center' }}
+                      className={classes.cardMedia}
                       image={imageSrc}
                       title={listItem.item.name}
                     />
                     {listItem.item.image && (
-                      <Box
-                        sx={{
-                          display: 'flex',
-                          position: 'absolute',
-                          bottom: 0,
-                          right: 0,
-                          background: 'rgba(255,255,255,0.9)',
-                          borderTopLeftRadius: 5,
-                          boxShadow: 2,
-                          padding: 0.5,
-                        }}
-                      >
+                      <Box className={classes.cardHeaderZoomIconWrapper}>
                         <ZoomIn />
                       </Box>
                     )}
