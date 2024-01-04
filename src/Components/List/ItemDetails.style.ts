@@ -73,6 +73,7 @@ export const useStyles = makeStyles((theme) => ({
     padding: theme.spacing(1),
     display: 'flex',
     alignItems: 'center',
+    justifyContent: 'center',
 
     '& img': {
       maxWidth: '100%',
