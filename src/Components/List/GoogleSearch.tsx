@@ -1,4 +1,4 @@
-import { useState, FormEvent } from 'react';
+import { useState, FormEvent, useRef } from 'react';
 import { useRouteMatch } from 'react-router-dom';
 import { Toolbar, IconButton, Typography, Box, InputBase, ImageList, ImageListItem, Skeleton, ButtonBase, CircularProgress, Button } from '@mui/material';
 import { ArrowBack, Search as SearchIcon } from '@mui/icons-material';
@@ -10,10 +10,10 @@ import { GoogleSearchResult, searchGoogle } from '../../Services/googleSearch';
 const useGoogleSearchStyles = makeStyles((theme) => ({
   googleSearchForm: {
     paddingInline: theme.spacing(1.5),
+    overflow: 'hidden',
   },
   imageList: {
     margin: 0,
-    overflow: 'unset',
   },
   input: {
     flex: 1,
@@ -44,6 +44,7 @@ export const GoogleSearch = ({
   const classes = useGoogleSearchStyles();
   const [isLoading, setIsLoading] = useState(false);
   const [selected, setSelected] = useState<string>();
+  const imageListRef = useRef<HTMLDivElement>(null);
 
   const RESULTS_PER_PAGE = 10;
 
@@ -70,6 +71,9 @@ export const GoogleSearch = ({
     setCurrentPage(nextPage);
     setHasNextPage(!!result.queries?.nextPage);
     setIsLoading(false);
+    setTimeout(() => {
+      imageListRef.current?.scrollTo({ top: imageListRef.current.scrollHeight, behavior: 'smooth' });
+    }, 100);
   }
 
   async function onResultClick(imagePath: string) {
@@ -112,7 +116,7 @@ export const GoogleSearch = ({
             <SearchIcon />
           </IconButton>
         </Box>
-        <Box flexDirection='column'>
+        <Box sx={{ flex: 1, overflowY: 'auto' }} ref={imageListRef}>
           <ImageList className={classes.imageList} cols={2} component='div'>
             {itemData.map((item) => (
               <ImageListItem
@@ -152,19 +156,18 @@ export const GoogleSearch = ({
                 </ImageListItem>
               ))}
           </ImageList>
-
-          {itemData.length > 0 && hasNextPage && !isLoading && (
-            <Box className={classes.paginationContainer}>
-              <Button
-                variant='outlined'
-                onClick={loadNextPage}
-                className={classes.loadMoreButton}
-              >
-                Load More Results
-              </Button>
-            </Box>
-          )}
         </Box>
+        {itemData.length > 0 && hasNextPage && !isLoading && (
+          <Box className={classes.paginationContainer}>
+            <Button
+              variant='outlined'
+              onClick={loadNextPage}
+              className={classes.loadMoreButton}
+            >
+              Load More Results
+            </Button>
+          </Box>
+        )}
       </Box>
     </>
   );
