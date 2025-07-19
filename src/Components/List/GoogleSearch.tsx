@@ -1,6 +1,6 @@
-import { useState, FormEvent } from 'react';
+import { useState, FormEvent, useRef } from 'react';
 import { useRouteMatch } from 'react-router-dom';
-import { Toolbar, IconButton, Typography, Box, InputBase, ImageList, ImageListItem, Skeleton, ButtonBase, CircularProgress } from '@mui/material';
+import { Toolbar, IconButton, Typography, Box, InputBase, ImageList, ImageListItem, Skeleton, ButtonBase, CircularProgress, Button } from '@mui/material';
 import { ArrowBack, Search as SearchIcon } from '@mui/icons-material';
 import makeStyles from '@mui/styles/makeStyles';
 
@@ -10,13 +10,23 @@ import { GoogleSearchResult, searchGoogle } from '../../Services/googleSearch';
 const useGoogleSearchStyles = makeStyles((theme) => ({
   googleSearchForm: {
     paddingInline: theme.spacing(1.5),
+    overflow: 'hidden',
   },
   imageList: {
     margin: 0,
-    overflow: 'unset',
   },
   input: {
     flex: 1,
+  },
+  paginationContainer: {
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: theme.spacing(2),
+    gap: theme.spacing(1),
+  },
+  loadMoreButton: {
+    marginTop: theme.spacing(2),
   },
 }));
 
@@ -28,17 +38,42 @@ export const GoogleSearch = ({
   const { url } = useRouteMatch();
   const { navigateTo } = useNavigation();
   const [itemData, setItemData] = useState<GoogleSearchResult[]>([]);
+  const [currentQuery, setCurrentQuery] = useState<string>('');
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [hasNextPage, setHasNextPage] = useState<boolean>(false);
   const classes = useGoogleSearchStyles();
   const [isLoading, setIsLoading] = useState(false);
   const [selected, setSelected] = useState<string>();
+  const imageListRef = useRef<HTMLDivElement>(null);
+
+  const RESULTS_PER_PAGE = 10;
 
   async function search(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setIsLoading(true);
-    const query = new FormData(e.target as HTMLFormElement).get('query');
-    const result = await searchGoogle(query as string);
-    setItemData(result);
+    const query = new FormData(e.target as HTMLFormElement).get('query') as string;
+    setCurrentQuery(query);
+    setCurrentPage(1);
+    const result = await searchGoogle(query, 1);
+    setItemData(result.items || []);
+    setHasNextPage(!!result.queries?.nextPage);
     setIsLoading(false);
+  }
+
+  async function loadNextPage() {
+    if (!hasNextPage || isLoading) return;
+
+    setIsLoading(true);
+    const nextPage = currentPage + 1;
+    const startIndex = (nextPage - 1) * RESULTS_PER_PAGE + 1;
+    const result = await searchGoogle(currentQuery, startIndex);
+    setItemData(prev => [...prev, ...(result.items || [])]);
+    setCurrentPage(nextPage);
+    setHasNextPage(!!result.queries?.nextPage);
+    setIsLoading(false);
+    setTimeout(() => {
+      imageListRef.current?.scrollTo({ top: imageListRef.current.scrollHeight, behavior: 'smooth' });
+    }, 100);
   }
 
   async function onResultClick(imagePath: string) {
@@ -81,47 +116,58 @@ export const GoogleSearch = ({
             <SearchIcon />
           </IconButton>
         </Box>
-        <Box flexDirection='column'>
+        <Box sx={{ flex: 1, overflowY: 'auto' }} ref={imageListRef}>
           <ImageList className={classes.imageList} cols={2} component='div'>
-            {isLoading
-              ? [...Array(8)].map((i) => (
-                  <ImageListItem key={i}>
-                    <Skeleton
-                      variant='rectangular'
-                      height='auto'
-                      style={{ aspectRatio: '1 / 1' }}
-                    />
-                  </ImageListItem>
-                ))
-              : itemData.map((item) => (
-                  <ImageListItem
-                    key={item.link}
-                    style={{
-                      overflow: 'hidden',
-                      aspectRatio: '1 / 1',
-                    }}
-                    component={ButtonBase}
-                    onClick={() => onResultClick(item.link)}
-                    disabled={!!selected}
-                  >
-                    <img
-                      alt=''
-                      src={item.image.thumbnailLink}
-                      style={{
-                        opacity: selected ? 0.5 : 1,
-                        transition: 'opacity 0.3s',
-                      }}
-                    />
-                    {selected === item.link && (
-                      <CircularProgress
-                        color='secondary'
-                        sx={{ position: 'absolute', inset: 0, margin: 'auto' }}
-                      />
-                    )}
-                  </ImageListItem>
-                ))}
+            {itemData.map((item) => (
+              <ImageListItem
+                key={item.link}
+                style={{
+                  overflow: 'hidden',
+                  aspectRatio: '1 / 1',
+                }}
+                component={ButtonBase}
+                onClick={() => onResultClick(item.link)}
+                disabled={!!selected}
+              >
+                <img
+                  alt=''
+                  src={item.image.thumbnailLink}
+                  style={{
+                    opacity: selected ? 0.5 : 1,
+                    transition: 'opacity 0.3s',
+                  }}
+                />
+                {selected === item.link && (
+                  <CircularProgress
+                    color='secondary'
+                    sx={{ position: 'absolute', inset: 0, margin: 'auto' }}
+                  />
+                )}
+              </ImageListItem>
+            ))}
+            {isLoading &&
+              [...Array(8)].map((_, i) => (
+                <ImageListItem key={`skeleton-${i}`}>
+                  <Skeleton
+                    variant='rectangular'
+                    height='auto'
+                    style={{ aspectRatio: '1 / 1' }}
+                  />
+                </ImageListItem>
+              ))}
           </ImageList>
         </Box>
+        {itemData.length > 0 && hasNextPage && !isLoading && (
+          <Box className={classes.paginationContainer}>
+            <Button
+              variant='outlined'
+              onClick={loadNextPage}
+              className={classes.loadMoreButton}
+            >
+              Load More Results
+            </Button>
+          </Box>
+        )}
       </Box>
     </>
   );

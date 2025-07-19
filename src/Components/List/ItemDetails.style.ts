@@ -5,8 +5,8 @@ export const useStyles = makeStyles((theme) => ({
     width: 250,
     display: 'flex',
     flexDirection: 'column',
-    height: '100%',
-    overflowX: 'hidden',
+    height: '100vh',
+    overflow: 'hidden',
   },
   imageWrapper: {
     position: 'relative',
