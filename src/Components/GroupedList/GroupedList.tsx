@@ -69,11 +69,31 @@ export const GroupedList: FC<GroupedListProps> = ({
   const classes = useStyles();
   const globalClasses = useGlobalStyles();
 
-  // Initialize expanded state - only first category expanded if collapsible
+  // Initialize expanded state - load from sessionStorage or default behavior
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(() => {
     if (!collapsible || categories.length === 0) {
       return new Set(categories.map(([category]) => category));
     }
+
+    // Try to load from sessionStorage
+    try {
+      const savedState = sessionStorage.getItem('groupedlist-expanded-categories');
+      if (savedState) {
+        const expandedArray = JSON.parse(savedState) as string[];
+        // Only keep categories that still exist in current data
+        const validCategories = expandedArray.filter(cat => 
+          categories.some(([category]) => category === cat)
+        );
+        if (validCategories.length > 0) {
+          return new Set(validCategories);
+        }
+      }
+    } catch (error) {
+      // Ignore errors with sessionStorage (e.g., in private mode)
+      console.warn('Failed to load expanded categories from sessionStorage:', error);
+    }
+
+    // Default: only first category expanded
     return new Set([categories[0][0]]);
   });
 
@@ -87,6 +107,18 @@ export const GroupedList: FC<GroupedListProps> = ({
       } else {
         newSet.add(categoryName);
       }
+
+      // Save to sessionStorage
+      try {
+        sessionStorage.setItem(
+          'groupedlist-expanded-categories', 
+          JSON.stringify(Array.from(newSet))
+        );
+      } catch (error) {
+        // Ignore errors with sessionStorage (e.g., in private mode)
+        console.warn('Failed to save expanded categories to sessionStorage:', error);
+      }
+
       return newSet;
     });
   };

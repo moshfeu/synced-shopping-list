@@ -85,4 +85,54 @@ describe('GroupedList', () => {
     expect(container.querySelector('[data-testid="ExpandLessIcon"]')).not.toBeInTheDocument();
     expect(container.querySelector('[data-testid="ExpandMoreIcon"]')).not.toBeInTheDocument();
   });
+
+  it('persists expanded state to sessionStorage', () => {
+    // Clear sessionStorage before test
+    sessionStorage.clear();
+    
+    const { getByText, queryByText } = renderWithTheme(<GroupedList {...mockProps} collapsible={true} />);
+    
+    // Expand Vegetables category
+    getByText('Vegetables').click();
+    
+    // Check that sessionStorage has been updated
+    const savedState = sessionStorage.getItem('groupedlist-expanded-categories');
+    expect(savedState).toBeTruthy();
+    const expandedCategories = JSON.parse(savedState!);
+    expect(expandedCategories).toEqual(expect.arrayContaining(['Fruits', 'Vegetables']));
+  });
+
+  it('loads expanded state from sessionStorage on initialization', () => {
+    // Set up sessionStorage with Vegetables expanded but not Fruits
+    sessionStorage.setItem('groupedlist-expanded-categories', JSON.stringify(['Vegetables']));
+    
+    const { getByText, queryByText } = renderWithTheme(<GroupedList {...mockProps} collapsible={true} />);
+    
+    // Fruits should be collapsed (not in sessionStorage)
+    expect(queryByText('Apple')).not.toBeInTheDocument();
+    expect(queryByText('Banana')).not.toBeInTheDocument();
+    
+    // Vegetables should be expanded (in sessionStorage)
+    expect(getByText('Carrot')).toBeInTheDocument();
+    expect(getByText('Broccoli')).toBeInTheDocument();
+    
+    // Clean up
+    sessionStorage.clear();
+  });
+
+  it('falls back to default behavior when sessionStorage contains invalid data', () => {
+    // Set invalid data in sessionStorage
+    sessionStorage.setItem('groupedlist-expanded-categories', 'invalid-json');
+    
+    const { getByText, queryByText } = renderWithTheme(<GroupedList {...mockProps} collapsible={true} />);
+    
+    // Should fall back to default: first category expanded
+    expect(getByText('Apple')).toBeInTheDocument();
+    expect(getByText('Banana')).toBeInTheDocument();
+    expect(queryByText('Carrot')).not.toBeInTheDocument();
+    expect(queryByText('Broccoli')).not.toBeInTheDocument();
+    
+    // Clean up
+    sessionStorage.clear();
+  });
 });
