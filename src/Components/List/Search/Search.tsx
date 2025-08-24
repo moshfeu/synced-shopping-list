@@ -84,15 +84,16 @@ export const Search: FC = () => {
       submit={{ icon: SearchIcon, label: 'Add' }}
     >
       <Divider className={classes.divider} orientation='vertical' />
-      <IconButton
-        component={Link}
-        to='/history'
-        className={classes.iconButton}
-        aria-label='Add from history'
-        size='large'
-      >
-        <HistoryIcon />
-      </IconButton>
+      {/* @ts-ignore */}
+      <Link to='/history' style={{ textDecoration: 'none' }}>
+        <IconButton
+          className={classes.iconButton}
+          aria-label='Add from history'
+          size='large'
+        >
+          <HistoryIcon />
+        </IconButton>
+      </Link>
     </Header>
   );
 };

@@ -1,30 +1,46 @@
 import React, { FC, useEffect, useState } from 'react';
 import { Snackbar, Button } from '@mui/material';
-import * as serviceWorker from '../../serviceWorkerRegistration';
 
 export const ServiceWorkerWrapper: FC = () => {
   const [showReload, setShowReload] = useState(false);
-  const [waitingWorker, setWaitingWorker] = useState<ServiceWorker | null>(
-    null
-  );
-
-  const onSWUpdate = (registration: ServiceWorkerRegistration) => {
-    setShowReload(true);
-    setWaitingWorker(registration.waiting);
-  };
+  const [waitingWorker, setWaitingWorker] = useState<ServiceWorker | null>(null);
 
   useEffect(() => {
-    serviceWorker.register({ onUpdate: onSWUpdate });
+    // Register the service worker and listen for updates
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+          .then((registration) => {
+            registration.addEventListener('updatefound', () => {
+              const newWorker = registration.installing;
+              if (newWorker) {
+                newWorker.addEventListener('statechange', () => {
+                  if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                    setWaitingWorker(newWorker);
+                    setShowReload(true);
+                  }
+                });
+              }
+            });
+          })
+          .catch((error) => {
+            console.error('SW registration failed', error);
+          });
+      });
+    }
   }, []);
 
   const reloadPage = () => {
-    waitingWorker?.postMessage({ type: 'SKIP_WAITING' });
+    if (waitingWorker) {
+      waitingWorker.postMessage({ type: 'SKIP_WAITING' });
+      
+      waitingWorker.addEventListener('statechange', (e) => {
+        if ((e.target as any)?.state === 'activated') {
+          window.location.reload();
+        }
+      });
+    }
     setShowReload(false);
-    waitingWorker?.addEventListener('statechange', (e) => {
-      if ((e.target as any)?.state === 'activated') {
-        window.location.reload();
-      }
-    });
   };
 
   return (

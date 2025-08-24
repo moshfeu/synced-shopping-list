@@ -2,7 +2,7 @@ import React, { FC, ReactChild } from 'react';
 import clsx from 'clsx';
 import { Typography } from '@mui/material';
 import makeStyles from '@mui/styles/makeStyles';
-import { ReactComponent as EmptyStateIllustration } from '../../Assets/emptyState.svg';
+import EmptyStateIllustration from '../../Assets/emptyState.svg?react';
 import { useGlobalStyles } from '../../Styles/common';
 
 type EmptyStateProps = {

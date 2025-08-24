@@ -22,7 +22,7 @@ import {
 import createStyles from '@mui/styles/createStyles';
 import makeStyles from '@mui/styles/makeStyles';
 import { version } from '../../../package.json';
-import { ReactComponent as NavIllustration } from '../../Assets/nav.svg';
+import NavIllustration from '../../Assets/nav.svg?react';
 import { useAuth } from '../../Hooks/useAuth';
 import { useOnline } from '../../Hooks/useOnline';
 import { useToggleMainNav } from '../../Hooks/useToggleMainNav';
@@ -126,21 +126,23 @@ export const MainNav: FC = () => {
         </div>
         <Divider />
         <List>
-          {routes.map(({ icon, text, path }) => (
-            <ListItem
-              key={text}
-              button
-              component={Link}
-              to={path}
-              onClick={toggleMainNav}
-            >
-              <ListItemIcon>{icon}</ListItemIcon>
-              <ListItemText
-                classes={{ primary: classes.navItemText }}
-                primary={text}
-              />
-            </ListItem>
-          ))}
+          {routes.map(({ icon, text, path }) => {
+            // @ts-ignore - React Router v5 types compatibility issue
+            return (
+              <Link key={text} to={path} style={{ textDecoration: 'none', color: 'inherit' }}>
+                <ListItem
+                  onClick={toggleMainNav}
+                  sx={{ cursor: 'pointer' }}
+                >
+                  <ListItemIcon>{icon}</ListItemIcon>
+                  <ListItemText
+                    classes={{ primary: classes.navItemText }}
+                    primary={text}
+                  />
+                </ListItem>
+              </Link>
+            );
+          })}
         </List>
         <Grid
           container

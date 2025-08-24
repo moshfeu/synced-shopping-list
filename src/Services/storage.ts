@@ -27,7 +27,7 @@ export async function remove(filePath: string) {
 }
 
 export function getImageUrl(image: string) {
-  return `https://firebasestorage.googleapis.com/v0/b/${process.env.REACT_APP_STORAGE_BUCKET}/o/${encodeURIComponent(
+  return `https://firebasestorage.googleapis.com/v0/b/${import.meta.env.VITE_STORAGE_BUCKET}/o/${encodeURIComponent(
     image
   )}?alt=media`;
 }

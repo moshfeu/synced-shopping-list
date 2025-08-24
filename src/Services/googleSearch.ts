@@ -27,6 +27,6 @@ export type GoogleSearchResponse = {
 }
 
 export const searchGoogle = async (query: string, startIndex: number = 1): Promise<GoogleSearchResponse> => {
-  const response = await fetch(`https://customsearch.googleapis.com/customsearch/v1?key=${process.env.REACT_APP_GOOGLE_IMAGES_TOKEN}&searchType=image&q=${query}&cx=${process.env.REACT_APP_CUSTOMABLE_SEARCH_ENGINE_ID}&start=${startIndex}`)
+  const response = await fetch(`https://customsearch.googleapis.com/customsearch/v1?key=${import.meta.env.VITE_GOOGLE_IMAGES_TOKEN}&searchType=image&q=${query}&cx=${import.meta.env.VITE_CUSTOMABLE_SEARCH_ENGINE_ID}&start=${startIndex}`)
   return response.json()
 }
