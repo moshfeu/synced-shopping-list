@@ -46,6 +46,9 @@ const useStyles = makeStyles((theme) =>
         textTransform: 'uppercase',
       },
     },
+    navItem: {
+      cursor: 'pointer',
+    },
     illustration: {
       width: '100%',
       height: 'auto',
@@ -132,7 +135,7 @@ export const MainNav: FC = () => {
               <Link key={text} to={path} style={{ textDecoration: 'none', color: 'inherit' }}>
                 <ListItem
                   onClick={toggleMainNav}
-                  sx={{ cursor: 'pointer' }}
+                  className={classes.navItem}
                 >
                   <ListItemIcon>{icon}</ListItemIcon>
                   <ListItemText
