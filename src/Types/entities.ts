@@ -20,6 +20,7 @@ export type ListItem = DBItem & {
   checked: boolean;
   urgency: '1' | '2' | '3';
   addedBy: Pick<firebase.User, 'displayName' | 'photoURL'> | null;
+  addedAt: number;
 };
 
 export type ItemView = Omit<Item, 'categoryId'> & {

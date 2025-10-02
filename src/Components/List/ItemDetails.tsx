@@ -34,6 +34,7 @@ import { proxy } from '../../Services/proxy';
 import { getImageUrl, remove, upload } from '../../Services/storage';
 import { useGlobalStyles } from '../../Styles/common';
 import { ListItemView } from '../../Types/entities';
+import { timeAgoIntl } from '../../Utils/datetime';
 import { UNCATEGORIZED } from '../../consts';
 import { Menu } from '../Menu/Menu';
 import { Tooltip } from '../TouchTooltip/TouchTooltip';
@@ -176,6 +177,14 @@ export const ItemDetails: FC<ItemDetailsProps> = ({ listItem }) => {
     deleteListItem(listItem);
   }
 
+  function getTooltipContent(listItem: ListItemView) {
+    return (
+      <Box className={classes.tooltip}>{`${
+        listItem.addedBy?.displayName ?? 'Anonymous'
+      }${listItem.addedAt ? `\n${timeAgoIntl(listItem.addedAt)}` : ''}`}</Box>
+    );
+  }
+
   return (
     <div className={classes.root}>
       <Switch>
@@ -183,7 +192,10 @@ export const ItemDetails: FC<ItemDetailsProps> = ({ listItem }) => {
           {listItem ? (
             <>
               <CardHeader
-                classes={{ root: classes.cardHeader, content: classes.cardHeaderContent }}
+                classes={{
+                  root: classes.cardHeader,
+                  content: classes.cardHeaderContent,
+                }}
                 title={
                   <CardActionArea
                     className={classes.cardActionArea}
@@ -313,9 +325,7 @@ export const ItemDetails: FC<ItemDetailsProps> = ({ listItem }) => {
                 </FormControl>
                 {listItem.addedBy && (
                   <FormControl classes={{ root: classes.formControl }}>
-                    <Tooltip
-                      title={listItem.addedBy.displayName ?? 'Anonymous'}
-                    >
+                    <Tooltip title={getTooltipContent(listItem)}>
                       <Avatar
                         src={listItem.addedBy.photoURL!}
                         alt={listItem.addedBy.displayName ?? 'Anonymous'}
