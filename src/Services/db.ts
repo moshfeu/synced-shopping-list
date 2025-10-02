@@ -53,6 +53,7 @@ export async function addListItem(
     note: '',
     quantity: 1,
     addedBy: getAddedByFromUser(user),
+    addedAt: Date.now(),
   };
 
   if (!('itemId' in item)) {
