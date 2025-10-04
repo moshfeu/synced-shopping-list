@@ -12,6 +12,7 @@ import {
   CardMedia,
   CircularProgress,
   FormControl,
+  FormControlLabel,
   FormLabel,
   Grid,
   IconButton,
@@ -22,7 +23,11 @@ import {
   TextField,
   ToggleButtonGroupProps,
 } from '@mui/material';
-import { ToggleButtonGroup, ToggleButton } from '@mui/material';
+import {
+  ToggleButtonGroup,
+  ToggleButton,
+  Switch as MuiSwitch,
+} from '@mui/material';
 import ImagePlaceholder from '../../Assets/imagePlaceholder.svg';
 import { useDB } from '../../Hooks/useDB';
 import { useDeleteListItem } from '../../Hooks/useDeleteListItem';
@@ -73,10 +78,14 @@ export const ItemDetails: FC<ItemDetailsProps> = ({ listItem }) => {
   ) {
     let value = null;
     let name = null;
+    let type = null;
 
-    ({ value, name } = (e.currentTarget as HTMLInputElement) || {});
+    ({ value, name, type } = (e.currentTarget as HTMLInputElement) || {});
     if (!name) {
-      ({ value, name } = e.target as HTMLInputElement);
+      ({ value, name, type } = e.target as HTMLInputElement);
+    }
+    if (type === 'checkbox') {
+      value = (e.target as HTMLInputElement).checked;
     }
     if (name?.startsWith('item_')) {
       const [, prop] = name.split('_');
@@ -323,6 +332,18 @@ export const ItemDetails: FC<ItemDetailsProps> = ({ listItem }) => {
                     variant='standard'
                   />
                 </FormControl>
+                <FormControl classes={{ root: classes.formControl }}>
+                  <FormControlLabel
+                    control={
+                      <MuiSwitch
+                        checked={!!listItem.item.requiredQuantity}
+                        name='item_requiredQuantity'
+                        onChange={onChange}
+                      />
+                    }
+                    label='Required Quantity'
+                  />
+                </FormControl>
                 {listItem.addedBy && (
                   <FormControl classes={{ root: classes.formControl }}>
                     <Tooltip title={getTooltipContent(listItem)}>
@@ -352,8 +373,6 @@ export const ItemDetails: FC<ItemDetailsProps> = ({ listItem }) => {
                 classes={{ root: classes.modal }}
                 open={open}
                 onClose={handleClose}
-                aria-labelledby='parent-modal-title'
-                aria-describedby='parent-modal-description'
               >
                 {/* https://stackoverflow.com/a/73130768/863110 */}
                 <>
