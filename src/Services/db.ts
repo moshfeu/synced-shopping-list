@@ -47,13 +47,15 @@ export async function addItem(item: NewRecord<Item>) {
 export async function addListItem(
   item: Pick<ListItem, 'itemId'> | NewRecord<Item>,
   user?: ListItem['addedBy']
-) {
-  const newListItem: Partial<ListItem> = {
+): Promise<ListItem> {
+  const newListItem: Omit<ListItem, 'id'> = {
     checked: false,
     note: '',
     quantity: 1,
+    urgency: '1',
     addedBy: getAddedByFromUser(user),
     addedAt: Date.now(),
+    itemId: '',
   };
 
   if (!('itemId' in item)) {
@@ -62,7 +64,11 @@ export async function addListItem(
   } else {
     newListItem.itemId = item.itemId;
   }
-  return db.ref(DB_REF.LIST).push(newListItem);
+  const refObject = await db.ref(DB_REF.LIST).push(newListItem);
+  return {
+    ...newListItem,
+    id: refObject.key!,
+  };
 }
 
 export const addListItemFull = async (item: ListItemView) => {
@@ -92,7 +98,7 @@ export function addListItems(items: Array<NewRecord<ListItem>>) {
 }
 
 export function updateListItem(
-  item: ListItemView,
+  item: ListItemView | ListItem,
   itemData: Partial<ListItemView>
 ) {
   return updateRef(item, itemData, DB_REF.LIST);

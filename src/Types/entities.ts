@@ -6,6 +6,7 @@ export type Item = DBItem & {
   name: string;
   categoryId?: string | null;
   image?: string | null;
+  requiredQuantity?: number;
 };
 
 export type Category = DBItem & {
