@@ -72,6 +72,7 @@ export const Autocomplete: FC<AutocompleteOptions> = ({
           // hold it, let the item's `onClick` to fire
           onChange={(e) => setInputValue(e.target.value)}
           value={inputValue}
+          autoComplete='off'
         />
       </form>
       {inputInFocus && optionsList.length ? (
