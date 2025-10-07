@@ -40,6 +40,7 @@ export const Search: FC = () => {
       if (existingInHistory) {
         return {
           itemId: existingInHistory.id,
+          requiredQuantity: existingInHistory.requiredQuantity
         };
       }
       return {
@@ -48,6 +49,7 @@ export const Search: FC = () => {
     }
     return {
       itemId: option.id,
+      requiredQuantity: option.requiredQuantity
     };
   }
 
@@ -78,7 +80,9 @@ export const Search: FC = () => {
     }
     const item = getItemOrNew(option);
     const listItem = await addListItem(item, currentUser);
-    setPendingItem(listItem);
+    if ('requiredQuantity' in item && item.requiredQuantity) {
+      setPendingItem(listItem);
+    }
   }
 
   function handleClose() {
