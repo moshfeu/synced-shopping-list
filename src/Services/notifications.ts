@@ -1,4 +1,4 @@
-const to = process.env.REACT_APP_TEST_TO;
+const to = import.meta.env.VITE_TEST_TO;
 
 export const sendNotification = () => {
   const notification = {
@@ -11,7 +11,7 @@ export const sendNotification = () => {
   fetch('https://fcm.googleapis.com/fcm/send', {
     method: 'POST',
     headers: {
-      Authorization: 'key=' + process.env.REACT_APP_SERVER_KEY,
+      Authorization: 'key=' + import.meta.env.VITE_SERVER_KEY,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({

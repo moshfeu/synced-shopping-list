@@ -1,5 +1,4 @@
 import { Handler } from '@netlify/functions'
-import fetch from 'node-fetch';
 
 export const handler: Handler = async (event, context) => {
   const { url } = event.queryStringParameters || {};
@@ -9,7 +8,19 @@ export const handler: Handler = async (event, context) => {
       body: 'Missing url parameter',
     };
   }
-  const response = await fetch(url, {});
+
+  let decodedUrl: string;
+  try {
+    decodedUrl = decodeURIComponent(url);
+  } catch (error) {
+    console.log('Error decoding URL:', url, error);
+    return {
+      statusCode: 400,
+      body: 'Invalid URL parameter - malformed URI',
+    };
+  }
+
+  const response = await fetch(decodedUrl, {});
   const arrayBuffer = await response.arrayBuffer();
   const data = Buffer.from(arrayBuffer);
   const base64 = data.toString('base64');

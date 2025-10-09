@@ -6,7 +6,7 @@ const messaging = firebase.messaging();
 export function register(user: firebase.User) {
   messaging
     .getToken({
-      vapidKey: process.env.REACT_APP_NOTIFICATION_TOKEN!,
+      vapidKey: import.meta.env.VITE_NOTIFICATION_TOKEN!,
     })
     .then(async (currentToken) => {
       if (currentToken) {

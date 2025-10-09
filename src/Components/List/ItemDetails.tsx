@@ -146,7 +146,7 @@ export const ItemDetails: FC<ItemDetailsProps> = ({ listItem }) => {
 
   async function onGoogleResult(imagePath: string) {
     const file = await proxy(imagePath);
-    const name = `${listItem?.item.id}#${listItem?.item.name}.png`;
+    const name = `${listItem?.item.id}#${Date.now()}.png`;
     const uploadedPath = await upload(name, file);
 
     await updateImage(uploadedPath);

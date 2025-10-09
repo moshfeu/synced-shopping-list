@@ -1,5 +1,5 @@
 import React, { FC, useEffect, useState } from 'react';
-import { Link, useHistory } from 'react-router-dom';
+import { Link, useHistory, useRouteMatch } from 'react-router-dom';
 import { Location } from 'history';
 import {
   List as ListIcon,
@@ -18,11 +18,12 @@ import {
   Typography,
   Chip,
   Grid,
+  ListItemButton,
 } from '@mui/material';
 import createStyles from '@mui/styles/createStyles';
 import makeStyles from '@mui/styles/makeStyles';
 import { version } from '../../../package.json';
-import { ReactComponent as NavIllustration } from '../../Assets/nav.svg';
+import NavIllustration from '../../Assets/nav.svg?react';
 import { useAuth } from '../../Hooks/useAuth';
 import { useOnline } from '../../Hooks/useOnline';
 import { useToggleMainNav } from '../../Hooks/useToggleMainNav';
@@ -45,6 +46,11 @@ const useStyles = makeStyles((theme) =>
       '&:first-letter': {
         textTransform: 'uppercase',
       },
+    },
+    navItem: {
+      cursor: 'pointer',
+      textDecoration: 'none',
+      color: 'inherit',
     },
     illustration: {
       width: '100%',
@@ -73,7 +79,7 @@ const routes = [
   },
   {
     text: 'Categories',
-    path: 'categories',
+    path: '/categories',
     icon: <CategoryIcon />,
   },
 ];
@@ -126,21 +132,25 @@ export const MainNav: FC = () => {
         </div>
         <Divider />
         <List>
-          {routes.map(({ icon, text, path }) => (
-            <ListItem
+          {routes.map(({ icon, text, path }) => {
+            console.log(11111, history.location, path);
+            return (
+            <ListItemButton
               key={text}
-              button
-              component={Link}
+              component={Link as React.ElementType}
               to={path}
               onClick={toggleMainNav}
+              className={classes.navItem}
+              selected={history.location.pathname === path}
             >
               <ListItemIcon>{icon}</ListItemIcon>
               <ListItemText
                 classes={{ primary: classes.navItemText }}
                 primary={text}
               />
-            </ListItem>
-          ))}
+            </ListItemButton>
+            );
+          })}
         </List>
         <Grid
           container

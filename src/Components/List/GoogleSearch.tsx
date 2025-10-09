@@ -6,6 +6,7 @@ import makeStyles from '@mui/styles/makeStyles';
 
 import { useNavigation } from '../../Hooks/useRoute';
 import { GoogleSearchResult, searchGoogle } from '../../Services/googleSearch';
+import type { RouteWithItemId } from '../../Types/routes';
 
 const useGoogleSearchStyles = makeStyles((theme) => ({
   googleSearchForm: {
@@ -35,8 +36,8 @@ export const GoogleSearch = ({
 }: {
   onSelect: (url: string) => Promise<void>;
 }) => {
-  const { url } = useRouteMatch();
-  const { navigateTo } = useNavigation();
+  const { params } = useRouteMatch<RouteWithItemId>();
+  const { navigateToItem } = useNavigation();
   const [itemData, setItemData] = useState<GoogleSearchResult[]>([]);
   const [currentQuery, setCurrentQuery] = useState<string>('');
   const [currentPage, setCurrentPage] = useState<number>(1);
@@ -88,7 +89,7 @@ export const GoogleSearch = ({
           edge='start'
           color='inherit'
           aria-label='menu'
-          onClick={() => navigateTo(url)}
+          onClick={() => navigateToItem(params.id)}
         >
           <ArrowBack />
         </IconButton>

@@ -4,7 +4,7 @@ A shopping list <a href="https://developer.mozilla.org/en-US/docs/Web/Progressiv
 
 ## Stack
 
-- React (CRA)
+- React (Vite)
 - Typescript
 - Material-UI
 - Firebase
@@ -64,6 +64,12 @@ Notes:
 2. `yarn push` triggers also `npm version` which bumps the app's version which reflected in the UI (main nav at the bottom)
 
 ## Run
+
+```sh
+yarn dev
+```
+
+or
 
 ```sh
 yarn start
