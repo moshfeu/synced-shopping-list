@@ -1,5 +1,5 @@
 import React, { FC } from 'react';
-import { Switch, Route, useRouteMatch } from 'react-router-dom';
+import { Routes, Route, useParams } from 'react-router-dom';
 import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
 import { Add, ZoomIn } from '@mui/icons-material';
 import {
@@ -54,7 +54,7 @@ export const ItemDetails: FC<ItemDetailsProps> = ({ listItem }) => {
   const classes = useStyles();
   const deleteListItem = useDeleteListItem();
   const { navigateToHome, navigateTo } = useNavigation();
-  const { path, url } = useRouteMatch();
+  const params = useParams();
   const { flexGrow, flex } = useGlobalStyles();
   const { categories } = useDB();
   const { dispatch } = useUIStore();
@@ -141,7 +141,7 @@ export const ItemDetails: FC<ItemDetailsProps> = ({ listItem }) => {
   }
 
   async function onReplaceGoogle() {
-    navigateTo(`${url}/google-search`);
+    navigateTo(`/item/${listItem.id}/google-search`);
   }
 
   async function onGoogleResult(imagePath: string) {
@@ -150,7 +150,7 @@ export const ItemDetails: FC<ItemDetailsProps> = ({ listItem }) => {
     const uploadedPath = await upload(name, file);
 
     await updateImage(uploadedPath);
-    navigateTo(url);
+    navigateTo(`/item/${listItem.id}`);
   }
 
   async function onReplace() {
@@ -196,9 +196,9 @@ export const ItemDetails: FC<ItemDetailsProps> = ({ listItem }) => {
 
   return (
     <div className={classes.root}>
-      <Switch>
-        <Route path={path} exact>
-          {listItem ? (
+      <Routes>
+        <Route path="/" element={
+          listItem ? (
             <>
               <CardHeader
                 classes={{
@@ -384,12 +384,10 @@ export const ItemDetails: FC<ItemDetailsProps> = ({ listItem }) => {
                 </>
               </Modal>
             </>
-          ) : null}
-        </Route>
-        <Route path={`${path}/google-search`}>
-          <GoogleSearch onSelect={onGoogleResult} />
-        </Route>
-      </Switch>
+          ) : null
+        } />
+        <Route path="/google-search" element={<GoogleSearch onSelect={onGoogleResult} />} />
+      </Routes>
     </div>
   );
 };
