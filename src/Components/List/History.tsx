@@ -110,6 +110,7 @@ export const History: FC<HistoryProps> = ({ open, items, onClose, onAdd }) => {
                   )
               )
             }
+            collapsible={true}
           />
         ) : (
           <EmptyState text='Have you added the whole history??' />
