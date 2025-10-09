@@ -103,5 +103,8 @@ export const useStyles = makeStyles((theme) => ({
     borderTopLeftRadius: 5,
     padding: theme.spacing(0.5),
     boxShadow: theme.shadows[1],
+  },
+  tooltip: {
+    whiteSpace: 'pre-line',
   }
 }));

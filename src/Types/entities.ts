@@ -6,6 +6,7 @@ export type Item = DBItem & {
   name: string;
   categoryId?: string | null;
   image?: string | null;
+  requiredQuantity?: number;
 };
 
 export type Category = DBItem & {
@@ -20,6 +21,7 @@ export type ListItem = DBItem & {
   checked: boolean;
   urgency: '1' | '2' | '3';
   addedBy: Pick<firebase.User, 'displayName' | 'photoURL'> | null;
+  addedAt: number;
 };
 
 export type ItemView = Omit<Item, 'categoryId'> & {

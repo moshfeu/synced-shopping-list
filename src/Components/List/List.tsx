@@ -92,6 +92,7 @@ export const List: FC = () => {
         note: '',
         checked: false,
         urgency: '1',
+        addedAt: Date.now(),
         addedBy: currentUser
           ? {
               displayName: currentUser.displayName,
