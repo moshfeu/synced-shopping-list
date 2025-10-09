@@ -39,10 +39,10 @@
   },
   "scripts": {
     "dev": "vite",
-    "start": "vite",
     "build": "vite build",
     "build:check": "tsc --noEmit && vite build",
-    "serve": "vite preview",
+    "preview": "vite preview",
+    "netlify:dev": "netlify dev",
     "test": "echo \"Tests not yet migrated to Vite\"",
     "pre-push": "sh scripts/pre-push.sh",
     "push:no-version": "NO_VERSION=true git push",

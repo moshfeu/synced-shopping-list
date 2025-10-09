@@ -1,12 +1,23 @@
 import { Handler } from '@netlify/functions'
 import fetch from 'node-fetch';
 
-export const handler: Handler = async (event) => {
+export const handler: Handler = async (event, context) => {
   const { url } = event.queryStringParameters || {};
   if (!url) {
     return {
       statusCode: 400,
       body: 'Missing url parameter',
+    };
+  }
+
+  let decodedUrl: string;
+  try {
+    decodedUrl = decodeURIComponent(url);
+  } catch (error) {
+    console.log('Error decoding URL:', url, error);
+    return {
+      statusCode: 400,
+      body: 'Invalid URL parameter - malformed URI',
     };
   }
 
