@@ -1,5 +1,5 @@
 import React, { FC, useEffect, useState } from 'react';
-import { Link, useHistory } from 'react-router-dom';
+import { Link, useHistory, useRouteMatch } from 'react-router-dom';
 import { Location } from 'history';
 import {
   List as ListIcon,
@@ -18,6 +18,7 @@ import {
   Typography,
   Chip,
   Grid,
+  ListItemButton,
 } from '@mui/material';
 import createStyles from '@mui/styles/createStyles';
 import makeStyles from '@mui/styles/makeStyles';
@@ -48,6 +49,8 @@ const useStyles = makeStyles((theme) =>
     },
     navItem: {
       cursor: 'pointer',
+      textDecoration: 'none',
+      color: 'inherit',
     },
     illustration: {
       width: '100%',
@@ -76,7 +79,7 @@ const routes = [
   },
   {
     text: 'Categories',
-    path: 'categories',
+    path: '/categories',
     icon: <CategoryIcon />,
   },
 ];
@@ -130,20 +133,22 @@ export const MainNav: FC = () => {
         <Divider />
         <List>
           {routes.map(({ icon, text, path }) => {
-            // @ts-ignore - React Router v5 types compatibility issue
+            console.log(11111, history.location, path);
             return (
-              <Link key={text} to={path} style={{ textDecoration: 'none', color: 'inherit' }}>
-                <ListItem
-                  onClick={toggleMainNav}
-                  className={classes.navItem}
-                >
-                  <ListItemIcon>{icon}</ListItemIcon>
-                  <ListItemText
-                    classes={{ primary: classes.navItemText }}
-                    primary={text}
-                  />
-                </ListItem>
-              </Link>
+            <ListItemButton
+              key={text}
+              component={Link as React.ElementType}
+              to={path}
+              onClick={toggleMainNav}
+              className={classes.navItem}
+              selected={history.location.pathname === path}
+            >
+              <ListItemIcon>{icon}</ListItemIcon>
+              <ListItemText
+                classes={{ primary: classes.navItemText }}
+                primary={text}
+              />
+            </ListItemButton>
             );
           })}
         </List>
