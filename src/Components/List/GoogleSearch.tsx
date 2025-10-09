@@ -1,5 +1,5 @@
 import { useState, FormEvent, useRef } from 'react';
-import { useRouteMatch } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { Toolbar, IconButton, Typography, Box, InputBase, ImageList, ImageListItem, Skeleton, ButtonBase, CircularProgress, Button } from '@mui/material';
 import { ArrowBack, Search as SearchIcon } from '@mui/icons-material';
 import makeStyles from '@mui/styles/makeStyles';
@@ -36,7 +36,7 @@ export const GoogleSearch = ({
 }: {
   onSelect: (url: string) => Promise<void>;
 }) => {
-  const { params } = useRouteMatch<RouteWithItemId>();
+  const params = useParams<RouteWithItemId>();
   const { navigateToItem } = useNavigation();
   const [itemData, setItemData] = useState<GoogleSearchResult[]>([]);
   const [currentQuery, setCurrentQuery] = useState<string>('');
@@ -89,7 +89,7 @@ export const GoogleSearch = ({
           edge='start'
           color='inherit'
           aria-label='menu'
-          onClick={() => navigateToItem(params.id)}
+          onClick={() => navigateToItem(params.id!)}
         >
           <ArrowBack />
         </IconButton>

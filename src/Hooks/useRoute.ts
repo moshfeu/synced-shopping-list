@@ -1,18 +1,17 @@
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 export const useNavigation = () => {
-  const history = useHistory();
+  const navigate = useNavigate();
 
   return {
     navigateTo: (path: string) => {
-      history.push(path);
+      navigate(path);
     },
     navigateToHome: () => {
-      history.push('/');
+      navigate('/');
     },
     navigateToItem: (itemId: string) => {
-      // generatePath('/item/:id', { id: itemId }) TODO: use this
-      history.push(`/item/${itemId}`);
+      navigate(`/item/${itemId}`);
     },
   };
 };

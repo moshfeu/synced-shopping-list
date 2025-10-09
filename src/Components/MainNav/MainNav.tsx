@@ -1,6 +1,5 @@
 import React, { FC, useEffect, useState } from 'react';
-import { Link, useHistory, useRouteMatch } from 'react-router-dom';
-import { Location } from 'history';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   List as ListIcon,
   Category as CategoryIcon,
@@ -84,22 +83,20 @@ const routes = [
   },
 ];
 
-function shouldMainNavBeOpen(location: Location) {
+function shouldMainNavBeOpen(location: ReturnType<typeof useLocation>) {
   return new URLSearchParams(location.search).has('menu');
 }
 
 export const MainNav: FC = () => {
   const classes = useStyles();
   const { currentUser } = useAuth();
-  const history = useHistory();
+  const location = useLocation();
   const toggleMainNav = useToggleMainNav();
-  const [isOpen, setIsOpen] = useState(shouldMainNavBeOpen(history.location));
+  const [isOpen, setIsOpen] = useState(shouldMainNavBeOpen(location));
 
   useEffect(() => {
-    history.listen((newLocation) => {
-      setIsOpen(shouldMainNavBeOpen(newLocation));
-    });
-  }, [history]);
+    setIsOpen(shouldMainNavBeOpen(location));
+  }, [location]);
 
   return (
     <>
@@ -133,7 +130,7 @@ export const MainNav: FC = () => {
         <Divider />
         <List>
           {routes.map(({ icon, text, path }) => {
-            console.log(11111, history.location, path);
+            console.log(11111, location, path);
             return (
             <ListItemButton
               key={text}
@@ -141,7 +138,7 @@ export const MainNav: FC = () => {
               to={path}
               onClick={toggleMainNav}
               className={classes.navItem}
-              selected={history.location.pathname === path}
+              selected={location.pathname === path}
             >
               <ListItemIcon>{icon}</ListItemIcon>
               <ListItemText

@@ -1,5 +1,5 @@
 import { useState, useEffect, FC, useMemo } from 'react';
-import { useHistory, useParams } from 'react-router-dom';
+import { useLocation, useParams } from 'react-router-dom';
 import { partition } from 'lodash';
 import { LinearProgress, Drawer, Typography } from '@mui/material';
 import makeStyles from '@mui/styles/makeStyles';
@@ -54,7 +54,7 @@ export const List: FC = () => {
   const { currentUser } = useAuth();
   const { state, dispatch } = useUIStore();
   const { id } = useParams<{ id: string }>();
-  const { location } = useHistory();
+  const location = useLocation();
   const [isDrawOpen, setIsDrawOpen] = useState(false);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const focusedItem = list.find((listItem) => listItem.id === id);
