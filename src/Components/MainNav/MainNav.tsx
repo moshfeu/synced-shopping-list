@@ -132,9 +132,7 @@ export const MainNav: FC = () => {
         </div>
         <Divider />
         <List>
-          {routes.map(({ icon, text, path }) => {
-            console.log(11111, history.location, path);
-            return (
+          {routes.map(({ icon, text, path }) => (
             <ListItemButton
               key={text}
               component={Link as React.ElementType}
@@ -149,8 +147,7 @@ export const MainNav: FC = () => {
                 primary={text}
               />
             </ListItemButton>
-            );
-          })}
+          ))}
         </List>
         <Grid
           container
@@ -199,13 +196,7 @@ const OnlineIndication = () => {
       variant='outlined'
       color={isOnline ? 'success' : 'warning'}
       label={isOnline ? 'online' : 'offline'}
-      icon={
-        isOnline ? (
-          <OnlineIcon />
-        ) : (
-          <OfflineIcon />
-        )
-      }
+      icon={isOnline ? <OnlineIcon /> : <OfflineIcon />}
     />
   );
 };

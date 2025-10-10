@@ -9,8 +9,7 @@ export default defineConfig({
     svgr(),
     react(),
     VitePWA({
-      registerType: 'prompt',
-      injectRegister: 'script',
+      registerType: 'autoUpdate',
       pwaAssets: {
         disabled: true, // Disable PWA assets generator to avoid dependency issues
       },
@@ -67,7 +66,7 @@ export default defineConfig({
           },
         ],
         cleanupOutdatedCaches: true,
-        skipWaiting: false,
+        skipWaiting: true, // Enable automatic updates
       },
       devOptions: {
         enabled: false,
