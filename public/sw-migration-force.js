@@ -4,7 +4,7 @@
 (function() {
   // Create visual overlay for mobile debugging
   function createMigrationOverlay() {
-    var overlay = document.createElement('div');
+    const overlay = document.createElement('div');
     overlay.id = 'migration-overlay';
     overlay.style.cssText = `
       position: fixed;
@@ -22,7 +22,7 @@
       box-sizing: border-box;
     `;
 
-    var content = document.createElement('div');
+    const content = document.createElement('div');
     content.innerHTML = `
       <h2 style="color: #ff6b35; margin: 0 0 20px 0;">🔄 PWA MIGRATION IN PROGRESS</h2>
       <div id="migration-log"></div>
@@ -41,7 +41,7 @@
   function log(message, color) {
     console.log(message);
     if (window.migrationLog) {
-      var logEntry = document.createElement('div');
+      const logEntry = document.createElement('div');
       logEntry.style.cssText = `
         margin: 5px 0;
         padding: 5px;
@@ -57,18 +57,26 @@
 
   // Wait for DOM to be ready
   function initMigration() {
+    // Check if migration was already completed
+    const migrationCompleted = localStorage.getItem('pwa-migration-completed');
+
+    if (migrationCompleted) {
+      console.log('PWA Migration already completed, skipping...');
+      return;
+    }
+
     window.migrationLog = createMigrationOverlay();
 
-    log('� FORCE PWA MIGRATION STARTING...', '#4CAF50');
+    log('🚀 FORCE PWA MIGRATION STARTING...', '#4CAF50');
     log('📱 Visual debug mode enabled for mobile', '#2196F3');
 
-    // ALWAYS run migration - ignore any previous flags
-    var migrationSteps = 0;
-    var totalSteps = 4;
+    // Run migration once only
+    let migrationSteps = 0;
+    const totalSteps = 4;
 
     function updateProgress() {
       migrationSteps++;
-      log(`📊 Step ${migrationSteps}/${totalSteps} completed`, '#FFC107');
+      log('📊 Step ' + migrationSteps + '/' + totalSteps + ' completed', '#FFC107');
     }
 
     // Step 1: Unregister ALL service workers
@@ -129,18 +137,21 @@
     function clearStorage() {
       log('🔍 Step 3: Clearing storage...', '#9C27B0');
       try {
-        var lsCount = localStorage.length;
-        var ssCount = sessionStorage.length;
+        const lsCount = localStorage.length;
+        const ssCount = sessionStorage.length;
 
         localStorage.clear();
         sessionStorage.clear();
+
+        // Set migration completed flag immediately
+        localStorage.setItem('pwa-migration-completed', 'true');
 
         log('🧹 Cleared ' + lsCount + ' localStorage items', '#4CAF50');
         log('🧹 Cleared ' + ssCount + ' sessionStorage items', '#4CAF50');
 
         // Clear IndexedDB if it exists
         if ('indexedDB' in window) {
-          var dbsToDelete = ['firebaseLocalStorageDb', 'workbox-precache'];
+          const dbsToDelete = ['firebaseLocalStorageDb', 'workbox-precache'];
           dbsToDelete.forEach(function(dbName) {
             try {
               indexedDB.deleteDatabase(dbName);
@@ -166,8 +177,8 @@
       log('✅ Migration completed successfully!', '#4CAF50');
       log('🔄 Reloading page in 3 seconds...', '#2196F3');
 
-      var countdown = 3;
-      var countdownInterval = setInterval(function() {
+      let countdown = 3;
+      const countdownInterval = setInterval(function() {
         countdown--;
         if (countdown > 0) {
           log('⏰ Reload in ' + countdown + '...', '#FFC107');
@@ -177,8 +188,8 @@
           updateProgress();
 
           setTimeout(function() {
-            // Try multiple methods to force reload
-            window.location.href = window.location.href + (window.location.href.includes('?') ? '&' : '?') + 'migrated=' + Date.now();
+            // Just reload normally - no URL params needed
+            window.location.reload(true);
           }, 500);
         }
       }, 1000);
