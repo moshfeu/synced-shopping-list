@@ -10,6 +10,7 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
+      injectRegister: 'auto',
       pwaAssets: {
         disabled: true, // Disable PWA assets generator to avoid dependency issues
       },
@@ -51,6 +52,9 @@ export default defineConfig({
         globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
         navigateFallback: 'index.html',
         navigateFallbackDenylist: [/^\/_/],
+        // Clean up old service worker and caches
+        cleanupOutdatedCaches: true,
+        clientsClaim: true, // Take control of all clients immediately
         runtimeCaching: [
           {
             urlPattern: ({ url }) => {
@@ -65,7 +69,6 @@ export default defineConfig({
             },
           },
         ],
-        cleanupOutdatedCaches: true,
         skipWaiting: true, // Enable automatic updates
       },
       devOptions: {
