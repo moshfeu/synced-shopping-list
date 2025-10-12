@@ -2,6 +2,41 @@
 // This script forces a complete PWA migration from CRA to Vite
 
 (function() {
+  // Emergency debug - show immediately that script is running
+  let debugBanner = null;
+
+  // Create emergency debug overlay that shows everything visually
+  function createDebugBanner(message, color = 'red') {
+    if (!debugBanner) {
+      debugBanner = document.createElement('div');
+      debugBanner.id = 'debug-banner';
+      debugBanner.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        min-height: 60px;
+        background: ${color};
+        color: white;
+        font-size: 16px;
+        font-weight: bold;
+        text-align: center;
+        padding: 10px;
+        z-index: 999999;
+        box-sizing: border-box;
+        line-height: 1.3;
+      `;
+      document.body.appendChild(debugBanner);
+    } else {
+      debugBanner.style.background = color;
+    }
+    debugBanner.textContent = message;
+    return debugBanner;
+  }
+
+  // Show script is running immediately
+  createDebugBanner('🚨 MIGRATION SCRIPT LOADED! DOM: ' + document.readyState, 'red');
+
   // Create visual overlay for mobile debugging
   function createMigrationOverlay() {
     const overlay = document.createElement('div');
@@ -57,13 +92,22 @@
 
   // Wait for DOM to be ready
   function initMigration() {
+    createDebugBanner('🔍 initMigration() called!', 'blue');
+
     // Check if migration was already completed
     const migrationCompleted = localStorage.getItem('pwa-migration-completed');
 
+    createDebugBanner('📋 Migration flag: ' + (migrationCompleted || 'NOT SET'), 'purple');
+
     if (migrationCompleted) {
-      console.log('PWA Migration already completed, skipping...');
+      createDebugBanner('✅ Migration already completed, skipping...', 'green');
+      setTimeout(() => {
+        if (debugBanner) debugBanner.remove();
+      }, 5000);
       return;
     }
+
+    createDebugBanner('🚀 Starting migration process...', 'orange');
 
     window.migrationLog = createMigrationOverlay();
 
@@ -198,8 +242,13 @@
 
   // Start migration when DOM is ready
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initMigration);
+    createDebugBanner('📅 DOM loading, waiting for ready...', 'orange');
+    document.addEventListener('DOMContentLoaded', function() {
+      createDebugBanner('📅 DOMContentLoaded fired!', 'blue');
+      setTimeout(initMigration, 500);
+    });
   } else {
-    setTimeout(initMigration, 100);
+    createDebugBanner('📅 DOM already ready, starting...', 'blue');
+    setTimeout(initMigration, 500);
   }
 })();
