@@ -52,9 +52,10 @@ export default defineConfig({
         globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
         navigateFallback: 'index.html',
         navigateFallbackDenylist: [/^\/_/],
-        // Clean up old service worker and caches
+        // Aggressive service worker takeover
         cleanupOutdatedCaches: true,
         clientsClaim: true, // Take control of all clients immediately
+        skipWaiting: true, // Enable automatic updates and don't wait for existing SW
         runtimeCaching: [
           {
             urlPattern: ({ url }) => {
@@ -68,8 +69,7 @@ export default defineConfig({
               },
             },
           },
-        ],
-        skipWaiting: true, // Enable automatic updates
+        ]
       },
       devOptions: {
         enabled: false,
