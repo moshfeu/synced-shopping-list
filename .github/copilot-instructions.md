@@ -142,6 +142,50 @@ type Category = {
 - Export components from index files where appropriate
 - Keep services and utilities in separate directories
 
+## Code Practices
+
+### Separation of Concerns
+- **Extract business logic from UI components** - Components should focus on rendering, not business logic
+- **Use custom hooks for reusable logic** - Create hooks in `src/Hooks/` for shared functionality
+- **Keep components clean and focused** - Each component should have a single, clear responsibility
+- **Example**: App badge logic extracted to `useAppBadge` hook instead of inline in `App.tsx`
+
+### Custom Hooks Guidelines
+- Place all custom hooks in `src/Hooks/` directory
+- Name hooks with `use` prefix (e.g., `useAppBadge`, `useDB`)
+- Include JSDoc comments explaining the hook's purpose
+- Make hooks focused on a single responsibility
+- Return only what consumers need
+- Include proper TypeScript types for parameters and return values
+
+### Dependency Management
+- **Check `packages-list.csv` before adding new dependencies**
+- Only use packages that are approved in the package list
+- Prefer built-in solutions over external packages when possible
+- Document reasons for new dependencies
+
+### Code Quality Standards
+- **Maintainability over quick fixes** - Refactor working code if it improves maintainability
+- **Professional patterns** - Follow industry best practices and clean code principles
+- **Reusability** - Write code that can be easily reused across the application
+- **Testability** - Structure code to be easily testable
+- **Documentation** - Add comments for complex logic and JSDoc for public APIs
+
+### Feature Implementation Workflow
+1. **Understand requirements** - Clarify what needs to be built
+2. **Plan architecture** - Decide where logic belongs (component, hook, service)
+3. **Implement cleanly** - Write the initial implementation
+4. **Refactor if needed** - Separate concerns, extract reusable logic
+5. **Test thoroughly** - Verify functionality in different scenarios
+6. **Document changes** - Update relevant documentation
+
+### Browser API Usage
+- Always check for API availability before using (feature detection)
+- Use TypeScript type assertions carefully with browser APIs
+- Gracefully degrade when APIs are not supported
+- Example: `if ('setAppBadge' in navigator)` before using Badging API
+
+
 ## Database Security
 
 Firebase rules restrict access to specific authenticated email addresses:
