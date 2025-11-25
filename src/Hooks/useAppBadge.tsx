@@ -16,10 +16,14 @@ export const useAppBadge = (list: ListItems) => {
     if ('setAppBadge' in navigator) {
       if (urgentItemsCount > 0) {
         // Set the badge with the count
-        navigator.setAppBadge(urgentItemsCount);
+        navigator.setAppBadge(urgentItemsCount).catch(() => {
+          // Silently fail - badge API is not critical functionality
+        });
       } else {
         // Clear the badge when there are no urgent items
-        navigator.clearAppBadge();
+        navigator.clearAppBadge().catch(() => {
+          // Silently fail - badge API is not critical functionality
+        });
       }
     }
   }, [list]);
