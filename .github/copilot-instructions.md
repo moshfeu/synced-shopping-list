@@ -158,12 +158,6 @@ type Category = {
 - Return only what consumers need
 - Include proper TypeScript types for parameters and return values
 
-### Dependency Management
-- **Check `packages-list.csv` before adding new dependencies**
-- Only use packages that are approved in the package list
-- Prefer built-in solutions over external packages when possible
-- Document reasons for new dependencies
-
 ### Code Quality Standards
 - **Maintainability over quick fixes** - Refactor working code if it improves maintainability
 - **Professional patterns** - Follow industry best practices and clean code principles
