@@ -86,3 +86,7 @@ The *proxy* function aims to solve the CORS issue when trying to save an image f
 ### Credits
 
 - Illustrations by [undraw](https://undraw.co/) ❤️
+
+## Embedding Tutorial Videos
+
+If you're creating tutorial videos or documentation for this project and need to embed YouTube videos, please refer to [YOUTUBE_EMBED_GUIDE.md](./YOUTUBE_EMBED_GUIDE.md) for proper configuration to avoid playback errors.
