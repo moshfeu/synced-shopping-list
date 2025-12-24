@@ -20,8 +20,7 @@ export const sendNotification = () => {
     }),
   })
     .then(async function (response) {
-      const result = await response.json();
-      console.log(result);
+      await response.json();
     })
     .catch(function (error) {
       console.error(error);

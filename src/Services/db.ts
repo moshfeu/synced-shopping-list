@@ -116,7 +116,6 @@ export async function deleteListItems(items: Array<ListItemView>) {
     }),
     {}
   );
-  console.log('deleteListItems', updates);
   await db.ref().update(updates);
 }
 
