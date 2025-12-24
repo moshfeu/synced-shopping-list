@@ -46,9 +46,10 @@ export const Tutorial: FC<TutorialProps> = ({
 
   // Fix for YouTube Error 153: Add proper parameters to embed URL
   // enablejsapi=1 - enables the JavaScript API
-  // origin parameter helps with CORS
+  // origin parameter helps with CORS (use current origin if available)
   // rel=0 - shows related videos from same channel only
-  const embedUrl = `https://www.youtube.com/embed/${videoId}?enablejsapi=1&origin=${window.location.origin}&rel=0`;
+  const origin = typeof window !== 'undefined' ? window.location.origin : '';
+  const embedUrl = `https://www.youtube.com/embed/${videoId}?enablejsapi=1&origin=${origin}&rel=0`;
 
   return (
     <Dialog
@@ -73,7 +74,7 @@ export const Tutorial: FC<TutorialProps> = ({
             className={classes.iframe}
             src={embedUrl}
             title={title}
-            allow='accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share'
+            allow='accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share'
             referrerPolicy='strict-origin-when-cross-origin'
             allowFullScreen
           />
