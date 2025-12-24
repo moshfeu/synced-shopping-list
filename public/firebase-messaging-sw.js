@@ -14,6 +14,6 @@ self.addEventListener('message', (message) => {
     }
 
     const messaging = firebase.messaging();
-    messaging.onBackgroundMessage(console.log);
+    messaging.onBackgroundMessage(() => {});
   }
 });
