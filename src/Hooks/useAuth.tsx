@@ -29,7 +29,6 @@ export const AuthProvider: FC = ({ children }) => {
         setCurrentUser(user);
         // register(user);
       } else {
-        console.log('no');
         setCurrentUser(null);
       }
       setIsLoading(false);

@@ -23,7 +23,7 @@ export async function add(url: string, file?: ArrayBuffer) {
       })
     );
   } catch (error) {
-    console.log(error);
+    console.error(error);
   }
 }
 

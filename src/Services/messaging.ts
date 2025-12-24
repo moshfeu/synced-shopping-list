@@ -23,17 +23,13 @@ export function register(user: firebase.User) {
             user: user.email,
             token: currentToken,
           });
-          console.log(`token ${currentToken} was added`);
-        } else {
-          console.log(`token: ${currentToken} is already exists`);
         }
       }
     })
     .catch((err) => {
-      console.log('An error occurred while retrieving token. ', err);
+      console.error('An error occurred while retrieving token. ', err);
     });
-  messaging.onMessage((a) => {
-    console.log(111111);
-    console.log(a);
+  messaging.onMessage(() => {
+    // Message received
   });
 }
