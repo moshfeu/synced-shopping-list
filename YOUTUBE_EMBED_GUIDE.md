@@ -14,7 +14,7 @@ Use this template for embedding YouTube videos:
   height="315" 
   src="https://www.youtube-nocookie.com/embed/VIDEO_ID?enablejsapi=1" 
   title="YouTube video player" 
-  frameborder="0" 
+  style="border:none;" 
   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
   referrerpolicy="strict-origin-when-cross-origin" 
   allowfullscreen>
