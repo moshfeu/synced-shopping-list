@@ -20,6 +20,7 @@ export const handler: Handler = async (event, context) => {
     };
   }
 
+  console.log('Proxying image:', decodedUrl);
   let response: Response;
   try {
     response = await fetch(decodedUrl, {
@@ -39,6 +40,12 @@ export const handler: Handler = async (event, context) => {
 
   const contentType = response.headers.get('Content-type') || '';
   if (!response.ok || !contentType.startsWith('image/')) {
+    console.log(
+      'Rejected response:',
+      decodedUrl,
+      `status ${response.status}`,
+      `type ${contentType}`
+    );
     return {
       statusCode: 502,
       body: `Not an image (status ${response.status}, type ${contentType})`,
@@ -48,6 +55,7 @@ export const handler: Handler = async (event, context) => {
   const arrayBuffer = await response.arrayBuffer();
   const data = Buffer.from(arrayBuffer);
   const base64 = data.toString('base64');
+  console.log('Proxied image:', decodedUrl, contentType, `${data.length} bytes`);
   return {
     headers: {
       'Content-type': contentType,

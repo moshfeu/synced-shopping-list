@@ -1,6 +1,6 @@
 import { useState, FormEvent, useRef } from 'react';
 import { useRouteMatch } from 'react-router-dom';
-import { Toolbar, IconButton, Typography, Box, InputBase, ImageList, ImageListItem, Skeleton, ButtonBase, CircularProgress, Button } from '@mui/material';
+import { Toolbar, IconButton, Typography, Box, InputBase, ImageList, ImageListItem, Skeleton, ButtonBase, CircularProgress, Button, Chip } from '@mui/material';
 import { ArrowBack, Search as SearchIcon } from '@mui/icons-material';
 import makeStyles from '@mui/styles/makeStyles';
 
@@ -45,6 +45,7 @@ export const GoogleSearch = ({
   const classes = useGoogleSearchStyles();
   const [isLoading, setIsLoading] = useState(false);
   const [selected, setSelected] = useState<string>();
+  const [failed, setFailed] = useState<Set<string>>(new Set());
   const imageListRef = useRef<HTMLDivElement>(null);
 
   const RESULTS_PER_PAGE = 10;
@@ -83,6 +84,7 @@ export const GoogleSearch = ({
       await onSelect(item.link, item.image.thumbnailLink);
     } catch {
       setSelected(undefined);
+      setFailed((prev) => new Set(prev).add(item.link));
     }
   }
 
@@ -132,16 +134,24 @@ export const GoogleSearch = ({
                 }}
                 component={ButtonBase}
                 onClick={() => onResultClick(item)}
-                disabled={!!selected}
+                disabled={!!selected || failed.has(item.link)}
               >
                 <img
                   alt=''
                   src={item.image.thumbnailLink}
                   style={{
-                    opacity: selected ? 0.5 : 1,
+                    opacity: selected || failed.has(item.link) ? 0.5 : 1,
                     transition: 'opacity 0.3s',
                   }}
                 />
+                {failed.has(item.link) && (
+                  <Chip
+                    label='Unavailable'
+                    size='small'
+                    color='error'
+                    sx={{ position: 'absolute', top: 4, right: 4 }}
+                  />
+                )}
                 {selected === item.link && (
                   <CircularProgress
                     color='secondary'
