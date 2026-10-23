@@ -1,4 +1,4 @@
-import React, { FC, useState } from 'react';
+import React, { FC, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Search as SearchIcon,
@@ -10,12 +10,13 @@ import { useAuth } from '../../../Hooks/useAuth';
 import { useDB } from '../../../Hooks/useDB';
 import { useUIStore } from '../../../Hooks/useUIStore';
 import { addListItem, updateListItem } from '../../../Services/db';
-import { Item, ListItemView } from '../../../Types/entities';
+import { ListItemView } from '../../../Types/entities';
 import type { ListItem } from '../../../Types/entities';
 import { Header } from '../../Header/Header';
+import type { AutocompleteOption } from '../../Autocomplete/Autocomplete';
 import { FormDialog } from '../../Dialogs/FormDialog/FormDialog';
 
-type Option = string | Item;
+type Option = string | AutocompleteOption;
 
 const useStyles = makeStyles(() => ({
   iconButton: {
@@ -33,6 +34,15 @@ export const Search: FC = () => {
   const { dispatch } = useUIStore();
   const { currentUser } = useAuth();
   const [pendingItem, setPendingItem] = useState<ListItem | null>(null);
+  const options = useMemo<Array<AutocompleteOption>>(
+    () => [
+      ...items,
+      ...list
+        .filter(({ checked }) => checked)
+        .map(({ item }) => ({ ...item, checked: true })),
+    ],
+    [items, list]
+  );
 
   function getItemOrNew(option: Option): Parameters<typeof addListItem>[0] {
     if (typeof option === 'string') {
@@ -53,30 +63,31 @@ export const Search: FC = () => {
     };
   }
 
-  function findItemInList(option: string): ListItemView | undefined {
-    return list.find(({ item }) => item.name === option);
+  function findItemInList(option: Option): ListItemView | undefined {
+    return list.find(({ item }) =>
+      typeof option === 'string' ? item.name === option : item.id === option.id
+    );
   }
 
-  function handleItemAlreadyInList(item: ListItemView): void {
-    if (!item.checked) {
-      dispatch({
-        type: 'SNACK',
-        payload: {
-          message: 'Item already in list',
-        },
-      });
-    } else {
-      updateListItem(item, { checked: false });
-    }
+  function reAddCollectedItem(listItem: ListItemView) {
+    updateListItem(listItem, { checked: false });
+    setPendingItem({ ...listItem, itemId: listItem.item.id, checked: false });
   }
 
   async function onAdd(option: Option) {
-    if (typeof option === 'string') {
-      const itemInList = findItemInList(option);
-      if (itemInList) {
-        handleItemAlreadyInList(itemInList);
-        return;
+    const itemInList = findItemInList(option);
+    if (itemInList) {
+      if (itemInList.checked) {
+        reAddCollectedItem(itemInList);
+      } else {
+        dispatch({
+          type: 'SNACK',
+          payload: {
+            message: 'Item already in list',
+          },
+        });
       }
+      return;
     }
     const item = getItemOrNew(option);
     const listItem = await addListItem(item, currentUser);
@@ -105,7 +116,7 @@ export const Search: FC = () => {
     <>
     <Header
       onSubmit={onAdd}
-      input={{ placeholder: 'Product Name', options: items }}
+      input={{ placeholder: 'Product Name', options }}
       submit={{ icon: SearchIcon, label: 'Add' }}
     >
       <Divider className={classes.divider} orientation='vertical' />
@@ -135,6 +146,7 @@ export const Search: FC = () => {
               type="number"
               fullWidth
               variant="standard"
+              defaultValue={pendingItem.quantity}
               InputProps={{
                 inputProps: { min: 1 },
               }}
