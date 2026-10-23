@@ -24,8 +24,10 @@ const useStyles = makeStyles((theme) => ({
   listItem: {
     gap: theme.spacing(1),
   },
+  name: {
+    flex: 1,
+  },
   badge: {
-    marginLeft: 'auto',
     flexShrink: 0,
   },
   list: {
@@ -93,7 +95,7 @@ export const Autocomplete: FC<AutocompleteOptions> = ({
               key={option.id}
               onClick={() => onItemClick(option)}
             >
-              {option.name}
+              <span className={classes.name}>{option.name}</span>
               {option.checked && (
                 <Chip
                   className={classes.badge}
