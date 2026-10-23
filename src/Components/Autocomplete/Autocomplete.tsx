@@ -3,7 +3,7 @@ import { Chip, InputBase, List, ListItem } from '@mui/material';
 import makeStyles from '@mui/styles/makeStyles';
 import { Item } from '../../Types/entities';
 
-export type AutocompleteOption = Item & { collected?: boolean };
+export type AutocompleteOption = Item & { checked?: boolean };
 
 type AutocompleteOptions = {
   maxResult: number;
@@ -21,8 +21,12 @@ const useStyles = makeStyles((theme) => ({
   input: {
     display: 'flex',
   },
+  listItem: {
+    gap: theme.spacing(1),
+  },
   badge: {
-    marginLeft: theme.spacing(1),
+    marginLeft: 'auto',
+    flexShrink: 0,
   },
   list: {
     position: 'absolute',
@@ -85,11 +89,12 @@ export const Autocomplete: FC<AutocompleteOptions> = ({
           {optionsList.map((option) => (
             <ListItem
               button
+              className={classes.listItem}
               key={option.id}
               onClick={() => onItemClick(option)}
             >
               {option.name}
-              {option.collected && (
+              {option.checked && (
                 <Chip
                   className={classes.badge}
                   label='Collected'

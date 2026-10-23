@@ -39,7 +39,7 @@ export const Search: FC = () => {
       ...items,
       ...list
         .filter(({ checked }) => checked)
-        .map(({ item }) => ({ ...item, collected: true })),
+        .map(({ item }) => ({ ...item, checked: true })),
     ],
     [items, list]
   );
