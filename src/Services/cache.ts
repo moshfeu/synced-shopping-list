@@ -2,7 +2,11 @@ import { getImageUrl } from './storage';
 
 const CACHE_KEY = 'ssr';
 
-export async function add(url: string, file?: ArrayBuffer) {
+export async function add(
+  url: string,
+  file?: ArrayBuffer,
+  contentType = 'application/octet-stream'
+) {
   if (!('caches' in window)) {
     return Promise.resolve();
   }
@@ -16,7 +20,7 @@ export async function add(url: string, file?: ArrayBuffer) {
       url,
       new Response(file, {
         headers: {
-          'Content-Type': 'application/octet-stream',
+          'Content-Type': contentType,
           'Content-Length': file.byteLength.toString(),
         },
         status: 200,

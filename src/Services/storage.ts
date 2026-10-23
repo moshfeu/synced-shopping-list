@@ -10,11 +10,18 @@ function getPath(fileName: string) {
   return `${ITEMS_PATH}/${fileName}`;
 }
 
-export async function upload(fileName: string, file: ArrayBuffer) {
+export async function upload(
+  fileName: string,
+  file: ArrayBuffer,
+  contentType?: string
+) {
   const productImageRef = storageRef.child(getPath(fileName));
-  const uploaded = await productImageRef.put(file);
+  const uploaded = await productImageRef.put(
+    file,
+    contentType ? { contentType } : undefined
+  );
   const { fullPath } = uploaded.metadata;
-  cache.add(getImageUrl(fullPath), file);
+  cache.add(getImageUrl(fullPath), file, contentType);
   return fullPath;
 }
 

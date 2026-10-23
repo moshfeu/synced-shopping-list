@@ -1,6 +1,6 @@
 import { useState, FormEvent, useRef } from 'react';
 import { useRouteMatch } from 'react-router-dom';
-import { Toolbar, IconButton, Typography, Box, InputBase, ImageList, ImageListItem, Skeleton, ButtonBase, CircularProgress, Button } from '@mui/material';
+import { Toolbar, IconButton, Typography, Box, InputBase, ImageList, ImageListItem, Skeleton, ButtonBase, CircularProgress, Button, Chip } from '@mui/material';
 import { ArrowBack, Search as SearchIcon } from '@mui/icons-material';
 import makeStyles from '@mui/styles/makeStyles';
 
@@ -34,7 +34,7 @@ const useGoogleSearchStyles = makeStyles((theme) => ({
 export const GoogleSearch = ({
   onSelect,
 }: {
-  onSelect: (url: string) => Promise<void>;
+  onSelect: (url: string, thumbnailUrl?: string) => Promise<void>;
 }) => {
   const { params } = useRouteMatch<RouteWithItemId>();
   const { navigateToItem } = useNavigation();
@@ -45,6 +45,7 @@ export const GoogleSearch = ({
   const classes = useGoogleSearchStyles();
   const [isLoading, setIsLoading] = useState(false);
   const [selected, setSelected] = useState<string>();
+  const [failed, setFailed] = useState<Set<string>>(new Set());
   const imageListRef = useRef<HTMLDivElement>(null);
 
   const RESULTS_PER_PAGE = 10;
@@ -77,9 +78,14 @@ export const GoogleSearch = ({
     }, 100);
   }
 
-  async function onResultClick(imagePath: string) {
-    setSelected(imagePath);
-    await onSelect(imagePath);
+  async function onResultClick(item: GoogleSearchResult) {
+    setSelected(item.link);
+    try {
+      await onSelect(item.link, item.image.thumbnailLink);
+    } catch {
+      setSelected(undefined);
+      setFailed((prev) => new Set(prev).add(item.link));
+    }
   }
 
   return (
@@ -127,17 +133,25 @@ export const GoogleSearch = ({
                   aspectRatio: '1 / 1',
                 }}
                 component={ButtonBase}
-                onClick={() => onResultClick(item.link)}
-                disabled={!!selected}
+                onClick={() => onResultClick(item)}
+                disabled={!!selected || failed.has(item.link)}
               >
                 <img
                   alt=''
                   src={item.image.thumbnailLink}
                   style={{
-                    opacity: selected ? 0.5 : 1,
+                    opacity: selected || failed.has(item.link) ? 0.5 : 1,
                     transition: 'opacity 0.3s',
                   }}
                 />
+                {failed.has(item.link) && (
+                  <Chip
+                    label='Unavailable'
+                    size='small'
+                    color='error'
+                    sx={{ position: 'absolute', top: 4, right: 4 }}
+                  />
+                )}
                 {selected === item.link && (
                   <CircularProgress
                     color='secondary'
