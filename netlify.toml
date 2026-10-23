@@ -19,4 +19,5 @@
   VITE_CUSTOMABLE_SEARCH_ENGINE_ID = "customableSearchEngineId"
   VITE_FUNCTIONS_BASE_URL="functionsBaseUrl"
 [functions]
+  directory = "netlify/functions"
   node_bundler = "esbuild"
