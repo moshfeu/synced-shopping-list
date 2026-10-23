@@ -144,13 +144,40 @@ export const ItemDetails: FC<ItemDetailsProps> = ({ listItem }) => {
     navigateTo(`${url}/google-search`);
   }
 
-  async function onGoogleResult(imagePath: string) {
-    const file = await proxy(imagePath);
-    const name = `${listItem?.item.id}#${Date.now()}.png`;
-    const uploadedPath = await upload(name, file);
+  async function fetchGoogleImage(imagePath: string, thumbnailPath?: string) {
+    try {
+      return await proxy(imagePath);
+    } catch (error) {
+      if (!thumbnailPath) {
+        throw error;
+      }
+      // the full size image is often blocked by its host, fallback to the thumbnail
+      return proxy(thumbnailPath);
+    }
+  }
 
-    await updateImage(uploadedPath);
-    navigateTo(url);
+  async function onGoogleResult(imagePath: string, thumbnailPath?: string) {
+    try {
+      const { arrayBuffer, contentType } = await fetchGoogleImage(
+        imagePath,
+        thumbnailPath
+      );
+      const extension = contentType.split('/')[1]?.split(/[;+]/)[0] || 'png';
+      const name = `${listItem?.item.id}#${Date.now()}.${extension}`;
+      const uploadedPath = await upload(name, arrayBuffer, contentType);
+
+      await updateImage(uploadedPath);
+      navigateTo(url);
+    } catch (error) {
+      console.error(`can't use google image`, error);
+      dispatch({
+        type: 'SNACK',
+        payload: {
+          message: "Couldn't use this image, try another one",
+        },
+      });
+      throw error;
+    }
   }
 
   async function onTakePhoto() {

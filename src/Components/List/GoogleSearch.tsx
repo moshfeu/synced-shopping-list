@@ -34,7 +34,7 @@ const useGoogleSearchStyles = makeStyles((theme) => ({
 export const GoogleSearch = ({
   onSelect,
 }: {
-  onSelect: (url: string) => Promise<void>;
+  onSelect: (url: string, thumbnailUrl?: string) => Promise<void>;
 }) => {
   const { params } = useRouteMatch<RouteWithItemId>();
   const { navigateToItem } = useNavigation();
@@ -77,9 +77,13 @@ export const GoogleSearch = ({
     }, 100);
   }
 
-  async function onResultClick(imagePath: string) {
-    setSelected(imagePath);
-    await onSelect(imagePath);
+  async function onResultClick(item: GoogleSearchResult) {
+    setSelected(item.link);
+    try {
+      await onSelect(item.link, item.image.thumbnailLink);
+    } catch {
+      setSelected(undefined);
+    }
   }
 
   return (
@@ -127,7 +131,7 @@ export const GoogleSearch = ({
                   aspectRatio: '1 / 1',
                 }}
                 component={ButtonBase}
-                onClick={() => onResultClick(item.link)}
+                onClick={() => onResultClick(item)}
                 disabled={!!selected}
               >
                 <img
