@@ -12,11 +12,14 @@ export function inputFileToArrayBuffer(file: File): Promise<ArrayBuffer> {
   });
 }
 
-export function showFileDialog(): Promise<FileList> {
+export function showFileDialog(capture?: 'environment' | 'user'): Promise<FileList> {
   return new Promise((resolve) => {
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = 'image/*';
+    if (capture) {
+      input.capture = capture;
+    }
     input.addEventListener('change', (e) => {
       const { files } = e.target as HTMLInputElement;
       resolve(files || new FileList());
