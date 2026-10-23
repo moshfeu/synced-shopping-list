@@ -6,13 +6,13 @@ import { useAuth } from '../../Hooks/useAuth';
 import { useToggleMainNav } from '../../Hooks/useToggleMainNav';
 import { login } from '../../Services/auth';
 import { Item } from '../../Types/entities';
-import { Autocomplete } from '../Autocomplete/Autocomplete';
+import { Autocomplete, AutocompleteOption } from '../Autocomplete/Autocomplete';
 
 type HeaderProps = {
   onSubmit?(item: string | object): void;
   input?: {
     placeholder: string;
-    options?: Array<Item>;
+    options?: Array<AutocompleteOption>;
   };
   submit?: {
     label: string;

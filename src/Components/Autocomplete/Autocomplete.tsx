@@ -1,13 +1,15 @@
 import React, { FC, useEffect, useState, useRef, FormEvent } from 'react';
-import { InputBase, List, ListItem } from '@mui/material';
+import { Chip, InputBase, List, ListItem } from '@mui/material';
 import makeStyles from '@mui/styles/makeStyles';
 import { Item } from '../../Types/entities';
+
+export type AutocompleteOption = Item & { collected?: boolean };
 
 type AutocompleteOptions = {
   maxResult: number;
   placeholder: string;
-  options: Array<Item>;
-  onSelect(option: Partial<Item> | string): void;
+  options: Array<AutocompleteOption>;
+  onSelect(option: Partial<AutocompleteOption> | string): void;
 };
 
 const useStyles = makeStyles((theme) => ({
@@ -18,6 +20,9 @@ const useStyles = makeStyles((theme) => ({
   },
   input: {
     display: 'flex',
+  },
+  badge: {
+    marginLeft: theme.spacing(1),
   },
   list: {
     position: 'absolute',
@@ -49,7 +54,7 @@ export const Autocomplete: FC<AutocompleteOptions> = ({
     );
   }, [inputValue, options, inputInFocus, maxResult]);
 
-  function onItemClick(option: Partial<Item> | string) {
+  function onItemClick(option: Partial<AutocompleteOption> | string) {
     setInputValue('');
     onSelect(option);
     inputRef.current?.focus();
@@ -84,6 +89,14 @@ export const Autocomplete: FC<AutocompleteOptions> = ({
               onClick={() => onItemClick(option)}
             >
               {option.name}
+              {option.collected && (
+                <Chip
+                  className={classes.badge}
+                  label='Collected'
+                  size='small'
+                  color='success'
+                />
+              )}
             </ListItem>
           ))}
         </List>
