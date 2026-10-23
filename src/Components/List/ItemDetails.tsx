@@ -153,8 +153,12 @@ export const ItemDetails: FC<ItemDetailsProps> = ({ listItem }) => {
     navigateTo(url);
   }
 
-  async function onReplace() {
-    const [imageFile] = await showFileDialog();
+  async function onTakePhoto() {
+    await onReplace('environment');
+  }
+
+  async function onReplace(capture?: 'environment' | 'user') {
+    const [imageFile] = await showFileDialog(capture);
     if (!imageFile) {
       return;
     }
@@ -231,7 +235,8 @@ export const ItemDetails: FC<ItemDetailsProps> = ({ listItem }) => {
                     />
                   ) : (
                     <Menu className={classes.imageMenu}>
-                      <MenuItem onClick={onReplace}>Replace</MenuItem>
+                      <MenuItem onClick={() => onReplace()}>Replace</MenuItem>
+                      <MenuItem onClick={onTakePhoto}>Take photo</MenuItem>
                       <MenuItem onClick={onReplaceGoogle}>
                         Replace (Google)
                       </MenuItem>
