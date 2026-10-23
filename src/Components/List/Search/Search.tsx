@@ -71,7 +71,9 @@ export const Search: FC = () => {
 
   function reAddCollectedItem(listItem: ListItemView) {
     updateListItem(listItem, { checked: false });
-    setPendingItem({ ...listItem, itemId: listItem.item.id, checked: false });
+    if (listItem.item.requiredQuantity) {
+      setPendingItem({ ...listItem, itemId: listItem.item.id, checked: false });
+    }
   }
 
   async function onAdd(option: Option) {
