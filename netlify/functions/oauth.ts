@@ -322,7 +322,13 @@ async function selftest(event: HandlerEvent) {
   const results: Record<string, string> = {};
   const check = async (name: string, fn: () => Promise<string | void>) => {
     try {
-      results[name] = (await fn()) || 'ok';
+      results[name] =
+        (await Promise.race([
+          fn(),
+          new Promise<never>((_, reject) =>
+            setTimeout(() => reject(new Error('timed out after 6s')), 6000)
+          ),
+        ])) || 'ok';
     } catch (error) {
       results[name] = `FAIL: ${String(error instanceof Error ? error.message : error).slice(0, 160)}`;
     }
