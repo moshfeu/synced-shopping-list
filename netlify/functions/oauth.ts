@@ -1,8 +1,10 @@
-import { createHash, timingSafeEqual } from 'node:crypto';
+import { createHash, randomUUID, timingSafeEqual } from 'node:crypto';
+import { connectLambda } from '@netlify/blobs';
 import { Handler, HandlerEvent, HandlerResponse } from '@netlify/functions';
 import { createRemoteJWKSet, jwtVerify } from 'jose';
 import { config, getBaseUrl } from './lib/config';
 import { createRepository } from './lib/db';
+import { isRevoked, revokeSession } from './lib/revocation';
 import { ACCESS_TOKEN_TTL_SECONDS, sign, verify } from './lib/tokens';
 
 /**
@@ -22,8 +24,8 @@ type AuthzState = {
   code_challenge: string;
   state?: string;
 };
-type CodeToken = AuthzState & { email: string; name?: string };
-type RefreshToken = { sub: string; name?: string; client_id: string };
+type CodeToken = AuthzState & { email: string; name?: string; sid: string };
+type RefreshToken = { sub: string; name?: string; client_id: string; sid: string };
 
 const json = (statusCode: number, body: unknown, headers = {}): HandlerResponse => ({
   statusCode,
@@ -115,6 +117,7 @@ function metadata(event: HandlerEvent, path: string) {
     issuer: base,
     authorization_endpoint: `${base}/oauth/authorize`,
     token_endpoint: `${base}/oauth/token`,
+    revocation_endpoint: `${base}/oauth/revoke`,
     registration_endpoint: `${base}/oauth/register`,
     response_types_supported: ['code'],
     grant_types_supported: ['authorization_code', 'refresh_token'],
@@ -245,17 +248,23 @@ async function callback(event: HandlerEvent) {
 
   const code = await sign(
     'code',
-    { ...authz, email, name } satisfies CodeToken,
+    { ...authz, email, name, sid: randomUUID() } satisfies CodeToken,
     '2m'
   );
   return redirect(withParams(authz.redirect_uri, { code, state: authz.state }));
 }
 
-async function issueTokens(event: HandlerEvent, email: string, name: string | undefined, clientId: string) {
+async function issueTokens(
+  event: HandlerEvent,
+  email: string,
+  name: string | undefined,
+  clientId: string,
+  sid: string
+) {
   const base = getBaseUrl(event);
   const [accessToken, refreshToken] = await Promise.all([
-    sign('access', { sub: email, name, aud: `${base}/api/mcp` }, `${ACCESS_TOKEN_TTL_SECONDS}s`),
-    sign('refresh', { sub: email, name, client_id: clientId }, '30d'),
+    sign('access', { sub: email, name, sid, aud: `${base}/api/mcp` }, `${ACCESS_TOKEN_TTL_SECONDS}s`),
+    sign('refresh', { sub: email, name, sid, client_id: clientId }, '30d'),
   ]);
   return json(200, {
     access_token: accessToken,
@@ -279,7 +288,7 @@ async function token(event: HandlerEvent) {
     ) {
       return oauthError('invalid_grant', 'Invalid authorization code or PKCE verifier');
     }
-    return issueTokens(event, code.email, code.name, code.client_id);
+    return issueTokens(event, code.email, code.name, code.client_id, code.sid);
   }
 
   if (body.grant_type === 'refresh_token') {
@@ -287,13 +296,29 @@ async function token(event: HandlerEvent) {
     if (!refresh || (body.client_id && refresh.client_id !== body.client_id)) {
       return oauthError('invalid_grant', 'Invalid refresh token');
     }
-    return issueTokens(event, refresh.sub, refresh.name, refresh.client_id);
+    if (await isRevoked(refresh.sid)) {
+      return oauthError('invalid_grant', 'Session was revoked');
+    }
+    return issueTokens(event, refresh.sub, refresh.name, refresh.client_id, refresh.sid);
   }
 
   return oauthError('unsupported_grant_type', 'Unsupported grant_type');
 }
 
+/** RFC 7009: revoking an access or refresh token ends its whole session. Always answers 200. */
+async function revoke(event: HandlerEvent) {
+  const { token: value } = parseBody(event);
+  const claims =
+    (await verify<{ sid?: string }>('refresh', value)) ||
+    (await verify<{ sid?: string }>('access', value));
+  if (claims?.sid) {
+    await revokeSession(claims.sid);
+  }
+  return json(200, {});
+}
+
 export const handler: Handler = async (event) => {
+  connectLambda(event as unknown as Parameters<typeof connectLambda>[0]);
   const path = event.path;
   try {
     if (event.httpMethod === 'OPTIONS') {
@@ -320,6 +345,9 @@ export const handler: Handler = async (event) => {
     }
     if (path.endsWith('/token') && event.httpMethod === 'POST') {
       return await token(event);
+    }
+    if (path.endsWith('/revoke') && event.httpMethod === 'POST') {
+      return await revoke(event);
     }
     return json(404, { error: 'not_found' });
   } catch (error) {

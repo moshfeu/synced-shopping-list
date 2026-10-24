@@ -1,6 +1,8 @@
+import { connectLambda } from '@netlify/blobs';
 import { Handler, HandlerEvent, HandlerResponse } from '@netlify/functions';
 import { getBaseUrl } from './lib/config';
 import { Repository, User, createRepository } from './lib/db';
+import { isRevoked } from './lib/revocation';
 import { verify } from './lib/tokens';
 
 /**
@@ -197,6 +199,7 @@ const respond = (statusCode: number, body?: unknown, headers = {}): HandlerRespo
 });
 
 export const handler: Handler = async (event: HandlerEvent) => {
+  connectLambda(event as unknown as Parameters<typeof connectLambda>[0]);
   if (event.httpMethod === 'OPTIONS') {
     return {
       statusCode: 204,
@@ -209,12 +212,24 @@ export const handler: Handler = async (event: HandlerEvent) => {
   }
 
   const bearer = (event.headers.authorization || '').match(/^Bearer (.+)$/i)?.[1];
-  const claims = await verify<{ sub: string; name?: string; aud: string }>('access', bearer);
+  const claims = await verify<{ sub: string; name?: string; aud: string; sid?: string }>('access', bearer);
   const base = getBaseUrl(event);
   if (!claims || claims.aud !== `${base}/api/mcp`) {
     return respond(401, { error: 'unauthorized' }, {
       'WWW-Authenticate': `Bearer resource_metadata="${base}/.well-known/oauth-protected-resource"`,
     });
+  }
+
+  try {
+    if (await isRevoked(claims.sid)) {
+      return respond(401, { error: 'token_revoked' }, {
+        'WWW-Authenticate': `Bearer error="invalid_token", resource_metadata="${base}/.well-known/oauth-protected-resource"`,
+      });
+    }
+  } catch (error) {
+    // Fail closed when the denylist can't be read
+    console.error('revocation check failed', error);
+    return respond(503, rpcError(null, -32000, 'Temporarily unavailable'));
   }
 
   if (event.httpMethod !== 'POST') {

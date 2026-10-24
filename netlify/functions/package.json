@@ -1,6 +1,7 @@
 {
   "type": "module",
   "dependencies": {
+    "@netlify/blobs": "^8",
     "firebase-admin": "^13",
     "jose": "^5"
   },
