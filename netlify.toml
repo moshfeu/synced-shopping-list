@@ -3,6 +3,26 @@
   to = "/.netlify/functions/:splat"
   status = 200
 [[redirects]]
+  from = "/.well-known/oauth-protected-resource/*"
+  to = "/.netlify/functions/oauth"
+  status = 200
+  force = true
+[[redirects]]
+  from = "/.well-known/oauth-protected-resource"
+  to = "/.netlify/functions/oauth"
+  status = 200
+  force = true
+[[redirects]]
+  from = "/.well-known/oauth-authorization-server"
+  to = "/.netlify/functions/oauth"
+  status = 200
+  force = true
+[[redirects]]
+  from = "/oauth/*"
+  to = "/.netlify/functions/oauth"
+  status = 200
+  force = true
+[[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200

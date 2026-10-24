@@ -83,6 +83,23 @@ netlify functions:serve
 
 The *proxy* function aims to solve the CORS issue when trying to save an image from Google search result (Item Details > Image > Replace (Google)).
 
+## MCP server (AI agents)
+
+The list can be read and edited by AI agents (Claude, ChatGPT, Cursor, ...) through an [MCP](https://modelcontextprotocol.io) server hosted as a Netlify function at `https://<your-site>/api/mcp`.
+
+Agents sign in with Google, same as the app, and the database rules apply to them as well: only emails allowed by your Firebase rules can access the list.
+
+Tools: `list_shopping_list`, `add_to_shopping_list`, `update_shopping_list_item` (including check / uncheck), `remove_from_shopping_list`, `clear_checked_items`, `list_categories`, `create_category`, `update_category`, `delete_category`, `list_suggestions`, `delete_suggestion`.
+
+### Setup
+
+1. In the Google Cloud console (the project behind your Firebase project) create an OAuth client of type *Web application* and add `https://<your-site>/oauth/callback` as an authorized redirect URI.
+2. Create a Firebase service account key (Project settings > Service accounts).
+3. Set these Netlify environment variables (see `.env.sample`): `MCP_JWT_SECRET`, `MCP_GOOGLE_CLIENT_ID`, `MCP_GOOGLE_CLIENT_SECRET`, `FIREBASE_SERVICE_ACCOUNT`. `VITE_DATABASE_URL` is reused for the database.
+4. Add `https://<your-site>/api/mcp` as a custom connector / remote MCP server in your AI client. The client discovers the OAuth endpoints automatically.
+
+Notes: tokens are stateless signed JWTs (access 1h, refresh 30d); rotating `MCP_JWT_SECRET` signs everybody out. The service account is only used to impersonate the signed-in user's email so the rules are enforced.
+
 ### Credits
 
 - Illustrations by [undraw](https://undraw.co/) ❤️
