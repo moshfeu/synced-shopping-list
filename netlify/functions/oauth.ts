@@ -386,6 +386,20 @@ async function selftest(event: HandlerEvent) {
   await check('blobsRead', async () => {
     await isRevoked('selftest');
   });
+  await check('serviceAccountRest', async () => {
+    const { cert } = await import('firebase-admin/app');
+    const account = config.serviceAccount;
+    const { access_token } = await cert(account).getAccessToken();
+    const response = await fetch(
+      `${config.databaseURL}/.json?shallow=true&access_token=${access_token}`,
+      { signal: AbortSignal.timeout(5000) }
+    );
+    const text = (await response.text()).replace(/\s+/g, ' ').slice(0, 100);
+    if (!response.ok) {
+      throw new Error(`database answered ${response.status} ${text}`);
+    }
+    return `ok (project ${account.project_id}, database ${new URL(config.databaseURL).host})`;
+  });
   await check('firebaseConnection', async () => {
     try {
       await createRepository({ email: 'selftest@invalid.example' }).getCategories();
