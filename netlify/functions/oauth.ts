@@ -386,6 +386,41 @@ async function selftest(event: HandlerEvent) {
   await check('blobsRead', async () => {
     await isRevoked('selftest');
   });
+  const base = getBaseUrl(event);
+  const selftestToken = await sign(
+    'access',
+    { sub: 'selftest@invalid.example', sid: 'selftest', aud: `${base}/api/mcp` },
+    '2m'
+  );
+  const rpc = async (id: number, method: string, params?: unknown) => {
+    const response = await fetch(`${base}/api/mcp`, {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        accept: 'application/json, text/event-stream',
+        authorization: `Bearer ${selftestToken}`,
+      },
+      body: JSON.stringify({ jsonrpc: '2.0', id, method, params }),
+      signal: AbortSignal.timeout(7000),
+    });
+    const text = await response.text();
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status} ${text.slice(0, 120)}`);
+    }
+    return JSON.parse(text);
+  };
+  await check('mcpInitialize', async () => {
+    const r = await rpc(1, 'initialize', { protocolVersion: '2025-06-18' });
+    return `ok ${r.result?.protocolVersion}`;
+  });
+  await check('mcpToolsList', async () => {
+    const r = await rpc(2, 'tools/list');
+    return `ok ${r.result?.tools?.length} tools`;
+  });
+  await check('mcpToolCall', async () => {
+    const r = await rpc(3, 'tools/call', { name: 'list_categories', arguments: {} });
+    return `ok (isError=${!!r.result?.isError}) ${String(r.result?.content?.[0]?.text).slice(0, 80)}`;
+  });
   await check('serviceAccountRest', async () => {
     const { cert } = await import('firebase-admin/app');
     const account = config.serviceAccount;
@@ -418,7 +453,7 @@ async function selftest(event: HandlerEvent) {
       await createRepository({ email: 'selftest@invalid.example' }).getCategories();
     } catch (error) {
       // the rules rejecting an unknown email proves the connection and the impersonation work
-      if (!/permission_denied|PERMISSION_DENIED/.test(String(error))) {
+      if (!/permission[_ ]denied/i.test(String(error))) {
         throw error;
       }
       return 'ok (rules rejected unknown email, as expected)';
