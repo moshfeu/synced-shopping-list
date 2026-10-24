@@ -22,7 +22,11 @@ export const config = {
     return process.env.FIREBASE_DATABASE_URL || required('VITE_DATABASE_URL');
   },
   get serviceAccount() {
-    return JSON.parse(required('FIREBASE_SERVICE_ACCOUNT'));
+    try {
+      return JSON.parse(required('FIREBASE_SERVICE_ACCOUNT'));
+    } catch {
+      throw new Error('FIREBASE_SERVICE_ACCOUNT must be the full JSON key file contents');
+    }
   },
 };
 

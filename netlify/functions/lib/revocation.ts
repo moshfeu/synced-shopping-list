@@ -7,7 +7,9 @@ import { getStore } from '@netlify/blobs';
  */
 export const SESSION_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 
-const store = () => getStore({ name: 'mcp-revoked-sessions', consistency: 'strong' });
+// Eventual consistency: strong reads need an edge URL that Lambda-compat functions don't get,
+// so a revocation can take up to ~60s to be seen everywhere.
+const store = () => getStore('mcp-revoked-sessions');
 
 export async function revokeSession(sid: string) {
   const s = store();

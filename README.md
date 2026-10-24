@@ -98,7 +98,7 @@ Tools: `list_shopping_list`, `add_to_shopping_list`, `update_shopping_list_item`
 3. Set these Netlify environment variables (see `.env.sample`): `MCP_JWT_SECRET`, `MCP_GOOGLE_CLIENT_ID`, `MCP_GOOGLE_CLIENT_SECRET`, `FIREBASE_SERVICE_ACCOUNT`. `VITE_DATABASE_URL` is reused for the database.
 4. Add `https://<your-site>/api/mcp` as a custom connector / remote MCP server in your AI client. The client discovers the OAuth endpoints automatically.
 
-Notes: tokens are signed JWTs (access 1h, refresh 30d), each tied to a session id. POST a token to `/oauth/revoke` (RFC 7009) to revoke its whole session: the revoked session ids are kept in Netlify Blobs, checked on every MCP call and on refresh. Rotating `MCP_JWT_SECRET` signs everybody out. The service account is only used to impersonate the signed-in user's email so the rules are enforced.
+Notes: tokens are signed JWTs (access 1h, refresh 30d), each tied to a session id. POST a token to `/oauth/revoke` (RFC 7009) to revoke its whole session: the revoked session ids are kept in Netlify Blobs, checked on every MCP call and on refresh (a revocation can take up to about a minute to apply). Rotating `MCP_JWT_SECRET` signs everybody out. The service account is only used to impersonate the signed-in user's email so the rules are enforced.
 
 ### Credits
 
