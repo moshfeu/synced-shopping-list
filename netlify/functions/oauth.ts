@@ -390,6 +390,12 @@ async function selftest(event: HandlerEvent) {
     const { cert } = await import('firebase-admin/app');
     const account = config.serviceAccount;
     const { access_token } = await cert(account).getAccessToken();
+    const info = await (
+      await fetch(`https://oauth2.googleapis.com/tokeninfo?access_token=${access_token}`, {
+        signal: AbortSignal.timeout(4000),
+      })
+    ).json();
+    results.serviceAccountIdentity = `${account.client_email} (project ${account.project_id}); token email ${info.email}, scopes ${String(info.scope).replace(/https:\/\/www\.googleapis\.com\/auth\//g, '')}`;
     const response = await fetch(
       `${config.databaseURL}/.json?shallow=true&access_token=${access_token}`,
       { signal: AbortSignal.timeout(5000) }
