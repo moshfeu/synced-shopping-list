@@ -396,10 +396,17 @@ async function selftest(event: HandlerEvent) {
       })
     ).json();
     results.serviceAccountIdentity = `${account.client_email} (project ${account.project_id}); token email ${info.email}, scopes ${String(info.scope).replace(/https:\/\/www\.googleapis\.com\/auth\//g, '')}`;
-    const response = await fetch(
-      `${config.databaseURL}/.json?shallow=true&access_token=${access_token}`,
-      { signal: AbortSignal.timeout(5000) }
-    );
+    const dbUrl = config.databaseURL;
+    results.databaseUrlShape = `${JSON.stringify(dbUrl.slice(0, 8))}...${JSON.stringify(dbUrl.slice(-14))} length ${dbUrl.length}`;
+    const viaQuery = await fetch(`${dbUrl}/.json?shallow=true&access_token=${access_token}`, {
+      signal: AbortSignal.timeout(5000),
+    });
+    const viaHeader = await fetch(`${dbUrl}/.json?shallow=true`, {
+      headers: { Authorization: `Bearer ${access_token}` },
+      signal: AbortSignal.timeout(5000),
+    });
+    results.restVariants = `query ${viaQuery.status}, header ${viaHeader.status}`;
+    const response = viaQuery.ok ? viaQuery : viaHeader;
     const text = (await response.text()).replace(/\s+/g, ' ').slice(0, 100);
     if (!response.ok) {
       throw new Error(`database answered ${response.status} ${text}`);
