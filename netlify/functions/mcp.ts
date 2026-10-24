@@ -3,6 +3,7 @@ import { Handler, HandlerEvent, HandlerResponse } from '@netlify/functions';
 import { getBaseUrl } from './lib/config';
 import { Repository, User, createRepository } from './lib/db';
 import { isRevoked } from './lib/revocation';
+import { imageFromBase64, imageFromUrl } from './lib/image';
 import { verify } from './lib/tokens';
 
 /**
@@ -82,6 +83,37 @@ const tools: Tool[] = [
       ['id']
     ),
     run: (repo, { id, ...changes }) => repo.updateListItem(id, changes),
+  },
+  {
+    name: 'set_item_image',
+    description:
+      'Attach a photo to a list item (replaces the current one). Provide imageUrl (public https link to a jpeg/png/webp/gif, max 4 MB) or imageBase64 with mimeType. Chat attachments have no URL, so use imageBase64 only for small files.',
+    inputSchema: object(
+      {
+        id: str('List item id (from list_shopping_list)'),
+        imageUrl: str('Public https URL of the image'),
+        imageBase64: str('Base64 image data (small images only)'),
+        mimeType: { type: 'string', enum: ['image/jpeg', 'image/png', 'image/webp', 'image/gif'] },
+      },
+      ['id']
+    ),
+    run: async (repo, { id, imageUrl, imageBase64, mimeType }) => {
+      if (!imageUrl === !imageBase64) {
+        throw new Error('Provide exactly one of imageUrl or imageBase64');
+      }
+      if (imageBase64 && !mimeType) {
+        throw new Error('mimeType is required with imageBase64');
+      }
+      const image = imageUrl ? await imageFromUrl(imageUrl) : imageFromBase64(imageBase64, mimeType);
+      return repo.setItemImage(id, image);
+    },
+  },
+  {
+    name: 'remove_item_image',
+    description: "Remove a list item's photo.",
+    inputSchema: object({ id: str('List item id') }, ['id']),
+    destructive: true,
+    run: (repo, { id }) => repo.removeItemImage(id),
   },
   {
     name: 'remove_from_shopping_list',

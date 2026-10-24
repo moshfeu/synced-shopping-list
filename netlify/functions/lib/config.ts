@@ -21,6 +21,9 @@ export const config = {
   get databaseURL() {
     return process.env.FIREBASE_DATABASE_URL || required('VITE_DATABASE_URL');
   },
+  get storageBucket() {
+    return process.env.FIREBASE_STORAGE_BUCKET || required('VITE_STORAGE_BUCKET');
+  },
   get serviceAccount() {
     try {
       return JSON.parse(required('FIREBASE_SERVICE_ACCOUNT'));

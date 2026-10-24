@@ -1,6 +1,8 @@
 import { cert, getApps, initializeApp } from 'firebase-admin/app';
 import type { App } from 'firebase-admin/app';
 import { getDatabase } from 'firebase-admin/database';
+import { getStorage } from 'firebase-admin/storage';
+import type { ImageData } from './image';
 import { config } from './config';
 
 export type Urgency = '1' | '2' | '3';
@@ -39,6 +41,7 @@ function getUserDb(user: User) {
       {
         credential: cert(config.serviceAccount),
         databaseURL: config.databaseURL,
+        storageBucket: config.storageBucket,
         databaseAuthVariableOverride: {
           uid: user.email,
           token: { email: user.email, email_verified: true },
@@ -57,6 +60,7 @@ function toArray<T>(record: Record<string, Omit<T, 'id'>> | null | undefined) {
 
 export function createRepository(user: User) {
   const db = getUserDb(user);
+  const app = getApps().find((a) => a.name === `user:${user.email}`)!;
 
   async function read<T>(path: string) {
     return toArray<T>((await db.ref(path).get()).val());
@@ -98,6 +102,7 @@ export function createRepository(user: User) {
             note: l.note,
             checked: l.checked,
             urgency: l.urgency,
+            hasImage: !!item?.image,
             addedBy: l.addedBy?.displayName ?? null,
             addedAt: l.addedAt,
           };
@@ -184,6 +189,38 @@ export function createRepository(user: User) {
       }
       await db.ref().update(updates);
       return (await this.getList()).find((l) => l.id === id);
+    },
+
+    /** Stores an image the same way the web app does: `items/<itemId>#<name>`, path kept in `item.image`. */
+    async setItemImage(id: string, image: ImageData) {
+      const { itemId } = await getListItem(id);
+      const itemSnapshot = await db.ref(`items/${itemId}`).get();
+      const previous: string | null | undefined = itemSnapshot.val()?.image;
+
+      const path = `items/${itemId}#mcp-${Date.now()}.${image.extension}`;
+      await getStorage(app)
+        .bucket()
+        .file(path)
+        .save(image.buffer, { contentType: image.contentType, resumable: false });
+      await db.ref(`items/${itemId}`).update({ image: path });
+
+      if (previous && !previous.startsWith('https')) {
+        await getStorage(app).bucket().file(previous).delete({ ignoreNotFound: true });
+      }
+      return { id, image: path, bytes: image.buffer.length };
+    },
+
+    async removeItemImage(id: string) {
+      const { itemId } = await getListItem(id);
+      const previous: string | null | undefined = (await db.ref(`items/${itemId}`).get()).val()?.image;
+      if (!previous) {
+        return { id, removed: false };
+      }
+      await db.ref(`items/${itemId}`).update({ image: null });
+      if (!previous.startsWith('https')) {
+        await getStorage(app).bucket().file(previous).delete({ ignoreNotFound: true });
+      }
+      return { id, removed: true };
     },
 
     async removeFromList(ids: string[]) {
