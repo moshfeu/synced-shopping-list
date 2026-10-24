@@ -448,17 +448,24 @@ async function selftest(event: HandlerEvent) {
     }
     return `ok (project ${account.project_id}, database ${new URL(config.databaseURL).host})`;
   });
+  const probeEmail = (event.queryStringParameters || {}).email || 'selftest@invalid.example';
+  const isRealProbe = !!(event.queryStringParameters || {}).email;
   await check('firebaseConnection', async () => {
     try {
-      await createRepository({ email: 'selftest@invalid.example' }).getCategories();
+      await createRepository({ email: probeEmail }).getCategories();
     } catch (error) {
       // the rules rejecting an unknown email proves the connection and the impersonation work
       if (!/permission[_ ]denied/i.test(String(error))) {
         throw error;
       }
+      if (isRealProbe) {
+        throw new Error('rules REJECT this email: add it to the database rules (.read/.write)');
+      }
       return 'ok (rules rejected unknown email, as expected)';
     }
-    return 'ok (read allowed for unknown email: check your rules)';
+    return isRealProbe
+      ? 'ok (rules ALLOW this email)'
+      : 'ok (read allowed for unknown email: check your rules)';
   });
   return json(200, results);
 }
