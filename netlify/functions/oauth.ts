@@ -317,6 +317,84 @@ async function revoke(event: HandlerEvent) {
   return json(200, {});
 }
 
+// TEMPORARY: diagnoses the deployed environment without log access. Remove before merge.
+async function selftest(event: HandlerEvent) {
+  const results: Record<string, string> = {};
+  const check = async (name: string, fn: () => Promise<string | void>) => {
+    try {
+      results[name] = (await fn()) || 'ok';
+    } catch (error) {
+      results[name] = `FAIL: ${String(error instanceof Error ? error.message : error).slice(0, 160)}`;
+    }
+  };
+
+  await check('env', async () => {
+    const missing = [
+      'MCP_JWT_SECRET',
+      'MCP_GOOGLE_CLIENT_ID',
+      'MCP_GOOGLE_CLIENT_SECRET',
+      'FIREBASE_SERVICE_ACCOUNT',
+    ].filter((name) => !process.env[name]);
+    if (!process.env.FIREBASE_DATABASE_URL && !process.env.VITE_DATABASE_URL) {
+      missing.push('FIREBASE_DATABASE_URL|VITE_DATABASE_URL');
+    }
+    if (missing.length) {
+      throw new Error(`missing ${missing.join(', ')}`);
+    }
+  });
+  await check('serviceAccountJson', async () => {
+    const account = config.serviceAccount;
+    if (!account.private_key || !account.client_email) {
+      throw new Error('missing private_key or client_email');
+    }
+  });
+  await check('tokenExchange', async () => {
+    const verifier = 'v'.repeat(64);
+    const code = await sign(
+      'code',
+      {
+        client_id: 'selftest',
+        redirect_uri: 'https://selftest.invalid/cb',
+        code_challenge: createHash('sha256').update(verifier).digest('base64url'),
+        email: 'selftest@invalid',
+        sid: 'selftest',
+      },
+      '1m'
+    );
+    const response = await token({
+      ...event,
+      body: new URLSearchParams({
+        grant_type: 'authorization_code',
+        code,
+        client_id: 'selftest',
+        redirect_uri: 'https://selftest.invalid/cb',
+        code_verifier: verifier,
+      }).toString(),
+      isBase64Encoded: false,
+      headers: { ...event.headers, 'content-type': 'application/x-www-form-urlencoded' },
+    });
+    if (response.statusCode !== 200) {
+      throw new Error(`status ${response.statusCode} ${response.body}`);
+    }
+  });
+  await check('blobsRead', async () => {
+    await isRevoked('selftest');
+  });
+  await check('firebaseConnection', async () => {
+    try {
+      await createRepository({ email: 'selftest@invalid.example' }).getCategories();
+    } catch (error) {
+      // the rules rejecting an unknown email proves the connection and the impersonation work
+      if (!/permission_denied|PERMISSION_DENIED/.test(String(error))) {
+        throw error;
+      }
+      return 'ok (rules rejected unknown email, as expected)';
+    }
+    return 'ok (read allowed for unknown email: check your rules)';
+  });
+  return json(200, results);
+}
+
 export const handler: Handler = async (event) => {
   connectLambda(event as unknown as Parameters<typeof connectLambda>[0]);
   const path = event.path;
@@ -345,6 +423,9 @@ export const handler: Handler = async (event) => {
     }
     if (path.endsWith('/token') && event.httpMethod === 'POST') {
       return await token(event);
+    }
+    if (path.endsWith('/selftest') && event.httpMethod === 'GET') {
+      return await selftest(event);
     }
     if (path.endsWith('/revoke') && event.httpMethod === 'POST') {
       return await revoke(event);
