@@ -1,5 +1,13 @@
 {
   "type": "module",
-  "dependencies": {},
-  "devDependencies": {}
+  "dependencies": {
+    "@netlify/blobs": "^8",
+    "firebase-admin": "^13",
+    "jose": "^5"
+  },
+  "devDependencies": {
+    "@netlify/functions": "^1.6.0",
+    "@types/node": "^22",
+    "typescript": "^5"
+  }
 }
