@@ -83,6 +83,10 @@ netlify functions:serve
 
 The *proxy* function aims to solve the CORS issue when trying to save an image from Google search result (Item Details > Image > Replace (Google)).
 
+## MCP server (AI agents)
+
+AI agents (Claude, ChatGPT, Cursor, ...) can read and edit the list through an [MCP](https://modelcontextprotocol.io) server at `https://<your-site>/api/mcp`, signing in with the same Google account as the app. Setup, flows and gotchas: [docs/mcp.md](docs/mcp.md).
+
 ### Credits
 
 - Illustrations by [undraw](https://undraw.co/) ❤️

@@ -51,7 +51,8 @@ export default defineConfig({
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
         navigateFallback: 'index.html',
-        navigateFallbackDenylist: [/^\/_/],
+        // Server routes (MCP OAuth + API) must reach Netlify, not the SPA shell
+        navigateFallbackDenylist: [/^\/_/, /^\/oauth\//, /^\/api\//, /^\/\.well-known\//],
         // Aggressive service worker takeover
         cleanupOutdatedCaches: true,
         clientsClaim: true, // Take control of all clients immediately
