@@ -14,12 +14,8 @@ export const EXTENSIONS: Record<string, string> = {
 
 export type ImageData = { buffer: Buffer; contentType: string; extension: string };
 
-function isPrivateAddress(address: string) {
-  if (isIP(address) === 6) {
-    const lower = address.toLowerCase();
-    return lower === '::1' || lower === '::' || /^f[cd]/.test(lower) || lower.startsWith('fe80');
-  }
-  // IPv4 ranges an agent-supplied URL must not reach (SSRF guard)
+/** IPv4 ranges an agent-supplied URL must not reach (SSRF guard). */
+function isInternalIPv4(address: string) {
   const [a, b] = address.split('.').map(Number);
   return (
     a === 0 || // "this network"
@@ -30,6 +26,38 @@ function isPrivateAddress(address: string) {
     (a === 192 && b === 168) || // private 192.168.0.0/16
     (a === 100 && b >= 64 && b <= 127) // carrier-grade NAT 100.64.0.0/10
   );
+}
+
+/** IPv4 address embedded in an IPv4-mapped IPv6 address (::ffff:a.b.c.d or ::ffff:hhhh:hhhh). */
+function getMappedIPv4(address: string) {
+  const dotted = address.match(/^::ffff:(\d+\.\d+\.\d+\.\d+)$/);
+  if (dotted) {
+    return dotted[1];
+  }
+  const hex = address.match(/^::ffff:([0-9a-f]{1,4}):([0-9a-f]{1,4})$/);
+  if (hex) {
+    const [high, low] = [parseInt(hex[1], 16), parseInt(hex[2], 16)];
+    return [high >> 8, high & 255, low >> 8, low & 255].join('.');
+  }
+  return undefined;
+}
+
+function isInternalIPv6(address: string) {
+  const lower = address.toLowerCase();
+  const mappedIPv4 = getMappedIPv4(lower);
+  if (mappedIPv4) {
+    return isInternalIPv4(mappedIPv4);
+  }
+  return (
+    lower === '::1' || // loopback
+    lower === '::' || // unspecified
+    /^f[cd]/.test(lower) || // unique local fc00::/7
+    /^fe[89ab]/.test(lower) // link-local fe80::/10
+  );
+}
+
+function isInternalAddress(address: string) {
+  return isIP(address) === 6 ? isInternalIPv6(address) : isInternalIPv4(address);
 }
 
 function fromBuffer(buffer: Buffer, declaredType: string): ImageData {
@@ -56,7 +84,7 @@ export async function imageFromUrl(rawUrl: string) {
     throw new Error('Image URL must use https');
   }
   const addresses = await lookup(url.hostname, { all: true });
-  if (!addresses.length || addresses.some(({ address }) => isPrivateAddress(address))) {
+  if (!addresses.length || addresses.some(({ address }) => isInternalAddress(address))) {
     throw new Error('Image URL must point to a public host');
   }
   const response = await fetch(url, {
