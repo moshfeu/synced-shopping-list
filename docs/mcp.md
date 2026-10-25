@@ -141,10 +141,10 @@ With `GRAFANA_LOKI_URL`, `GRAFANA_LOKI_USER` and `GRAFANA_LOKI_TOKEN` set in Net
 2. Create an access policy token with the `logs:write` scope (Administration > Cloud access policies) and set it as `GRAFANA_LOKI_TOKEN`.
 3. Set the three variables in Netlify (the token is a secret). Mind the 4 KB limit on all variables combined.
 
-Streams carry the labels `app="synced-shopping-list"`, `service` (`mcp` or `oauth`), `env` (the Netlify deploy context: `production`, `deploy-preview`, ...) and `level`. Everything else is in the JSON line:
+Streams carry the labels `app="synced-shopping-list"`, `service_name` (`synced-shopping-list-mcp` or `synced-shopping-list-oauth`), `env` (the Netlify deploy context: `production`, `deploy-preview`, ...) and `level`. Everything else is in the JSON line:
 
 ```logql
-{app="synced-shopping-list", service="mcp"} | json | event="mcp.tool" | ok="false"
+{app="synced-shopping-list", service_name="synced-shopping-list-mcp"} | json | event="mcp.tool" | ok="false"
 {app="synced-shopping-list", env="deploy-preview"} | json | event=~"oauth.*"
 ```
 
