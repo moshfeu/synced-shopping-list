@@ -1,16 +1,29 @@
 import { omit } from 'lodash';
 import { db } from './firebase';
+import { createListRepository, DB_REF } from '../shared/list-repository';
+import type { DatabaseAdapter } from '../shared/list-repository';
 import { ListItem, Item, Category, ListItemView, DBItem, ItemView } from '../Types/entities';
 
 type NewRecord<T> = Omit<T, 'id'>;
 
-export const DB_REF = {
-  ITEMS: 'items',
-  CATEGORIES: 'categories',
-  LIST: 'list',
-} as const;
+export { DB_REF };
 
-type DBRef = typeof DB_REF[keyof typeof DB_REF];
+const clientAdapter: DatabaseAdapter = {
+  async get<T>(path: string) {
+    return (await db.ref(path).get()).val() as T | null;
+  },
+  async update(updates) {
+    await db.ref().update(updates);
+  },
+  async push(path, value) {
+    return (await db.ref(path).push(value)).key!;
+  },
+  async remove(path) {
+    await db.ref(path).remove();
+  },
+};
+
+const repository = createListRepository(clientAdapter);
 
 function getAddedByFromUser(user?: ListItem['addedBy']) {
   if (!user) {
@@ -22,53 +35,22 @@ function getAddedByFromUser(user?: ListItem['addedBy']) {
   };
 }
 
-function updateRef<T extends DBItem>(
-  item: T,
-  itemData: Partial<T>,
-  ref: DBRef
-) {
+function requireId(item: DBItem) {
   if (!item.id) {
     throw new Error('item must has id');
   }
-  const updates = Object.entries(itemData).reduce(
-    (prev, [prop, value]) => ({
-      ...prev,
-      [`${ref}/${item.id}/${prop}`]: value,
-    }),
-    {}
-  );
-  return db.ref().update(updates);
+  return item.id;
 }
 
 export async function addItem(item: NewRecord<Item>) {
-  return db.ref(DB_REF.ITEMS).push(item);
+  return repository.addItem(item);
 }
 
-export async function addListItem(
+export function addListItem(
   item: Pick<ListItem, 'itemId'> | NewRecord<Item>,
   user?: ListItem['addedBy']
 ): Promise<ListItem> {
-  const newListItem: Omit<ListItem, 'id'> = {
-    checked: false,
-    note: '',
-    quantity: 1,
-    urgency: '1',
-    addedBy: getAddedByFromUser(user),
-    addedAt: Date.now(),
-    itemId: '',
-  };
-
-  if (!('itemId' in item)) {
-    const newItem = await addItem(item);
-    newListItem.itemId = newItem.key!;
-  } else {
-    newListItem.itemId = item.itemId;
-  }
-  const refObject = await db.ref(DB_REF.LIST).push(newListItem);
-  return {
-    ...newListItem,
-    id: refObject.key!,
-  };
+  return repository.addListItem(item, getAddedByFromUser(user));
 }
 
 export const addListItemFull = async (item: ListItemView) => {
@@ -76,64 +58,46 @@ export const addListItemFull = async (item: ListItemView) => {
   if (item.item.category) {
     itemToAdd.categoryId = item.item.category.id;
   }
-  const { key: itemId } = await addItem(itemToAdd);
-  if (!itemId) {
-    throw new Error('added item must have id');
-  }
+  const itemId = await repository.addItem(itemToAdd);
   const listItem: NewRecord<ListItem> = {
     ...omit(item, ['id', 'item', 'category']) as ListItem,
     itemId,
   };
-
-  const { key: addedListItemId } = await db.ref(DB_REF.LIST).push({
-    ...listItem,
-    itemId,
-  });
+  const addedListItemId = await repository.pushListItem(listItem);
   return { itemId, addedListItemId };
 };
 
 export function addListItems(items: Array<NewRecord<ListItem>>) {
-  const listItemsRef = db.ref(DB_REF.LIST);
-  return Promise.all(items.map((item) => listItemsRef.push(item)));
+  return repository.addListItems(items);
 }
 
 export function updateListItem(
   item: ListItemView | ListItem,
   itemData: Partial<ListItemView>
 ) {
-  return updateRef(item, itemData, DB_REF.LIST);
+  return repository.updateListItem(requireId(item), itemData);
 }
 
 export function deleteItem(itemId: string) {
-  return db.ref(`${DB_REF.ITEMS}/${itemId}`).remove();
+  return repository.deleteItem(itemId);
 }
 
-export async function deleteListItems(items: Array<ListItemView>) {
-  const updates = items.reduce(
-    (prev, next) => ({
-      ...prev,
-      [`${DB_REF.LIST}/${next.id}`]: null,
-    }),
-    {}
-  );
-  console.log('deleteListItems', updates);
-  await db.ref().update(updates);
+export function deleteListItems(items: Array<ListItemView>) {
+  return repository.deleteListItems(items.map(({ id }) => id));
 }
 
 export function updateItem(item: ItemView, itemData: Partial<Item>) {
-  return updateRef(item, itemData, DB_REF.ITEMS);
+  return repository.updateItem(requireId(item), itemData);
 }
 
 export function addCategory(category: NewRecord<Category>) {
-  return db.ref(DB_REF.CATEGORIES).push(category);
+  return repository.addCategory(category);
 }
 
 export function updateCategory(id: string, name: string) {
-  return db.ref(`${DB_REF.CATEGORIES}/${id}`).update({
-    name,
-  });
+  return repository.updateCategory(id, { name });
 }
 
 export function deleteCategory(categoryId: string) {
-  return db.ref(`${DB_REF.CATEGORIES}/${categoryId}`).remove();
+  return repository.deleteCategory(categoryId);
 }
