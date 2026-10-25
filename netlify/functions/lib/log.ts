@@ -43,7 +43,8 @@ export async function flushLogs(service: string, env: string) {
     return;
   }
   // Labels stay low-cardinality; everything else is in the JSON line (`| json`)
-  const labels = { app: 'synced-shopping-list', service, env };
+  // `service_name` is Grafana's own service label (OpenTelemetry style); set it so it doesn't default to "mcp"
+  const labels = { app: 'synced-shopping-list', service_name: `synced-shopping-list-${service}`, env };
   const streams = (['info', 'warn', 'error'] as const)
     .map((level) => ({
       stream: { ...labels, level },
