@@ -22,7 +22,12 @@ export const config = {
     return process.env.FIREBASE_DATABASE_URL || required('VITE_DATABASE_URL');
   },
   get storageBucket() {
-    return process.env.FIREBASE_STORAGE_BUCKET || required('VITE_STORAGE_BUCKET');
+    // Follows the service account's project so a dev key never writes to the
+    // prod bucket. Set FIREBASE_STORAGE_BUCKET for `*.firebasestorage.app` buckets.
+    return (
+      process.env.FIREBASE_STORAGE_BUCKET ||
+      `${this.serviceAccount.project_id}.appspot.com`
+    );
   },
   get serviceAccount() {
     try {
