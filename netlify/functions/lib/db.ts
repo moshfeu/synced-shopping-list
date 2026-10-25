@@ -2,10 +2,10 @@ import { cert, getApps, initializeApp } from 'firebase-admin/app';
 import type { App } from 'firebase-admin/app';
 import { getDatabase } from 'firebase-admin/database';
 import { getStorage } from 'firebase-admin/storage';
-import { EXTENSIONS, MAX_UPLOAD_BYTES } from './image';
+import { MAX_UPLOAD_BYTES } from './image';
 import type { ImageData } from './image';
 import { config } from './config';
-import { buildItemImagePath } from '../../../src/shared/images';
+import { IMAGE_EXTENSIONS, buildItemImagePath } from '../../../src/shared/images';
 import { createListRepository } from '../../../src/shared/list-repository';
 import type {
   DatabaseAdapter,
@@ -141,9 +141,9 @@ export function createRepository(user: User) {
 
     /** Step 1 of a direct upload: a short-lived signed PUT link so the bytes never pass through the agent's context. */
     async createImageUpload(id: string, contentType: string) {
-      const extension = EXTENSIONS[contentType];
+      const extension = IMAGE_EXTENSIONS[contentType];
       if (!extension) {
-        throw new Error(`Unsupported image type "${contentType}" (use ${Object.keys(EXTENSIONS).join(', ')})`);
+        throw new Error(`Unsupported image type "${contentType}" (use ${Object.keys(IMAGE_EXTENSIONS).join(', ')})`);
       }
       const path = mcpImagePath(await getItemOf(id), extension);
       const sizeRange = `0,${MAX_UPLOAD_BYTES}`;
@@ -179,7 +179,7 @@ export function createRepository(user: User) {
         throw new Error('No uploaded file found at that path (did the PUT succeed?)');
       }
       const [{ size, contentType }] = await file.getMetadata();
-      if (!EXTENSIONS[String(contentType)]) {
+      if (!IMAGE_EXTENSIONS[String(contentType)]) {
         await file.delete({ ignoreNotFound: true });
         throw new Error(`Uploaded file has unsupported type "${contentType}"`);
       }

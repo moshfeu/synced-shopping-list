@@ -6,8 +6,6 @@ export const MAX_IMAGE_BYTES = 4 * 1024 * 1024;
 
 export const MAX_UPLOAD_BYTES = 10 * 1024 * 1024;
 
-export const EXTENSIONS = IMAGE_EXTENSIONS;
-
 export type ImageData = { buffer: Buffer; contentType: string; extension: string };
 
 /** IPv4 ranges an agent-supplied URL must not reach (SSRF guard). */
@@ -58,7 +56,7 @@ function isInternalAddress(address: string) {
 
 function fromBuffer(buffer: Buffer, declaredType: string): ImageData {
   const contentType = declaredType.split(';')[0].trim().toLowerCase();
-  const extension = EXTENSIONS[contentType];
+  const extension = IMAGE_EXTENSIONS[contentType];
   if (!extension) {
     throw new Error(`Unsupported image type "${contentType}" (use jpeg, png, webp or gif)`);
   }
