@@ -3,7 +3,9 @@ import { isIP } from 'node:net';
 
 export const MAX_IMAGE_BYTES = 4 * 1024 * 1024;
 
-const EXTENSIONS: Record<string, string> = {
+export const MAX_UPLOAD_BYTES = 10 * 1024 * 1024;
+
+export const EXTENSIONS: Record<string, string> = {
   'image/jpeg': 'jpg',
   'image/png': 'png',
   'image/webp': 'webp',

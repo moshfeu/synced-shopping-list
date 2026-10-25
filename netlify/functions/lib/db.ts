@@ -2,6 +2,7 @@ import { cert, getApps, initializeApp } from 'firebase-admin/app';
 import type { App } from 'firebase-admin/app';
 import { getDatabase } from 'firebase-admin/database';
 import { getStorage } from 'firebase-admin/storage';
+import { EXTENSIONS, MAX_UPLOAD_BYTES } from './image';
 import type { ImageData } from './image';
 import { config } from './config';
 
@@ -208,6 +209,60 @@ export function createRepository(user: User) {
         await getStorage(app).bucket().file(previous).delete({ ignoreNotFound: true });
       }
       return { id, image: path, bytes: image.buffer.length };
+    },
+
+    /** Step 1 of a direct upload: a short-lived signed PUT link so the bytes never pass through the agent's context. */
+    async createImageUpload(id: string, contentType: string) {
+      const extension = EXTENSIONS[contentType];
+      if (!extension) {
+        throw new Error(`Unsupported image type "${contentType}" (use ${Object.keys(EXTENSIONS).join(', ')})`);
+      }
+      const { itemId } = await getListItem(id);
+      const path = `items/${itemId}#mcp-${Date.now()}.${extension}`;
+      const sizeRange = `0,${MAX_UPLOAD_BYTES}`;
+      const [uploadUrl] = await getStorage(app)
+        .bucket()
+        .file(path)
+        .getSignedUrl({
+          version: 'v4',
+          action: 'write',
+          expires: Date.now() + 10 * 60 * 1000,
+          contentType,
+          extensionHeaders: { 'x-goog-content-length-range': sizeRange },
+        });
+      return {
+        uploadUrl,
+        method: 'PUT',
+        headers: { 'Content-Type': contentType, 'x-goog-content-length-range': sizeRange },
+        path,
+        expiresInSeconds: 600,
+        next: `PUT the raw image bytes to uploadUrl with exactly these headers, then call finalize_item_image with id and path`,
+      };
+    },
+
+    /** Step 2: verifies the uploaded file, then points the item at it (and drops the previous image). */
+    async finalizeItemImage(id: string, path: string) {
+      const { itemId } = await getListItem(id);
+      if (!path.startsWith(`items/${itemId}#mcp-`)) {
+        throw new Error('path does not belong to this item');
+      }
+      const file = getStorage(app).bucket().file(path);
+      const [exists] = await file.exists();
+      if (!exists) {
+        throw new Error('No uploaded file found at that path (did the PUT succeed?)');
+      }
+      const [{ size, contentType }] = await file.getMetadata();
+      if (!EXTENSIONS[String(contentType)]) {
+        await file.delete({ ignoreNotFound: true });
+        throw new Error(`Uploaded file has unsupported type "${contentType}"`);
+      }
+      const itemSnapshot = await db.ref(`items/${itemId}`).get();
+      const previous: string | null | undefined = itemSnapshot.val()?.image;
+      await db.ref(`items/${itemId}`).update({ image: path });
+      if (previous && previous !== path && !previous.startsWith('https')) {
+        await getStorage(app).bucket().file(previous).delete({ ignoreNotFound: true });
+      }
+      return { id, image: path, bytes: Number(size), contentType };
     },
 
     async removeItemImage(id: string) {

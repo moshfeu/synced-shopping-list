@@ -109,6 +109,25 @@ const tools: Tool[] = [
     },
   },
   {
+    name: 'create_item_image_upload',
+    description:
+      'Step 1 of attaching a full-size photo without sending it through chat: returns a short-lived signed URL. Then HTTP PUT the raw image bytes to it with the returned headers (e.g. curl --upload-file), then call finalize_item_image. Max 10 MB.',
+    inputSchema: object(
+      {
+        id: str('List item id (from list_shopping_list)'),
+        contentType: { type: 'string', enum: ['image/jpeg', 'image/png', 'image/webp', 'image/gif'] },
+      },
+      ['id', 'contentType']
+    ),
+    run: (repo, { id, contentType }) => repo.createImageUpload(id, contentType),
+  },
+  {
+    name: 'finalize_item_image',
+    description: 'Step 2 of create_item_image_upload: attaches the uploaded file (path from step 1) to the list item.',
+    inputSchema: object({ id: str('List item id'), path: str('path returned by create_item_image_upload') }, ['id', 'path']),
+    run: (repo, { id, path }) => repo.finalizeItemImage(id, path),
+  },
+  {
     name: 'remove_item_image',
     description: "Remove a list item's photo.",
     inputSchema: object({ id: str('List item id') }, ['id']),
