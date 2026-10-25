@@ -5,7 +5,7 @@ import { createRemoteJWKSet, jwtVerify } from 'jose';
 import { config, getBaseUrl } from './lib/config';
 import { createRepository } from './lib/db';
 import { jsonResponse, preflightResponse } from './lib/http';
-import { errorFields, log, maskEmail } from './lib/log';
+import { errorFields, flushLogs, log, maskEmail } from './lib/log';
 import { isRevoked, revokeSession } from './lib/revocation';
 import { ACCESS_TOKEN_TTL_SECONDS, sign, verify } from './lib/tokens';
 
@@ -358,7 +358,7 @@ async function revoke(event: HandlerEvent) {
   return json(200, {});
 }
 
-export const handler: Handler = async (event) => {
+const handle = async (event: HandlerEvent) => {
   connectLambda(event as unknown as Parameters<typeof connectLambda>[0]);
   const path = event.path;
   try {
@@ -390,5 +390,13 @@ export const handler: Handler = async (event) => {
   } catch (error) {
     log('error', 'oauth.unhandled_error', { path, httpMethod: event.httpMethod, ...errorFields(error) });
     return oauthError('server_error', 'Unexpected error', 500);
+  }
+};
+
+export const handler: Handler = async (event: HandlerEvent) => {
+  try {
+    return await handle(event);
+  } finally {
+    await flushLogs('oauth');
   }
 };

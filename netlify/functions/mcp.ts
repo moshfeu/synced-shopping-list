@@ -4,7 +4,7 @@ import pkg from '../../package.json';
 import { getBaseUrl } from './lib/config';
 import { Repository, User, createRepository } from './lib/db';
 import { corsResponse, jsonResponse, preflightResponse } from './lib/http';
-import { errorFields, log, maskEmail } from './lib/log';
+import { errorFields, flushLogs, log, maskEmail } from './lib/log';
 import { isRevoked } from './lib/revocation';
 import { imageFromBase64, imageFromUrl } from './lib/image';
 import { verify } from './lib/tokens';
@@ -276,7 +276,7 @@ async function handleRequest(req: JsonRpcRequest, user: User, sid?: string) {
 
 const respond = jsonResponse;
 
-export const handler: Handler = async (event: HandlerEvent) => {
+const handle = async (event: HandlerEvent) => {
   connectLambda(event as unknown as Parameters<typeof connectLambda>[0]);
   if (event.httpMethod === 'OPTIONS') {
     return preflightResponse(
@@ -340,4 +340,12 @@ export const handler: Handler = async (event: HandlerEvent) => {
     return corsResponse(202);
   }
   return respond(200, Array.isArray(payload) ? responses : responses[0]);
+};
+
+export const handler: Handler = async (event: HandlerEvent) => {
+  try {
+    return await handle(event);
+  } finally {
+    await flushLogs('mcp');
+  }
 };
