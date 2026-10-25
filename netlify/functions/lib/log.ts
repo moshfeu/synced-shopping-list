@@ -35,7 +35,7 @@ function lokiConfig() {
  * once the handler returns, so await this in a `finally`. It never throws and gives up
  * after 2 s: logging must not break or slow down a request.
  */
-export async function flushLogs(service: string) {
+export async function flushLogs(service: string, env: string) {
   const config = lokiConfig();
   const entries = pending;
   pending = [];
@@ -43,7 +43,7 @@ export async function flushLogs(service: string) {
     return;
   }
   // Labels stay low-cardinality; everything else is in the JSON line (`| json`)
-  const labels = { app: 'synced-shopping-list', service, env: process.env.CONTEXT || 'unknown' };
+  const labels = { app: 'synced-shopping-list', service, env };
   const streams = (['info', 'warn', 'error'] as const)
     .map((level) => ({
       stream: { ...labels, level },
@@ -65,6 +65,18 @@ export async function flushLogs(service: string) {
   } catch (error) {
     console.error(`Grafana Loki push failed: ${error instanceof Error ? error.message : error}`);
   }
+}
+
+/**
+ * Netlify's CONTEXT variable only exists at build time, so the deploy context comes from
+ * the host: `deploy-preview-135--site.netlify.app`, `branch--site.netlify.app` or the production host.
+ */
+export function deployContext(headers: Record<string, string | undefined>) {
+  const host = headers['x-forwarded-host'] || headers.host || '';
+  if (host.startsWith('deploy-preview-')) {
+    return 'deploy-preview';
+  }
+  return host.includes('--') ? 'branch-deploy' : 'production';
 }
 
 /** Error details safe to log; the stack only travels with real errors. */

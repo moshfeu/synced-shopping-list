@@ -5,7 +5,7 @@ import { createRemoteJWKSet, jwtVerify } from 'jose';
 import { config, getBaseUrl } from './lib/config';
 import { createRepository } from './lib/db';
 import { jsonResponse, preflightResponse } from './lib/http';
-import { errorFields, flushLogs, log, maskEmail } from './lib/log';
+import { deployContext, errorFields, flushLogs, log, maskEmail } from './lib/log';
 import { isRevoked, revokeSession } from './lib/revocation';
 import { ACCESS_TOKEN_TTL_SECONDS, sign, verify } from './lib/tokens';
 
@@ -397,6 +397,6 @@ export const handler: Handler = async (event: HandlerEvent) => {
   try {
     return await handle(event);
   } finally {
-    await flushLogs('oauth');
+    await flushLogs('oauth', deployContext(event.headers));
   }
 };

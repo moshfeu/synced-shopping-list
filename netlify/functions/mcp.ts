@@ -4,7 +4,7 @@ import pkg from '../../package.json';
 import { getBaseUrl } from './lib/config';
 import { Repository, User, createRepository } from './lib/db';
 import { corsResponse, jsonResponse, preflightResponse } from './lib/http';
-import { errorFields, flushLogs, log, maskEmail } from './lib/log';
+import { deployContext, errorFields, flushLogs, log, maskEmail } from './lib/log';
 import { isRevoked } from './lib/revocation';
 import { imageFromBase64, imageFromUrl } from './lib/image';
 import { verify } from './lib/tokens';
@@ -346,6 +346,6 @@ export const handler: Handler = async (event: HandlerEvent) => {
   try {
     return await handle(event);
   } finally {
-    await flushLogs('mcp');
+    await flushLogs('mcp', deployContext(event.headers));
   }
 };
