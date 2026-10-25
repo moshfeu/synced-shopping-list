@@ -19,7 +19,7 @@ export const config = {
     return required('MCP_GOOGLE_CLIENT_SECRET');
   },
   get databaseURL() {
-    return process.env.FIREBASE_DATABASE_URL || required('VITE_DATABASE_URL');
+    return required('VITE_DATABASE_URL');
   },
   get storageBucket() {
     return required('VITE_STORAGE_BUCKET');
@@ -34,9 +34,6 @@ export const config = {
 };
 
 export function getBaseUrl(event: HandlerEvent) {
-  if (process.env.MCP_BASE_URL) {
-    return process.env.MCP_BASE_URL.replace(/\/$/, '');
-  }
   const host = event.headers['x-forwarded-host'] || event.headers.host;
   const proto = event.headers['x-forwarded-proto'] || 'https';
   return `${proto}://${host}`;
