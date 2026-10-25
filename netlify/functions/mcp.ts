@@ -4,6 +4,7 @@ import pkg from '../../package.json';
 import { getBaseUrl } from './lib/config';
 import { Repository, User, createRepository } from './lib/db';
 import { corsResponse, jsonResponse, preflightResponse } from './lib/http';
+import { errorFields, log, maskEmail } from './lib/log';
 import { isRevoked } from './lib/revocation';
 import { imageFromBase64, imageFromUrl } from './lib/image';
 import { verify } from './lib/tokens';
@@ -202,10 +203,16 @@ const rpcError = (id: JsonRpcRequest['id'] | null, code: number, message: string
   error: { code, message },
 });
 
-async function handleRequest(req: JsonRpcRequest, user: User) {
+async function handleRequest(req: JsonRpcRequest, user: User, sid?: string) {
   switch (req.method) {
     case 'initialize': {
       const requested = req.params?.protocolVersion;
+      log('info', 'mcp.initialize', {
+        sid,
+        client: req.params?.clientInfo?.name,
+        clientVersion: req.params?.clientInfo?.version,
+        requestedProtocol: requested,
+      });
       return rpc(req.id, {
         protocolVersion: PROTOCOL_VERSIONS.includes(requested) ? requested : PROTOCOL_VERSIONS[0],
         capabilities: { tools: {} },
@@ -227,13 +234,34 @@ async function handleRequest(req: JsonRpcRequest, user: User) {
     case 'tools/call': {
       const tool = tools.find((t) => t.name === req.params?.name);
       if (!tool) {
+        log('warn', 'mcp.tool_unknown', { sid, tool: req.params?.name });
         return rpcError(req.id, -32602, `Unknown tool: ${req.params?.name}`);
       }
+      const startedAt = Date.now();
+      // Argument names only: values can hold notes, names or image data
+      const argumentNames = Object.keys(req.params.arguments || {});
       try {
         const result = await tool.run(createRepository(user), req.params.arguments || {});
+        log('info', 'mcp.tool', {
+          sid,
+          tool: tool.name,
+          user: maskEmail(user.email),
+          argumentNames,
+          ms: Date.now() - startedAt,
+          ok: true,
+        });
         return rpc(req.id, { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] });
       } catch (error) {
         // Tool failures are reported to the model, not as protocol errors
+        log('warn', 'mcp.tool', {
+          sid,
+          tool: tool.name,
+          user: maskEmail(user.email),
+          argumentNames,
+          ms: Date.now() - startedAt,
+          ok: false,
+          ...errorFields(error),
+        });
         return rpc(req.id, {
           isError: true,
           content: [{ type: 'text', text: error instanceof Error ? error.message : String(error) }],
@@ -241,6 +269,7 @@ async function handleRequest(req: JsonRpcRequest, user: User) {
       }
     }
     default:
+      log('warn', 'mcp.method_unknown', { sid, method: req.method });
       return rpcError(req.id, -32601, `Method not found: ${req.method}`);
   }
 }
@@ -260,6 +289,12 @@ export const handler: Handler = async (event: HandlerEvent) => {
   const claims = await verify<{ sub: string; name?: string; aud: string; sid?: string }>('access', bearer);
   const base = getBaseUrl(event);
   if (!claims || claims.aud !== `${base}/api/mcp`) {
+    log('warn', 'mcp.unauthorized', {
+      reason: !bearer ? 'no_token' : !claims ? 'invalid_or_expired_token' : 'wrong_audience',
+      audience: claims?.aud,
+      expectedAudience: `${base}/api/mcp`,
+      httpMethod: event.httpMethod,
+    });
     return respond(401, { error: 'unauthorized' }, {
       'WWW-Authenticate': `Bearer resource_metadata="${base}/.well-known/oauth-protected-resource"`,
     });
@@ -267,18 +302,20 @@ export const handler: Handler = async (event: HandlerEvent) => {
 
   try {
     if (await isRevoked(claims.sid)) {
+      log('warn', 'mcp.token_revoked', { sid: claims.sid, user: maskEmail(claims.sub) });
       return respond(401, { error: 'token_revoked' }, {
         'WWW-Authenticate': `Bearer error="invalid_token", resource_metadata="${base}/.well-known/oauth-protected-resource"`,
       });
     }
   } catch (error) {
     // Fail closed when the denylist can't be read
-    console.error('revocation check failed', error);
+    log('error', 'mcp.revocation_check_failed', { sid: claims.sid, ...errorFields(error) });
     return respond(503, rpcError(null, -32000, 'Temporarily unavailable'));
   }
 
   if (event.httpMethod !== 'POST') {
     // No server-initiated stream and no sessions
+    log('warn', 'mcp.method_not_allowed', { httpMethod: event.httpMethod });
     return respond(405, rpcError(null, -32000, 'Method not allowed'), { Allow: 'POST' });
   }
 
@@ -286,6 +323,7 @@ export const handler: Handler = async (event: HandlerEvent) => {
   try {
     payload = JSON.parse(event.body || '');
   } catch {
+    log('warn', 'mcp.parse_error', { sid: claims.sid, bytes: event.body?.length ?? 0 });
     return respond(400, rpcError(null, -32700, 'Parse error'));
   }
 
@@ -294,7 +332,7 @@ export const handler: Handler = async (event: HandlerEvent) => {
   // Notifications and responses carry no id and need no answer
   const responses = (
     await Promise.all(
-      messages.map((m) => (m.id === undefined ? undefined : handleRequest(m, user)))
+      messages.map((m) => (m.id === undefined ? undefined : handleRequest(m, user, claims.sid)))
     )
   ).filter(Boolean);
 

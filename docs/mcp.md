@@ -116,6 +116,23 @@ Gotchas:
 - Full-size photos: call `create_shopping_list_item_image_upload` (returns a 10-minute signed URL), `PUT` the raw bytes to it with the returned headers (e.g. `curl --upload-file photo.jpg -H 'Content-Type: image/jpeg' -H 'x-goog-content-length-range: 0,10485760' "<uploadUrl>"`), then call `finalize_shopping_list_item_image`. The bytes never pass through the agent's context, up to 10 MB.
 - Realtime Database rule timestamps (`now < …`) are in milliseconds.
 
+## Logs
+
+The functions write one JSON line per event (`netlify/functions/lib/log.ts`) with `level`, `event` and `ts` plus context, so the Netlify function logs can be filtered by `event`:
+
+| Event | When |
+| --- | --- |
+| `oauth.register`, `oauth.authorize`, `oauth.signed_in` | A client registers, starts sign-in, completes it |
+| `oauth.google_token_exchange_failed` | Google refused the code (the `googleError` field says why, e.g. `redirect_uri_mismatch`, `invalid_client`) |
+| `oauth.access_denied` | The database rules rejected the email (the error message says which rule or role) |
+| `oauth.token`, `oauth.token_rejected` | Code or refresh grants; `reason` says why one was rejected (PKCE, client id, revoked, expired) |
+| `oauth.revoked`, `oauth.revoke_ignored` | Session revocation |
+| `mcp.initialize`, `mcp.tool` | A client connects; each tool call with `tool`, `ms`, `ok` and the error message when it failed |
+| `mcp.unauthorized`, `mcp.token_revoked` | Rejected requests (`reason`: `no_token`, `invalid_or_expired_token`, `wrong_audience`) |
+| `mcp.revocation_check_failed`, `oauth.unhandled_error` | Server errors, with a short stack |
+
+Logs never contain tokens, codes, secrets, signed URLs, request bodies, tool argument values or image data. Emails are masked (`j***@gmail.com`) and tool calls log only the argument names.
+
 ## Tokens and revocation
 
 Tokens are signed JWTs (access 1h, refresh 30d), each tied to a session id. POST a token to `/oauth/revoke` (RFC 7009) to revoke its whole session: the revoked session ids are kept in Netlify Blobs, checked on every MCP call and on refresh (a revocation can take up to about a minute to apply). Rotating `MCP_JWT_SECRET` signs everybody out. The service account is only used to impersonate the signed-in user's email so the rules are enforced.

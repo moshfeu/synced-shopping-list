@@ -5,6 +5,7 @@ import { createRemoteJWKSet, jwtVerify } from 'jose';
 import { config, getBaseUrl } from './lib/config';
 import { createRepository } from './lib/db';
 import { jsonResponse, preflightResponse } from './lib/http';
+import { errorFields, log, maskEmail } from './lib/log';
 import { isRevoked, revokeSession } from './lib/revocation';
 import { ACCESS_TOKEN_TTL_SECONDS, sign, verify } from './lib/tokens';
 
@@ -119,6 +120,15 @@ function metadata(event: HandlerEvent, path: string) {
   });
 }
 
+/** Host only: redirect URIs can carry state in their path or query. */
+function hostOf(uri: string | undefined) {
+  try {
+    return new URL(uri || '').host;
+  } catch {
+    return undefined;
+  }
+}
+
 async function register(event: HandlerEvent) {
   const { redirect_uris, client_name } = parseBodyJson(event);
   if (
@@ -126,10 +136,12 @@ async function register(event: HandlerEvent) {
     !redirect_uris.length ||
     !redirect_uris.every(isValidRedirectUri)
   ) {
+    log('warn', 'oauth.register_rejected', { reason: 'invalid_redirect_uris', client: String(client_name).slice(0, 100) });
     return oauthError('invalid_redirect_uri', 'redirect_uris are missing or invalid');
   }
   const name = typeof client_name === 'string' ? client_name.slice(0, 100) : undefined;
   const clientId = await sign('client', { redirect_uris, client_name: name });
+  log('info', 'oauth.register', { client: name, redirectHosts: redirect_uris.map(hostOf) });
   return json(201, {
     client_id: clientId,
     client_name: name,
@@ -153,15 +165,21 @@ async function authorize(event: HandlerEvent) {
   const client = await verify<ClientToken>('client', q.client_id);
   if (!client || !q.redirect_uri || !client.redirect_uris.includes(q.redirect_uri)) {
     // Never redirect to an unverified redirect_uri
+    log('warn', 'oauth.authorize_rejected', {
+      reason: !client ? 'invalid_client_id' : !q.redirect_uri ? 'missing_redirect_uri' : 'redirect_uri_not_registered',
+      redirectHost: hostOf(q.redirect_uri),
+    });
     return page(400, 'Unknown client or redirect URI.');
   }
   const fail = (error: string, description: string) =>
     redirect(withParams(q.redirect_uri!, { error, error_description: description, state: q.state }));
 
   if (q.response_type !== 'code') {
+    log('warn', 'oauth.authorize_rejected', { reason: 'unsupported_response_type', responseType: q.response_type });
     return fail('unsupported_response_type', 'Only response_type=code is supported');
   }
   if (!q.code_challenge || q.code_challenge_method !== 'S256') {
+    log('warn', 'oauth.authorize_rejected', { reason: 'pkce_s256_required', method: q.code_challenge_method });
     return fail('invalid_request', 'PKCE with code_challenge_method=S256 is required');
   }
 
@@ -175,6 +193,7 @@ async function authorize(event: HandlerEvent) {
     },
     '10m'
   );
+  log('info', 'oauth.authorize', { client: client.client_name, redirectHost: hostOf(q.redirect_uri) });
   return redirect(
     withParams('https://accounts.google.com/o/oauth2/v2/auth', {
       client_id: config.googleClientId,
@@ -191,12 +210,14 @@ async function callback(event: HandlerEvent) {
   const q = event.queryStringParameters || {};
   const authz = await verify<AuthzState>('authz', q.state);
   if (!authz) {
+    log('warn', 'oauth.callback_rejected', { reason: 'invalid_or_expired_state' });
     return page(400, 'Sign-in expired or invalid. Please start again from your AI agent.');
   }
   const fail = (error: string, description: string) =>
     redirect(withParams(authz.redirect_uri, { error, error_description: description, state: authz.state }));
 
   if (q.error || !q.code) {
+    log('warn', 'oauth.callback_rejected', { reason: 'google_error_or_no_code', googleError: q.error });
     return fail('access_denied', q.error || 'Sign-in was cancelled');
   }
 
@@ -212,6 +233,14 @@ async function callback(event: HandlerEvent) {
     }),
   });
   if (!tokenResponse.ok) {
+    // Google's error body names the cause (invalid_client, redirect_uri_mismatch, ...) and holds no secrets
+    const detail = await tokenResponse.json().catch(() => ({}));
+    log('error', 'oauth.google_token_exchange_failed', {
+      status: tokenResponse.status,
+      googleError: detail.error,
+      googleErrorDescription: detail.error_description,
+      redirectUri: `${getBaseUrl(event)}/oauth/callback`,
+    });
     return fail('server_error', 'Google sign-in failed');
   }
 
@@ -224,18 +253,21 @@ async function callback(event: HandlerEvent) {
       audience: config.googleClientId,
     });
     if (!payload.email || payload.email_verified !== true) {
+      log('warn', 'oauth.callback_rejected', { reason: 'email_not_verified' });
       return fail('access_denied', 'Google account email is not verified');
     }
     email = String(payload.email).toLowerCase();
     name = payload.name as string | undefined;
-  } catch {
+  } catch (error) {
+    log('error', 'oauth.google_identity_failed', errorFields(error));
     return fail('server_error', 'Could not verify the Google identity');
   }
 
   // Same authorization as the web app: the database rules decide who gets in
   try {
     await createRepository({ email, name }).getCategories();
-  } catch {
+  } catch (error) {
+    log('warn', 'oauth.access_denied', { user: maskEmail(email), ...errorFields(error) });
     return fail('access_denied', `${email} is not allowed to access this shopping list`);
   }
 
@@ -244,6 +276,7 @@ async function callback(event: HandlerEvent) {
     { ...authz, email, name, sid: randomUUID() } satisfies CodeToken,
     '2m'
   );
+  log('info', 'oauth.signed_in', { user: maskEmail(email), redirectHost: hostOf(authz.redirect_uri) });
   return redirect(withParams(authz.redirect_uri, { code, state: authz.state }));
 }
 
@@ -272,29 +305,41 @@ async function token(event: HandlerEvent) {
 
   if (body.grant_type === 'authorization_code') {
     const code = await verify<CodeToken>('code', body.code);
-    if (
-      !code ||
-      code.client_id !== body.client_id ||
-      code.redirect_uri !== body.redirect_uri ||
-      !body.code_verifier ||
-      !pkceMatches(body.code_verifier, code.code_challenge)
-    ) {
+    const rejection = !code
+      ? 'invalid_or_expired_code'
+      : code.client_id !== body.client_id
+        ? 'client_id_mismatch'
+        : code.redirect_uri !== body.redirect_uri
+          ? 'redirect_uri_mismatch'
+          : !body.code_verifier || !pkceMatches(body.code_verifier, code.code_challenge)
+            ? 'pkce_mismatch'
+            : undefined;
+    if (!code || rejection) {
+      log('warn', 'oauth.token_rejected', { grant: 'authorization_code', reason: rejection });
       return oauthError('invalid_grant', 'Invalid authorization code or PKCE verifier');
     }
+    log('info', 'oauth.token', { grant: 'authorization_code', sid: code.sid, user: maskEmail(code.email) });
     return issueTokens(event, code.email, code.name, code.client_id, code.sid);
   }
 
   if (body.grant_type === 'refresh_token') {
     const refresh = await verify<RefreshToken>('refresh', body.refresh_token);
     if (!refresh || (body.client_id && refresh.client_id !== body.client_id)) {
+      log('warn', 'oauth.token_rejected', {
+        grant: 'refresh_token',
+        reason: !refresh ? 'invalid_or_expired_refresh_token' : 'client_id_mismatch',
+      });
       return oauthError('invalid_grant', 'Invalid refresh token');
     }
     if (await isRevoked(refresh.sid)) {
+      log('warn', 'oauth.token_rejected', { grant: 'refresh_token', reason: 'session_revoked', sid: refresh.sid });
       return oauthError('invalid_grant', 'Session was revoked');
     }
+    log('info', 'oauth.token', { grant: 'refresh_token', sid: refresh.sid, user: maskEmail(refresh.sub) });
     return issueTokens(event, refresh.sub, refresh.name, refresh.client_id, refresh.sid);
   }
 
+  log('warn', 'oauth.token_rejected', { reason: 'unsupported_grant_type', grant: body.grant_type });
   return oauthError('unsupported_grant_type', 'Unsupported grant_type');
 }
 
@@ -306,6 +351,9 @@ async function revoke(event: HandlerEvent) {
     (await verify<{ sid?: string }>('access', value));
   if (claims?.sid) {
     await revokeSession(claims.sid);
+    log('info', 'oauth.revoked', { sid: claims.sid });
+  } else {
+    log('info', 'oauth.revoke_ignored', { reason: 'unknown_or_invalid_token' });
   }
   return json(200, {});
 }
@@ -340,7 +388,7 @@ export const handler: Handler = async (event) => {
     }
     return json(404, { error: 'not_found' });
   } catch (error) {
-    console.error('oauth error', error);
+    log('error', 'oauth.unhandled_error', { path, httpMethod: event.httpMethod, ...errorFields(error) });
     return oauthError('server_error', 'Unexpected error', 500);
   }
 };
