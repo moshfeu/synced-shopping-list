@@ -236,7 +236,7 @@ export function createRepository(user: User) {
         headers: { 'Content-Type': contentType, 'x-goog-content-length-range': sizeRange },
         path,
         expiresInSeconds: 600,
-        next: `PUT the raw image bytes to uploadUrl with exactly these headers, then call finalize_item_image with id and path`,
+        next: `PUT the raw image bytes to uploadUrl with exactly these headers, then call finalize_shopping_list_item_image with id and path`,
       };
     },
 

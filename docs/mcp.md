@@ -4,7 +4,7 @@ The list can be read and edited by AI agents (Claude, ChatGPT, Cursor, ...) thro
 
 Agents sign in with Google, same as the app, and the database rules apply to them as well: only emails allowed by your Firebase rules can access the list.
 
-Tools: `list_shopping_list`, `add_to_shopping_list`, `update_shopping_list_item` (including check / uncheck), `set_shopping_list_item_image`, `create_shopping_list_item_image_upload` + `finalize_item_image`, `remove_item_image`, `remove_from_shopping_list`, `clear_checked_items`, `list_categories`, `create_category`, `update_category`, `delete_category`, `list_suggestions`, `delete_suggestion`.
+Tools: `list_shopping_list`, `add_to_shopping_list`, `update_shopping_list_item` (including check / uncheck), `set_shopping_list_item_image`, `create_shopping_list_item_image_upload` + `finalize_shopping_list_item_image`, `remove_shopping_list_item_image`, `remove_from_shopping_list`, `clear_checked_items`, `list_categories`, `create_category`, `update_category`, `delete_category`, `list_suggestions`, `delete_suggestion`.
 
 ## How it works
 
@@ -92,7 +92,7 @@ sequenceDiagram
     N-->>A: uploadUrl, headers, path
     A->>S: PUT raw bytes to uploadUrl
     S-->>A: 200
-    A->>N: finalize_item_image (id, path)
+    A->>N: finalize_shopping_list_item_image (id, path)
     N->>S: check the file exists and has an image type
     N->>R: set items/<itemId>/image = path
     N->>S: delete the previous image
@@ -113,7 +113,7 @@ Gotchas:
 - Variables can have a different value per deploy context. Deploy previews may point at a separate (dev) Firebase project, so give that context a service account key from the same project as its `VITE_DATABASE_URL`.
 - The service account needs access to that project's Realtime Database (the default `firebase-adminsdk-…` account has it; a custom one needs a suitable role).
 - `set_shopping_list_item_image` writes to Firebase Storage with the service account, so that account needs Storage access (the default `firebase-adminsdk-…` account has it). Images are stored as `items/<itemId>#…` like the app does, up to 4 MB, from a public https URL or base64.
-- Full-size photos: call `create_shopping_list_item_image_upload` (returns a 10-minute signed URL), `PUT` the raw bytes to it with the returned headers (e.g. `curl --upload-file photo.jpg -H 'Content-Type: image/jpeg' -H 'x-goog-content-length-range: 0,10485760' "<uploadUrl>"`), then call `finalize_item_image`. The bytes never pass through the agent's context, up to 10 MB.
+- Full-size photos: call `create_shopping_list_item_image_upload` (returns a 10-minute signed URL), `PUT` the raw bytes to it with the returned headers (e.g. `curl --upload-file photo.jpg -H 'Content-Type: image/jpeg' -H 'x-goog-content-length-range: 0,10485760' "<uploadUrl>"`), then call `finalize_shopping_list_item_image`. The bytes never pass through the agent's context, up to 10 MB.
 - Realtime Database rule timestamps (`now < …`) are in milliseconds.
 
 ## Tokens and revocation
