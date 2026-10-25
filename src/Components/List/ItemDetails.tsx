@@ -102,14 +102,14 @@ export const ItemDetails: FC<ItemDetailsProps> = ({ listItem }) => {
 
   async function onAddCategory(formData: FormData) {
     const name = formData.get('category') as string;
-    const category = await addCategory({
+    const categoryId = await addCategory({
       name,
     });
-    if (!category?.key) {
+    if (!categoryId) {
       return;
     }
     updateItem(listItem!.item, {
-      categoryId: category.key,
+      categoryId,
     });
   }
 

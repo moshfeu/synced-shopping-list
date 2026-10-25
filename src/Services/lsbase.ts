@@ -1,4 +1,4 @@
-import { set, omit } from 'lodash';
+import { get, set, omit } from 'lodash';
 import { dbRef } from './converters';
 
 type Event = 'value';
@@ -95,6 +95,10 @@ export class Lsbase {
 
   ref = (path?: string) => {
     return {
+      get: async () => {
+        const value = path ? get(this.data, this.fireBasetoJsPath(path)) : this.data;
+        return { val: () => value ?? null };
+      },
       update: async (updates: Updates) => {
         Object.entries(updates).forEach(([path, value]) => {
           const jsPath = this.fireBasetoJsPath(path);

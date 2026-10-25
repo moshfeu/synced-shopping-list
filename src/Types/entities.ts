@@ -1,28 +1,6 @@
-export type DBItem = {
-  readonly id: string;
-};
+import type { Category, DBItem, Item, ListItem } from '../shared/entities';
 
-export type Item = DBItem & {
-  name: string;
-  categoryId?: string | null;
-  image?: string | null;
-  requiredQuantity?: number;
-};
-
-export type Category = DBItem & {
-  name: string;
-  color?: string;
-};
-
-export type ListItem = DBItem & {
-  itemId: string;
-  quantity: number;
-  note: string;
-  checked: boolean;
-  urgency: '1' | '2' | '3';
-  addedBy: Pick<firebase.User, 'displayName' | 'photoURL'> | null;
-  addedAt: number;
-};
+export type { Category, DBItem, Item, ListItem };
 
 export type ItemView = Omit<Item, 'categoryId'> & {
   category?: Category;
