@@ -1,7 +1,9 @@
 import { connectLambda } from '@netlify/blobs';
 import { Handler, HandlerEvent, HandlerResponse } from '@netlify/functions';
+import pkg from '../../package.json';
 import { getBaseUrl } from './lib/config';
 import { Repository, User, createRepository } from './lib/db';
+import { corsResponse, jsonResponse, preflightResponse } from './lib/http';
 import { isRevoked } from './lib/revocation';
 import { imageFromBase64, imageFromUrl } from './lib/image';
 import { verify } from './lib/tokens';
@@ -85,7 +87,7 @@ const tools: Tool[] = [
     run: (repo, { id, ...changes }) => repo.updateListItem(id, changes),
   },
   {
-    name: 'set_item_image',
+    name: 'set_shopping_list_item_image',
     description:
       'Attach a photo to a list item (replaces the current one). Provide imageUrl (public https link to a jpeg/png/webp/gif, max 4 MB) or imageBase64 with mimeType. Chat attachments have no URL, so use imageBase64 only for small files.',
     inputSchema: object(
@@ -109,7 +111,7 @@ const tools: Tool[] = [
     },
   },
   {
-    name: 'create_item_image_upload',
+    name: 'create_shopping_list_item_image_upload',
     description:
       'Step 1 of attaching a full-size photo without sending it through chat: returns a short-lived signed URL. Then HTTP PUT the raw image bytes to it with the returned headers (e.g. curl --upload-file), then call finalize_item_image. Max 10 MB.',
     inputSchema: object(
@@ -123,8 +125,8 @@ const tools: Tool[] = [
   },
   {
     name: 'finalize_item_image',
-    description: 'Step 2 of create_item_image_upload: attaches the uploaded file (path from step 1) to the list item.',
-    inputSchema: object({ id: str('List item id'), path: str('path returned by create_item_image_upload') }, ['id', 'path']),
+    description: 'Step 2 of create_shopping_list_item_image_upload: attaches the uploaded file (path from step 1) to the list item.',
+    inputSchema: object({ id: str('List item id'), path: str('path returned by create_shopping_list_item_image_upload') }, ['id', 'path']),
     run: (repo, { id, path }) => repo.finalizeItemImage(id, path),
   },
   {
@@ -207,7 +209,7 @@ async function handleRequest(req: JsonRpcRequest, user: User) {
       return rpc(req.id, {
         protocolVersion: PROTOCOL_VERSIONS.includes(requested) ? requested : PROTOCOL_VERSIONS[0],
         capabilities: { tools: {} },
-        serverInfo: { name: 'synced-shopping-list', version: '1.0.0' },
+        serverInfo: { name: 'synced-shopping-list', version: pkg.version },
         instructions: 'Read and edit the shared shopping list. Call list_shopping_list to get item ids.',
       });
     }
@@ -243,23 +245,15 @@ async function handleRequest(req: JsonRpcRequest, user: User) {
   }
 }
 
-const respond = (statusCode: number, body?: unknown, headers = {}): HandlerResponse => ({
-  statusCode,
-  headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*', ...headers },
-  body: body === undefined ? undefined : JSON.stringify(body),
-});
+const respond = jsonResponse;
 
 export const handler: Handler = async (event: HandlerEvent) => {
   connectLambda(event as unknown as Parameters<typeof connectLambda>[0]);
   if (event.httpMethod === 'OPTIONS') {
-    return {
-      statusCode: 204,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'POST, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type, Authorization, MCP-Protocol-Version, Mcp-Session-Id',
-      },
-    };
+    return preflightResponse(
+      'POST, OPTIONS',
+      'Content-Type, Authorization, MCP-Protocol-Version, Mcp-Session-Id'
+    );
   }
 
   const bearer = (event.headers.authorization || '').match(/^Bearer (.+)$/i)?.[1];
@@ -305,7 +299,7 @@ export const handler: Handler = async (event: HandlerEvent) => {
   ).filter(Boolean);
 
   if (!responses.length) {
-    return { statusCode: 202, headers: { 'Access-Control-Allow-Origin': '*' } };
+    return corsResponse(202);
   }
   return respond(200, Array.isArray(payload) ? responses : responses[0]);
 };

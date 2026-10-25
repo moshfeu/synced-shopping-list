@@ -4,6 +4,7 @@ import { Handler, HandlerEvent, HandlerResponse } from '@netlify/functions';
 import { createRemoteJWKSet, jwtVerify } from 'jose';
 import { config, getBaseUrl } from './lib/config';
 import { createRepository } from './lib/db';
+import { jsonResponse, preflightResponse } from './lib/http';
 import { isRevoked, revokeSession } from './lib/revocation';
 import { ACCESS_TOKEN_TTL_SECONDS, sign, verify } from './lib/tokens';
 
@@ -27,16 +28,8 @@ type AuthzState = {
 type CodeToken = AuthzState & { email: string; name?: string; sid: string };
 type RefreshToken = { sub: string; name?: string; client_id: string; sid: string };
 
-const json = (statusCode: number, body: unknown, headers = {}): HandlerResponse => ({
-  statusCode,
-  headers: {
-    'Content-Type': 'application/json',
-    'Cache-Control': 'no-store',
-    'Access-Control-Allow-Origin': '*',
-    ...headers,
-  },
-  body: JSON.stringify(body),
-});
+const json = (statusCode: number, body: unknown, headers = {}) =>
+  jsonResponse(statusCode, body, { 'Cache-Control': 'no-store', ...headers });
 
 const oauthError = (error: string, description: string, statusCode = 400) =>
   json(statusCode, { error, error_description: description });
@@ -322,14 +315,10 @@ export const handler: Handler = async (event) => {
   const path = event.path;
   try {
     if (event.httpMethod === 'OPTIONS') {
-      return {
-        statusCode: 204,
-        headers: {
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-          'Access-Control-Allow-Headers': 'Content-Type, Authorization, MCP-Protocol-Version',
-        },
-      };
+      return preflightResponse(
+        'GET, POST, OPTIONS',
+        'Content-Type, Authorization, MCP-Protocol-Version'
+      );
     }
     if (path.includes('/.well-known/')) {
       return metadata(event, path);

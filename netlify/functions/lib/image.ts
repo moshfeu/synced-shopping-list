@@ -19,15 +19,16 @@ function isPrivateAddress(address: string) {
     const lower = address.toLowerCase();
     return lower === '::1' || lower === '::' || /^f[cd]/.test(lower) || lower.startsWith('fe80');
   }
+  // IPv4 ranges an agent-supplied URL must not reach (SSRF guard)
   const [a, b] = address.split('.').map(Number);
   return (
-    a === 0 ||
-    a === 10 ||
-    a === 127 ||
-    (a === 169 && b === 254) ||
-    (a === 172 && b >= 16 && b <= 31) ||
-    (a === 192 && b === 168) ||
-    (a === 100 && b >= 64 && b <= 127)
+    a === 0 || // "this network"
+    a === 10 || // private 10.0.0.0/8
+    a === 127 || // loopback
+    (a === 169 && b === 254) || // link-local, incl. the cloud metadata endpoint
+    (a === 172 && b >= 16 && b <= 31) || // private 172.16.0.0/12
+    (a === 192 && b === 168) || // private 192.168.0.0/16
+    (a === 100 && b >= 64 && b <= 127) // carrier-grade NAT 100.64.0.0/10
   );
 }
 

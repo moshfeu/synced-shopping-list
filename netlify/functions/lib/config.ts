@@ -22,7 +22,7 @@ export const config = {
     return process.env.FIREBASE_DATABASE_URL || required('VITE_DATABASE_URL');
   },
   get storageBucket() {
-    return process.env.FIREBASE_STORAGE_BUCKET || required('VITE_STORAGE_BUCKET');
+    return required('VITE_STORAGE_BUCKET');
   },
   get serviceAccount() {
     try {
