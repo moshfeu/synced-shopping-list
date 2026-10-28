@@ -90,7 +90,7 @@ const tools: Tool[] = [
   {
     name: 'set_shopping_list_item_image',
     description:
-      'Attach a photo to a list item (replaces the current one). Provide imageUrl (public https link to a jpeg/png/webp/gif, max 4 MB) or imageBase64 with mimeType. Chat attachments have no URL, so use imageBase64 only for small files.',
+      'Attach a photo to a list item (replaces the current one). Provide imageUrl (public https link to a jpeg/png/webp/gif, max 4 MB) or imageBase64 with mimeType. Chat attachments have no URL: use create_shopping_list_item_image_upload for them (imageBase64 only for tiny images).',
     inputSchema: object(
       {
         id: str('List item id (from list_shopping_list)'),
@@ -114,7 +114,7 @@ const tools: Tool[] = [
   {
     name: 'create_shopping_list_item_image_upload',
     description:
-      'Step 1 of attaching a full-size photo without sending it through chat: returns a short-lived signed URL. Then HTTP PUT the raw image bytes to it with the returned headers (e.g. curl --upload-file), then call finalize_shopping_list_item_image. Max 10 MB.',
+      'Step 1 of 3 for attaching a photo the user sent in chat or has as a file (you cannot copy file bytes into a tool call). Returns a signed uploadUrl (valid 10 minutes, max 10 MB), the headers to send and a path. Step 2: HTTP PUT the raw file bytes to uploadUrl with exactly those headers, using whatever tool you have that can send a chat attachment or a local file (a shell: curl --upload-file). Step 3: call finalize_shopping_list_item_image with the path. If you have no way to PUT the bytes, tell the user instead of sending base64.',
     inputSchema: object(
       {
         id: str('List item id (from list_shopping_list)'),
@@ -126,7 +126,7 @@ const tools: Tool[] = [
   },
   {
     name: 'finalize_shopping_list_item_image',
-    description: 'Step 2 of create_shopping_list_item_image_upload: attaches the uploaded file (path from step 1) to the list item.',
+    description: 'Step 3 of create_shopping_list_item_image_upload: after the file was PUT to uploadUrl, attaches it (path from step 1) to the list item.',
     inputSchema: object({ id: str('List item id'), path: str('path returned by create_shopping_list_item_image_upload') }, ['id', 'path']),
     run: (repo, { id, path }) => repo.finalizeItemImage(id, path),
   },
@@ -217,7 +217,8 @@ async function handleRequest(req: JsonRpcRequest, user: User, sid?: string) {
         protocolVersion: PROTOCOL_VERSIONS.includes(requested) ? requested : PROTOCOL_VERSIONS[0],
         capabilities: { tools: {} },
         serverInfo: { name: 'synced-shopping-list', version: pkg.version },
-        instructions: 'Read and edit the shared shopping list. Call list_shopping_list to get item ids.',
+        instructions:
+          'Read and edit the shared shopping list. Call list_shopping_list to get item ids. To add a photo from a chat attachment or file: add or find the item, call create_shopping_list_item_image_upload, PUT the file bytes to the returned uploadUrl with the returned headers, then call finalize_shopping_list_item_image. The signed URL expires after 10 minutes.',
       });
     }
     case 'ping':
