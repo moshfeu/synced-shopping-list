@@ -99,7 +99,7 @@ sequenceDiagram
     N-->>A: image, bytes, contentType
 ```
 
-`set_shopping_list_item_image` is the small-image shortcut: the function receives the image (public https URL or base64, up to 4 MB), writes it to Storage with the service account, and updates `items/<itemId>/image`.
+`set_shopping_list_item_image` is the shortcut for a public image: the function fetches the https URL (up to 4 MB), writes it to Storage with the service account, and updates `items/<itemId>/image`.
 
 ## Setup
 
@@ -112,8 +112,8 @@ Gotchas:
 - Netlify caps all environment variables visible to functions at 4 KB combined. Store `FIREBASE_SERVICE_ACCOUNT` as one line with only `project_id`, `client_email` and `private_key`, and remove unused variables (e.g. old `REACT_APP_*`).
 - Variables can have a different value per deploy context. Deploy previews may point at a separate (dev) Firebase project, so give that context a service account key from the same project as its `VITE_DATABASE_URL`.
 - The service account needs access to that project's Realtime Database (the default `firebase-adminsdk-…` account has it; a custom one needs a suitable role).
-- `set_shopping_list_item_image` writes to Firebase Storage with the service account, so that account needs Storage access (the default `firebase-adminsdk-…` account has it). Images are stored as `items/<itemId>#…` like the app does, up to 4 MB, from a public https URL or base64.
-- Full-size photos: call `create_shopping_list_item_image_upload` (returns a 10-minute signed URL), `PUT` the raw bytes to it with the returned headers (e.g. `curl --upload-file photo.jpg -H 'Content-Type: image/jpeg' -H 'x-goog-content-length-range: 0,10485760' "<uploadUrl>"`), then call `finalize_shopping_list_item_image`. The bytes never pass through the agent's context, up to 10 MB.
+- `set_shopping_list_item_image` writes to Firebase Storage with the service account, so that account needs Storage access (the default `firebase-adminsdk-…` account has it). Images are stored as `items/<itemId>#…` like the app does, up to 4 MB from a public https URL.
+- Full-size photos: call `create_shopping_list_item_image_upload` (returns a 10-minute signed URL), `PUT` the raw bytes to it with the returned headers (e.g. `curl --upload-file photo.jpg -H 'Content-Type: image/jpeg' -H 'x-goog-content-length-range: 0,10485760' "<uploadUrl>"`), then call `finalize_shopping_list_item_image`. The bytes never pass through the agent's context, up to 10 MB. The same steps are in the tool descriptions and the server `instructions`, so a client needs no instructions of its own; it only needs some way to send the file's bytes (a shell, or a client tool that PUTs a chat attachment).
 - Realtime Database rule timestamps (`now < …`) are in milliseconds.
 
 ## Logs
