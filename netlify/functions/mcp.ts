@@ -6,7 +6,7 @@ import { Repository, User, createRepository } from './lib/db';
 import { corsResponse, jsonResponse, preflightResponse } from './lib/http';
 import { deployContext, errorFields, flushLogs, log, maskEmail } from './lib/log';
 import { isRevoked } from './lib/revocation';
-import { imageFromBase64, imageFromUrl } from './lib/image';
+import { imageFromUrl } from './lib/image';
 import { verify } from './lib/tokens';
 
 /**
@@ -90,31 +90,20 @@ const tools: Tool[] = [
   {
     name: 'set_shopping_list_item_image',
     description:
-      'Attach a photo to a list item (replaces the current one). Provide imageUrl (public https link to a jpeg/png/webp/gif, max 4 MB) or imageBase64 with mimeType. Chat attachments have no URL: use create_shopping_list_item_image_upload for them (imageBase64 only for tiny images).',
+      'Attach a photo to a list item (replaces the current one). imageUrl is a public https link to a jpeg/png/webp/gif, max 4 MB. For a photo from chat or a file (no URL) use create_shopping_list_item_image_upload instead.',
     inputSchema: object(
       {
         id: str('List item id (from list_shopping_list)'),
         imageUrl: str('Public https URL of the image'),
-        imageBase64: str('Base64 image data (small images only)'),
-        mimeType: { type: 'string', enum: ['image/jpeg', 'image/png', 'image/webp', 'image/gif'] },
       },
-      ['id']
+      ['id', 'imageUrl']
     ),
-    run: async (repo, { id, imageUrl, imageBase64, mimeType }) => {
-      if (!imageUrl === !imageBase64) {
-        throw new Error('Provide exactly one of imageUrl or imageBase64');
-      }
-      if (imageBase64 && !mimeType) {
-        throw new Error('mimeType is required with imageBase64');
-      }
-      const image = imageUrl ? await imageFromUrl(imageUrl) : imageFromBase64(imageBase64, mimeType);
-      return repo.setItemImage(id, image);
-    },
+    run: async (repo, { id, imageUrl }) => repo.setItemImage(id, await imageFromUrl(imageUrl)),
   },
   {
     name: 'create_shopping_list_item_image_upload',
     description:
-      'Step 1 of 3 for attaching a photo the user sent in chat or has as a file (you cannot copy file bytes into a tool call). Returns a signed uploadUrl (valid 10 minutes, max 10 MB), the headers to send and a path. Step 2: HTTP PUT the raw file bytes to uploadUrl with exactly those headers, using whatever tool you have that can send a chat attachment or a local file (a shell: curl --upload-file). Step 3: call finalize_shopping_list_item_image with the path. If you have no way to PUT the bytes, tell the user instead of sending base64.',
+      'Step 1 of 3 for attaching a photo the user sent in chat or has as a file (you cannot copy file bytes into a tool call). Returns a signed uploadUrl (valid 10 minutes, max 10 MB), the headers to send and a path. Step 2: HTTP PUT the raw file bytes to uploadUrl with exactly those headers, using whatever tool you have that can send a chat attachment or a local file (a shell: curl --upload-file). Step 3: call finalize_shopping_list_item_image with the path. If you have no way to PUT the bytes, tell the user.',
     inputSchema: object(
       {
         id: str('List item id (from list_shopping_list)'),
