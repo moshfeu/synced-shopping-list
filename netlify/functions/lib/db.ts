@@ -29,6 +29,27 @@ type ListItem = {
 
 export type User = { email: string; name?: string };
 
+/** Where an added item came from: brand new, or a known item that was only a suggestion. */
+export type AddSource = 'new' | 'suggestion';
+
+export class NotFoundError extends Error {}
+
+/** Adding an item that is already on the list. `code` tells a bought item from one still to buy. */
+export class AddToListConflict extends Error {
+  readonly code: 'already_checked' | 'already_on_list';
+  readonly listItemId: string;
+
+  constructor(name: string, existing: ListItem) {
+    super(
+      existing.checked
+        ? `"${name}" is already on the list and checked; uncheck it instead`
+        : `"${name}" is already on the list; update it instead`
+    );
+    this.code = existing.checked ? 'already_checked' : 'already_on_list';
+    this.listItemId = existing.id;
+  }
+}
+
 /**
  * Admin SDK apps bypass security rules unless `databaseAuthVariableOverride` is set.
  * Impersonating the signed-in user makes the existing rules
@@ -125,13 +146,15 @@ export function createRepository(user: User) {
       ]);
       let item = items.find((i) => i.name.trim().toLowerCase() === name.toLowerCase());
 
-      if (item && list.some((l) => l.itemId === item!.id)) {
-        throw new Error(`"${item.name}" is already on the list; update it instead`);
+      const existing = item && list.find((l) => l.itemId === item!.id);
+      if (item && existing) {
+        throw new AddToListConflict(item.name, existing);
       }
+      const source: AddSource = item ? 'suggestion' : 'new';
 
       const category = input.category ? await findCategory(input.category) : undefined;
       if (input.category && !category) {
-        throw new Error(`Category "${input.category}" was not found`);
+        throw new NotFoundError(`Category "${input.category}" was not found`);
       }
 
       if (!item) {
@@ -152,7 +175,7 @@ export function createRepository(user: User) {
         addedAt: Date.now(),
       };
       const ref = await db.ref('list').push(listItem);
-      return { id: ref.key!, name: item.name, ...listItem };
+      return { id: ref.key!, name: item.name, source, ...listItem };
     },
 
     async updateListItem(

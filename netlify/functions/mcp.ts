@@ -1,13 +1,11 @@
 import { connectLambda } from '@netlify/blobs';
 import { Handler, HandlerEvent, HandlerResponse } from '@netlify/functions';
 import pkg from '../../package.json';
-import { getBaseUrl } from './lib/config';
+import { authenticate } from './lib/auth';
 import { Repository, User, createRepository } from './lib/db';
 import { corsResponse, jsonResponse, preflightResponse } from './lib/http';
 import { deployContext, errorFields, flushLogs, log, maskEmail } from './lib/log';
-import { isRevoked } from './lib/revocation';
 import { imageFromUrl } from './lib/image';
-import { verify } from './lib/tokens';
 
 /**
  * Stateless MCP server (Streamable HTTP, JSON responses) exposing the shopping list.
@@ -275,33 +273,15 @@ const handle = async (event: HandlerEvent) => {
     );
   }
 
-  const bearer = (event.headers.authorization || '').match(/^Bearer (.+)$/i)?.[1];
-  const claims = await verify<{ sub: string; name?: string; aud: string; sid?: string }>('access', bearer);
-  const base = getBaseUrl(event);
-  if (!claims || claims.aud !== `${base}/api/mcp`) {
-    log('warn', 'mcp.unauthorized', {
-      reason: !bearer ? 'no_token' : !claims ? 'invalid_or_expired_token' : 'wrong_audience',
-      audience: claims?.aud,
-      expectedAudience: `${base}/api/mcp`,
-      httpMethod: event.httpMethod,
-    });
-    return respond(401, { error: 'unauthorized' }, {
-      'WWW-Authenticate': `Bearer resource_metadata="${base}/.well-known/oauth-protected-resource"`,
-    });
+  const auth = await authenticate(event, 'mcp');
+  if (!auth.ok) {
+    return respond(
+      auth.status,
+      auth.status === 503 ? rpcError(null, -32000, auth.error) : { error: auth.error },
+      auth.headers
+    );
   }
-
-  try {
-    if (await isRevoked(claims.sid)) {
-      log('warn', 'mcp.token_revoked', { sid: claims.sid, user: maskEmail(claims.sub) });
-      return respond(401, { error: 'token_revoked' }, {
-        'WWW-Authenticate': `Bearer error="invalid_token", resource_metadata="${base}/.well-known/oauth-protected-resource"`,
-      });
-    }
-  } catch (error) {
-    // Fail closed when the denylist can't be read
-    log('error', 'mcp.revocation_check_failed', { sid: claims.sid, ...errorFields(error) });
-    return respond(503, rpcError(null, -32000, 'Temporarily unavailable'));
-  }
+  const { user, sid } = auth;
 
   if (event.httpMethod !== 'POST') {
     // No server-initiated stream and no sessions
@@ -313,16 +293,15 @@ const handle = async (event: HandlerEvent) => {
   try {
     payload = JSON.parse(event.body || '');
   } catch {
-    log('warn', 'mcp.parse_error', { sid: claims.sid, bytes: event.body?.length ?? 0 });
+    log('warn', 'mcp.parse_error', { sid, bytes: event.body?.length ?? 0 });
     return respond(400, rpcError(null, -32700, 'Parse error'));
   }
 
-  const user: User = { email: claims.sub, name: claims.name };
   const messages = Array.isArray(payload) ? payload : [payload];
   // Notifications and responses carry no id and need no answer
   const responses = (
     await Promise.all(
-      messages.map((m) => (m.id === undefined ? undefined : handleRequest(m, user, claims.sid)))
+      messages.map((m) => (m.id === undefined ? undefined : handleRequest(m, user, sid)))
     )
   ).filter(Boolean);
 

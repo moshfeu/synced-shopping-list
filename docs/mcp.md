@@ -101,6 +101,20 @@ sequenceDiagram
 
 `set_shopping_list_item_image` is the shortcut for a public image: the function fetches the https URL (up to 4 MB), writes it to Storage with the service account, and updates `items/<itemId>/image`.
 
+## Adding items over REST
+
+Bots can add items without reading the list first: `POST /api/items` (same Bearer token as the MCP) with one item or an array. The status says what happened:
+
+| Status | `code` | Meaning |
+| --- | --- | --- |
+| 201 | `new` | Unknown item: created and put on the list |
+| 201 | `suggestion` | Known suggestion: put on the list |
+| 409 | `already_on_list` | Already on the list, still to buy (`listItemId` is returned) |
+| 409 | `already_checked` | On the list but checked (`listItemId` is returned, uncheck it to buy again) |
+| 400 / 404 | `invalid_input` / `not_found` | Bad input / unknown category |
+
+An array is answered with `207` and `{ "results": [{ "status", "code", ... }] }`, one entry per item in order. Items are processed sequentially, so a duplicate name inside one batch gets a 409.
+
 ## Setup
 
 1. In the Google Cloud console (the project behind your Firebase project) create an OAuth client of type *Web application* and add `https://<your-site>/oauth/callback` as an authorized redirect URI.
