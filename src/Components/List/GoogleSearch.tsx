@@ -1,7 +1,7 @@
 import { useState, FormEvent, useRef } from 'react';
 import { useRouteMatch } from 'react-router-dom';
 import { Toolbar, IconButton, Typography, Box, InputBase, ImageList, ImageListItem, Skeleton, ButtonBase, CircularProgress, Button, Chip } from '@mui/material';
-import { ArrowBack, Clear as ClearIcon, Search as SearchIcon } from '@mui/icons-material';
+import { ArrowBack, Search as SearchIcon } from '@mui/icons-material';
 import makeStyles from '@mui/styles/makeStyles';
 
 import { useNavigation } from '../../Hooks/useRoute';
@@ -118,18 +118,8 @@ export const GoogleSearch = ({
             placeholder='Search Google Images'
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
+            type='search'
             inputProps={{ 'aria-label': 'search google images' }}
-            endAdornment={
-              inputValue && (
-                <IconButton
-                  size='small'
-                  aria-label='clear search'
-                  onClick={() => setInputValue('')}
-                >
-                  <ClearIcon fontSize='small' />
-                </IconButton>
-              )
-            }
           />
           <IconButton
             type='submit'
