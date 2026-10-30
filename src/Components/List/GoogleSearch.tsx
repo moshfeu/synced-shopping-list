@@ -33,9 +33,12 @@ const useGoogleSearchStyles = makeStyles((theme) => ({
 
 export const GoogleSearch = ({
   onSelect,
+  initialQuery = '',
 }: {
   onSelect: (url: string, thumbnailUrl?: string) => Promise<void>;
+  initialQuery?: string;
 }) => {
+  const [inputValue, setInputValue] = useState(initialQuery);
   const { params } = useRouteMatch<RouteWithItemId>();
   const { navigateToItem } = useNavigation();
   const [itemData, setItemData] = useState<GoogleSearchResult[]>([]);
@@ -113,6 +116,9 @@ export const GoogleSearch = ({
             name='query'
             className={classes.input}
             placeholder='Search Google Images'
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
+            type='search'
             inputProps={{ 'aria-label': 'search google images' }}
           />
           <IconButton

@@ -72,11 +72,6 @@ function fromBuffer(buffer: Buffer, declaredType: string): ImageData {
   return { buffer, contentType, extension };
 }
 
-export function imageFromBase64(base64: string, mimeType: string) {
-  const clean = base64.replace(/^data:[^,]*,/, '').replace(/\s/g, '');
-  return fromBuffer(Buffer.from(clean, 'base64'), mimeType);
-}
-
 /** Fetches a public https image. Refuses private addresses and redirects so it can't reach internal services. */
 export async function imageFromUrl(rawUrl: string) {
   const url = new URL(rawUrl);
