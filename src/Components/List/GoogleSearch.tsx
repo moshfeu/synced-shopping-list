@@ -1,7 +1,7 @@
 import { useState, FormEvent, useRef } from 'react';
 import { useRouteMatch } from 'react-router-dom';
 import { Toolbar, IconButton, Typography, Box, InputBase, ImageList, ImageListItem, Skeleton, ButtonBase, CircularProgress, Button, Chip } from '@mui/material';
-import { ArrowBack, Search as SearchIcon } from '@mui/icons-material';
+import { ArrowBack, Clear as ClearIcon, Search as SearchIcon } from '@mui/icons-material';
 import makeStyles from '@mui/styles/makeStyles';
 
 import { useNavigation } from '../../Hooks/useRoute';
@@ -33,9 +33,12 @@ const useGoogleSearchStyles = makeStyles((theme) => ({
 
 export const GoogleSearch = ({
   onSelect,
+  initialQuery = '',
 }: {
   onSelect: (url: string, thumbnailUrl?: string) => Promise<void>;
+  initialQuery?: string;
 }) => {
+  const [inputValue, setInputValue] = useState(initialQuery);
   const { params } = useRouteMatch<RouteWithItemId>();
   const { navigateToItem } = useNavigation();
   const [itemData, setItemData] = useState<GoogleSearchResult[]>([]);
@@ -113,7 +116,20 @@ export const GoogleSearch = ({
             name='query'
             className={classes.input}
             placeholder='Search Google Images'
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
             inputProps={{ 'aria-label': 'search google images' }}
+            endAdornment={
+              inputValue && (
+                <IconButton
+                  size='small'
+                  aria-label='clear search'
+                  onClick={() => setInputValue('')}
+                >
+                  <ClearIcon fontSize='small' />
+                </IconButton>
+              )
+            }
           />
           <IconButton
             type='submit'
