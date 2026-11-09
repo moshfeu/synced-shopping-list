@@ -13,6 +13,11 @@ import type {
 } from '../../../src/shared/list-repository';
 
 export type { Urgency } from '../../../src/shared/entities';
+export {
+  AddToListConflict,
+  NotFoundError,
+} from '../../../src/shared/list-repository';
+export type { AddSource } from '../../../src/shared/list-repository';
 
 export type User = { email: string; name?: string };
 

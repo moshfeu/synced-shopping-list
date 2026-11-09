@@ -29,6 +29,27 @@ export const DB_REF = {
   LIST: 'list',
 } as const;
 
+/** Where an added item came from: brand new, or a known item that was only a suggestion. */
+export type AddSource = 'new' | 'suggestion';
+
+export class NotFoundError extends Error {}
+
+/** Adding an item that is already on the list. `code` tells a bought item from one still to buy. */
+export class AddToListConflict extends Error {
+  readonly code: 'already_checked' | 'already_on_list';
+  readonly listItemId: string;
+
+  constructor(name: string, existing: ListItem) {
+    super(
+      existing.checked
+        ? `"${name}" is already on the list and checked; uncheck it instead`
+        : `"${name}" is already on the list; update it instead`
+    );
+    this.code = existing.checked ? 'already_checked' : 'already_on_list';
+    this.listItemId = existing.id;
+  }
+}
+
 export type NewListItemInput = {
   name: string;
   quantity?: number;
@@ -141,13 +162,15 @@ export function createListRepository(
       ]);
       let item = items.find((i) => sameName(i.name, name));
 
-      if (item && list.some((l) => l.itemId === item!.id)) {
-        throw new Error(`"${item.name}" is already on the list; update it instead`);
+      const existing = item && list.find((l) => l.itemId === item!.id);
+      if (item && existing) {
+        throw new AddToListConflict(item.name, existing);
       }
+      const source: AddSource = item ? 'suggestion' : 'new';
 
       const category = input.category ? await findCategory(input.category) : undefined;
       if (input.category && !category) {
-        throw new Error(`Category "${input.category}" was not found`);
+        throw new NotFoundError(`Category "${input.category}" was not found`);
       }
 
       if (!item) {
@@ -167,7 +190,7 @@ export function createListRepository(
         addedAt: Date.now(),
       };
       const id = await repository.pushListItem(listItem);
-      return { id, name: item.name, ...listItem };
+      return { id, name: item.name, source, ...listItem };
     },
 
     /** Applies list-item fields and, by name, the underlying item's name and category. */

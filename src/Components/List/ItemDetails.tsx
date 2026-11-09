@@ -419,7 +419,10 @@ export const ItemDetails: FC<ItemDetailsProps> = ({ listItem }) => {
           ) : null}
         </Route>
         <Route path={`${path}/google-search`}>
-          <GoogleSearch onSelect={onGoogleResult} />
+          <GoogleSearch
+            onSelect={onGoogleResult}
+            initialQuery={listItem?.item.name}
+          />
         </Route>
       </Switch>
     </div>

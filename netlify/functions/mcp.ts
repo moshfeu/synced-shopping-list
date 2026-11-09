@@ -1,13 +1,11 @@
 import { connectLambda } from '@netlify/blobs';
 import { Handler, HandlerEvent, HandlerResponse } from '@netlify/functions';
 import pkg from '../../package.json';
-import { getBaseUrl } from './lib/config';
+import { authenticate } from './lib/auth';
 import { Repository, User, createRepository } from './lib/db';
 import { corsResponse, jsonResponse, preflightResponse } from './lib/http';
 import { deployContext, errorFields, flushLogs, log, maskEmail } from './lib/log';
-import { isRevoked } from './lib/revocation';
-import { imageFromBase64, imageFromUrl } from './lib/image';
-import { verify } from './lib/tokens';
+import { imageFromUrl } from './lib/image';
 
 /**
  * Stateless MCP server (Streamable HTTP, JSON responses) exposing the shopping list.
@@ -90,31 +88,20 @@ const tools: Tool[] = [
   {
     name: 'set_shopping_list_item_image',
     description:
-      'Attach a photo to a list item (replaces the current one). Provide imageUrl (public https link to a jpeg/png/webp/gif, max 4 MB) or imageBase64 with mimeType. Chat attachments have no URL, so use imageBase64 only for small files.',
+      'Attach a photo to a list item (replaces the current one). imageUrl is a public https link to a jpeg/png/webp/gif, max 4 MB. For a photo from chat or a file (no URL) use create_shopping_list_item_image_upload instead.',
     inputSchema: object(
       {
         id: str('List item id (from list_shopping_list)'),
         imageUrl: str('Public https URL of the image'),
-        imageBase64: str('Base64 image data (small images only)'),
-        mimeType: { type: 'string', enum: ['image/jpeg', 'image/png', 'image/webp', 'image/gif'] },
       },
-      ['id']
+      ['id', 'imageUrl']
     ),
-    run: async (repo, { id, imageUrl, imageBase64, mimeType }) => {
-      if (!imageUrl === !imageBase64) {
-        throw new Error('Provide exactly one of imageUrl or imageBase64');
-      }
-      if (imageBase64 && !mimeType) {
-        throw new Error('mimeType is required with imageBase64');
-      }
-      const image = imageUrl ? await imageFromUrl(imageUrl) : imageFromBase64(imageBase64, mimeType);
-      return repo.setItemImage(id, image);
-    },
+    run: async (repo, { id, imageUrl }) => repo.setItemImage(id, await imageFromUrl(imageUrl)),
   },
   {
     name: 'create_shopping_list_item_image_upload',
     description:
-      'Step 1 of attaching a full-size photo without sending it through chat: returns a short-lived signed URL. Then HTTP PUT the raw image bytes to it with the returned headers (e.g. curl --upload-file), then call finalize_shopping_list_item_image. Max 10 MB.',
+      'Step 1 of 3 for attaching a photo the user sent in chat or has as a file (you cannot copy file bytes into a tool call). Returns a signed uploadUrl (valid 10 minutes, max 10 MB), the headers to send and a path. Step 2: HTTP PUT the raw file bytes to uploadUrl with exactly those headers, using whatever tool you have that can send a chat attachment or a local file (a shell: curl --upload-file). Step 3: call finalize_shopping_list_item_image with the path. If you have no way to PUT the bytes, tell the user.',
     inputSchema: object(
       {
         id: str('List item id (from list_shopping_list)'),
@@ -126,7 +113,7 @@ const tools: Tool[] = [
   },
   {
     name: 'finalize_shopping_list_item_image',
-    description: 'Step 2 of create_shopping_list_item_image_upload: attaches the uploaded file (path from step 1) to the list item.',
+    description: 'Step 3 of create_shopping_list_item_image_upload: after the file was PUT to uploadUrl, attaches it (path from step 1) to the list item.',
     inputSchema: object({ id: str('List item id'), path: str('path returned by create_shopping_list_item_image_upload') }, ['id', 'path']),
     run: (repo, { id, path }) => repo.finalizeItemImage(id, path),
   },
@@ -217,7 +204,8 @@ async function handleRequest(req: JsonRpcRequest, user: User, sid?: string) {
         protocolVersion: PROTOCOL_VERSIONS.includes(requested) ? requested : PROTOCOL_VERSIONS[0],
         capabilities: { tools: {} },
         serverInfo: { name: 'synced-shopping-list', version: pkg.version },
-        instructions: 'Read and edit the shared shopping list. Call list_shopping_list to get item ids.',
+        instructions:
+          'Read and edit the shared shopping list. Call list_shopping_list to get item ids. To add a photo from a chat attachment or file: add or find the item, call create_shopping_list_item_image_upload, PUT the file bytes to the returned uploadUrl with the returned headers, then call finalize_shopping_list_item_image. The signed URL expires after 10 minutes.',
       });
     }
     case 'ping':
@@ -285,33 +273,15 @@ const handle = async (event: HandlerEvent) => {
     );
   }
 
-  const bearer = (event.headers.authorization || '').match(/^Bearer (.+)$/i)?.[1];
-  const claims = await verify<{ sub: string; name?: string; aud: string; sid?: string }>('access', bearer);
-  const base = getBaseUrl(event);
-  if (!claims || claims.aud !== `${base}/api/mcp`) {
-    log('warn', 'mcp.unauthorized', {
-      reason: !bearer ? 'no_token' : !claims ? 'invalid_or_expired_token' : 'wrong_audience',
-      audience: claims?.aud,
-      expectedAudience: `${base}/api/mcp`,
-      httpMethod: event.httpMethod,
-    });
-    return respond(401, { error: 'unauthorized' }, {
-      'WWW-Authenticate': `Bearer resource_metadata="${base}/.well-known/oauth-protected-resource"`,
-    });
+  const auth = await authenticate(event, 'mcp');
+  if (!auth.ok) {
+    return respond(
+      auth.status,
+      auth.status === 503 ? rpcError(null, -32000, auth.error) : { error: auth.error },
+      auth.headers
+    );
   }
-
-  try {
-    if (await isRevoked(claims.sid)) {
-      log('warn', 'mcp.token_revoked', { sid: claims.sid, user: maskEmail(claims.sub) });
-      return respond(401, { error: 'token_revoked' }, {
-        'WWW-Authenticate': `Bearer error="invalid_token", resource_metadata="${base}/.well-known/oauth-protected-resource"`,
-      });
-    }
-  } catch (error) {
-    // Fail closed when the denylist can't be read
-    log('error', 'mcp.revocation_check_failed', { sid: claims.sid, ...errorFields(error) });
-    return respond(503, rpcError(null, -32000, 'Temporarily unavailable'));
-  }
+  const { user, sid } = auth;
 
   if (event.httpMethod !== 'POST') {
     // No server-initiated stream and no sessions
@@ -323,16 +293,15 @@ const handle = async (event: HandlerEvent) => {
   try {
     payload = JSON.parse(event.body || '');
   } catch {
-    log('warn', 'mcp.parse_error', { sid: claims.sid, bytes: event.body?.length ?? 0 });
+    log('warn', 'mcp.parse_error', { sid, bytes: event.body?.length ?? 0 });
     return respond(400, rpcError(null, -32700, 'Parse error'));
   }
 
-  const user: User = { email: claims.sub, name: claims.name };
   const messages = Array.isArray(payload) ? payload : [payload];
   // Notifications and responses carry no id and need no answer
   const responses = (
     await Promise.all(
-      messages.map((m) => (m.id === undefined ? undefined : handleRequest(m, user, claims.sid)))
+      messages.map((m) => (m.id === undefined ? undefined : handleRequest(m, user, sid)))
     )
   ).filter(Boolean);
 
