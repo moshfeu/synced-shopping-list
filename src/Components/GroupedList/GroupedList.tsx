@@ -8,7 +8,10 @@ import {
   ListItemIcon,
   ListItemSecondaryAction,
   ListItemText,
+  Collapse,
 } from '@mui/material';
+import { ExpandLess, ExpandMore } from '@mui/icons-material';
+import { useSessionStorageState } from '../../Hooks/useSessionStorageState';
 import makeStyles from '@mui/styles/makeStyles';
 import { useGlobalStyles } from '../../Styles/common';
 import { Item, ListItem } from '../../Types/entities';
@@ -29,6 +32,8 @@ type GroupedListProps = {
   onCheckItem(item: GroupedListItem): void;
   onDeleteItem?(item: GroupedListItem): void;
   onAction?(item: GroupedListItem): void;
+  /** When set, sections are collapsible and their state is kept in sessionStorage under this key */
+  collapsibleStorageKey?: string;
 };
 
 const useStyles = makeStyles((theme) => ({
@@ -38,6 +43,13 @@ const useStyles = makeStyles((theme) => ({
   },
   listSubheader: {
     backgroundColor: theme.palette.background.default,
+  },
+  collapsibleSubheader: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    cursor: 'pointer',
+    userSelect: 'none',
   },
 
   level1: {},
@@ -55,9 +67,25 @@ export const GroupedList: FC<GroupedListProps> = ({
   actionIcon,
   onCheckItem,
   onDeleteItem,
+  collapsibleStorageKey,
 }) => {
   const classes = useStyles();
   const globalClasses = useGlobalStyles();
+  const collapsible = Boolean(collapsibleStorageKey);
+  const [collapsed, updateCollapsed] = useSessionStorageState<string[]>(
+    collapsibleStorageKey ?? 'grouped-list-collapsed',
+    []
+  );
+
+  const isCollapsed = (category: string) =>
+    collapsible && collapsed.includes(category);
+
+  const toggleCategory = (category: string) =>
+    updateCollapsed((prev) =>
+      prev.includes(category)
+        ? prev.filter((c) => c !== category)
+        : [...prev, category]
+    );
 
   const getLevelClass = (level: GroupedListItem['level']) => {
     return level
@@ -76,10 +104,21 @@ export const GroupedList: FC<GroupedListProps> = ({
           <ul className={classes.ul}>
             <ListSubheader
               color='primary'
-              classes={{ root: classes.listSubheader }}
+              classes={{
+                root: `${classes.listSubheader} ${
+                  collapsible ? classes.collapsibleSubheader : ''
+                }`,
+              }}
+              onClick={
+                collapsible ? () => toggleCategory(category) : undefined
+              }
+              aria-expanded={collapsible ? !isCollapsed(category) : undefined}
             >
               {category}
+              {collapsible &&
+                (isCollapsed(category) ? <ExpandMore /> : <ExpandLess />)}
             </ListSubheader>
+            <Collapse in={!isCollapsed(category)} timeout='auto' unmountOnExit>
             {categoryItems.map((item) => (
               <Swipable
                 key={item.key}
@@ -127,6 +166,7 @@ export const GroupedList: FC<GroupedListProps> = ({
                 </MuiListItem>
               </Swipable>
             ))}
+            </Collapse>
           </ul>
         </li>
       ))}
