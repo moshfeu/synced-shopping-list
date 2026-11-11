@@ -1,4 +1,4 @@
-import React, { FC, ReactChild } from 'react';
+import React, { FC, ReactChild, useRef } from 'react';
 import {
   List,
   ListSubheader,
@@ -44,6 +44,10 @@ const useStyles = makeStyles((theme) => ({
   listSubheader: {
     backgroundColor: theme.palette.background.default,
   },
+  checkedCounter: {
+    marginInlineStart: theme.spacing(0.5),
+    opacity: 0.7,
+  },
   collapsibleSubheader: {
     display: 'flex',
     alignItems: 'center',
@@ -77,6 +81,8 @@ export const GroupedList: FC<GroupedListProps> = ({
     []
   );
 
+  const sectionRefs = useRef(new Map<string, HTMLLIElement>());
+
   const isCollapsed = (category: string) =>
     collapsible && collapsed.includes(category);
 
@@ -86,6 +92,18 @@ export const GroupedList: FC<GroupedListProps> = ({
         ? prev.filter((c) => c !== category)
         : [...prev, category]
     );
+
+  // After a section folds, the scroll position can land in the middle of
+  // another section. Bring the next open section (or the folded one) into view.
+  const scrollAfterCollapse = (category: string) => {
+    const index = categories.findIndex(([name]) => name === category);
+    const next = categories
+      .slice(index + 1)
+      .find(([name]) => !isCollapsed(name));
+    sectionRefs.current
+      .get(next ? next[0] : category)
+      ?.scrollIntoView({ block: 'start' });
+  };
 
   const getLevelClass = (level: GroupedListItem['level']) => {
     return level
@@ -100,7 +118,14 @@ export const GroupedList: FC<GroupedListProps> = ({
   return (
     <List subheader={<li />}>
       {categories.map(([category, categoryItems]) => (
-        <li key={`section-${category}`}>
+        <li
+          key={`section-${category}`}
+          ref={(el) => {
+            el
+              ? sectionRefs.current.set(category, el)
+              : sectionRefs.current.delete(category);
+          }}
+        >
           <ul className={classes.ul}>
             <ListSubheader
               color='primary'
@@ -114,11 +139,23 @@ export const GroupedList: FC<GroupedListProps> = ({
               }
               aria-expanded={collapsible ? !isCollapsed(category) : undefined}
             >
-              {category}
+              <span>
+                {category}
+                {categoryItems.some((item) => item.checked) && (
+                  <span className={classes.checkedCounter}>
+                    ({categoryItems.filter((item) => item.checked).length})
+                  </span>
+                )}
+              </span>
               {collapsible &&
                 (isCollapsed(category) ? <ExpandMore /> : <ExpandLess />)}
             </ListSubheader>
-            <Collapse in={!isCollapsed(category)} timeout='auto' unmountOnExit>
+            <Collapse
+              in={!isCollapsed(category)}
+              timeout='auto'
+              unmountOnExit
+              onExited={() => scrollAfterCollapse(category)}
+            >
             {categoryItems.map((item) => (
               <Swipable
                 key={item.key}
