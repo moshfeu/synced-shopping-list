@@ -86,23 +86,19 @@ export const GroupedList: FC<GroupedListProps> = ({
   const isCollapsed = (category: string) =>
     collapsible && collapsed.includes(category);
 
-  const toggleCategory = (category: string) =>
+  // When a section folds, smoothly scroll to its header while the collapse
+  // animation runs, so the view never lands in the middle of another section.
+  const toggleCategory = (category: string) => {
+    if (!isCollapsed(category)) {
+      sectionRefs.current
+        .get(category)
+        ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
     updateCollapsed((prev) =>
       prev.includes(category)
         ? prev.filter((c) => c !== category)
         : [...prev, category]
     );
-
-  // After a section folds, the scroll position can land in the middle of
-  // another section. Bring the next open section (or the folded one) into view.
-  const scrollAfterCollapse = (category: string) => {
-    const index = categories.findIndex(([name]) => name === category);
-    const next = categories
-      .slice(index + 1)
-      .find(([name]) => !isCollapsed(name));
-    sectionRefs.current
-      .get(next ? next[0] : category)
-      ?.scrollIntoView({ block: 'start' });
   };
 
   const getLevelClass = (level: GroupedListItem['level']) => {
@@ -154,7 +150,6 @@ export const GroupedList: FC<GroupedListProps> = ({
               in={!isCollapsed(category)}
               timeout='auto'
               unmountOnExit
-              onExited={() => scrollAfterCollapse(category)}
             >
             {categoryItems.map((item) => (
               <Swipable
