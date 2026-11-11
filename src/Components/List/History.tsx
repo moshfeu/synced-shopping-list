@@ -98,6 +98,7 @@ export const History: FC<HistoryProps> = ({ open, items, onClose, onAdd }) => {
           <GroupedList
             categories={groupByCategories}
             actionIcon={<Delete />}
+            collapsibleStorageKey='history-collapsed-categories'
             onAction={(item) => deleteItem(item.key)}
             onDeleteItem={(item) => deleteItem(item.key)}
             onCheckItem={(item) =>
